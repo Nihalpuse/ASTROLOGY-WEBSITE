@@ -4,8 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import UniversalZodiacBanner from '../../../components/UniversalZodiacBanner';
 import ZodiacInfoNavigation from '@/app/components/ZodiacInfoNavigation';
-import AriesProductRecommendations from '../../../components/AriesProductRecommendations';
-import { Statistics } from '../../../components/Statistics';
+
 import SimpleHorizontalBanner from '../../../components/SimpleHorizontalBanner';
 import ReusableProductGrid from '../../../components/ReusableProductGrid';
 

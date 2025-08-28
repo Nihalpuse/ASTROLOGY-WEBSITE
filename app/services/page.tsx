@@ -110,15 +110,15 @@ export default function ServicesPage() {
         </p>
 
         {/* Services Search with CTA */}
-        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3 mb-8 w-full">
+  <div className="flex flex-col items-center justify-center gap-3 mb-8 w-full md:gap-3 gap-5">
           <Link
             href="/services/all"
-            className="inline-block bg-green-800 hover:bg-green-900 text-white font-semibold px-6 py-3 rounded-full transition-colors duration-200 text-base whitespace-nowrap text-center md:text-left"
+            className="inline-block bg-green-800 hover:bg-green-900 text-white font-semibold px-6 py-3 rounded-full transition-colors duration-200 text-base whitespace-nowrap text-center"
             style={{ lineHeight: '1.5', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
           >
             View All Services
           </Link>
-          <div className="w-full md:w-auto">
+          <div className="w-full max-w-md">
             <ServicesSearch onSearchChange={setSearch} className="mb-0 w-full" />
           </div>
         </div>
@@ -141,12 +141,12 @@ export default function ServicesPage() {
         />
 
         {/* Service Carousels (Top-Selling Section) */}
-        <div className="mt-16 mb-32">
+        <div className="mt-16 mb-8">
           <ServiceCarousels />
         </div>
 
         {/* Nakshatra Gyaan Banner */}
-        <div className="mt-16 mb-32">
+        <div className="mt-16 mb-8">
           <NakshatraGyaanBanner />
         </div>
 

@@ -4,9 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import UniversalZodiacBanner from '../../../components/UniversalZodiacBanner';
 import ZodiacInfoNavigation from '@/app/components/ZodiacInfoNavigation';
-import AquariusProductRecommendations from '../../../components/AquariusProductRecommendations';
 import ReusableProductGrid from '../../../components/ReusableProductGrid';
-import { Statistics } from '../../../components/Statistics';
 import SimpleHorizontalBanner from '../../../components/SimpleHorizontalBanner';
 
 export default function AquariusZodiacPage() {

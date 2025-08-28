@@ -5,7 +5,6 @@ import { motion, AnimatePresence } from 'framer-motion';
 import UniversalZodiacBanner from '../../../components/UniversalZodiacBanner';
 import ZodiacInfoNavigation from '@/app/components/ZodiacInfoNavigation';
 import ReusableProductGrid from '../../../components/ReusableProductGrid';
-import { Statistics } from '../../../components/Statistics';
 import SimpleHorizontalBanner from '../../../components/SimpleHorizontalBanner';
 
 export default function CapricornZodiacPage() {

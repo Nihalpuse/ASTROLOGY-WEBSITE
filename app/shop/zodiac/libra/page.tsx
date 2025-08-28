@@ -4,7 +4,6 @@ import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import UniversalZodiacBanner from '../../../components/UniversalZodiacBanner';
 import ZodiacInfoNavigation from '@/app/components/ZodiacInfoNavigation';
-import { Statistics } from '../../../components/Statistics';
 import SimpleHorizontalBanner from '../../../components/SimpleHorizontalBanner';
 import ReusableProductGrid from '../../../components/ReusableProductGrid';
 
@@ -66,17 +65,7 @@ export default function LibraZodiacPage() {
           </div>
         </motion.div>
 
-        {/* STATISTICS SECTION */}
-        <motion.div
-          className="bg-white py-16"
-          initial={{ opacity: 0, y: 50 }}
-          animate={isLoaded ? { opacity: 1, y: 0 } : {}}
-          transition={{ duration: 0.8, delay: 0.6 }}
-        >
-          <div className="max-w-7xl mx-auto px-4">
-            <Statistics />
-          </div>
-        </motion.div>
+
 
         {/* SIMPLE HORIZONTAL BANNER */}
         <div className="-mt-8">

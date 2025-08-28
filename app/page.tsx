@@ -50,10 +50,6 @@ const AstrologyQuiz = dynamic(
   () => import("./components/AstrologyQuiz").then((mod) => mod.AstrologyQuiz),
   { loading: () => <div>Loading...</div>, ssr: false }
 );
-const Statistics = dynamic(
-  () => import("./components/Statistics").then((mod) => mod.Statistics),
-  { loading: () => <div>Loading...</div>, ssr: false }
-);
 const RecentPosts = dynamic(() => import("./components/RecentPosts"), {
   loading: () => <div>Loading...</div>,
   ssr: false,
@@ -81,9 +77,6 @@ export default function HomePage() {
       <NewHeroSection />
 
       <div className="pt-32 relative z-10">
-        <ScrollAnimation>
-          <Statistics />
-        </ScrollAnimation>
         <RecentPosts />
         {/* <FeaturedBlogs /> */}
 
