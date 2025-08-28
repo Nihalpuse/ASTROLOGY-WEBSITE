@@ -123,13 +123,13 @@ export function Testimonials() {
   const testimonial = testimonials[current];
 
   return (
-    <section className="relative w-full min-h-[60vh] bg-white overflow-hidden py-20 flex flex-col items-center justify-center px-4 md:px-0">
+    <section className="relative w-full min-h-[60vh] bg-white overflow-hidden py-10 flex flex-col items-center justify-center px-4 md:px-0">
       <div className="w-full max-w-4xl mx-auto flex flex-col items-center">
         <motion.div
           initial={{ opacity: 0, y: -30 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.7 }}
-          className="w-full mb-12 flex flex-col items-center"
+          className="w-full mb-4 flex flex-col items-center"
         >
           <div className="w-full rounded-3xl py-7 px-2 sm:px-4 md:px-10 lg:px-16 mb-8 flex flex-col items-center justify-center shadow-md border border-[#e6c77e]" style={{ backgroundColor: '#FEFBF2' }}>
             <h1 className="text-3xl xs:text-4xl sm:text-5xl md:text-6xl font-extrabold text-black mb-3 text-center drop-shadow-lg tracking-tight">

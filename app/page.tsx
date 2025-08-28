@@ -76,7 +76,7 @@ export default function HomePage() {
     <div className="relative min-h-screen overflow-hidden bg-white">
       <NewHeroSection />
 
-      <div className="pt-32 relative z-10">
+      <div className="pt-8 relative z-10">
         <RecentPosts />
         {/* <FeaturedBlogs /> */}
 

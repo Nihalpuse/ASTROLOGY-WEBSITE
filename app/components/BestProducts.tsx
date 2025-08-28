@@ -87,8 +87,8 @@ export function BestProducts() {
   };
 
   return (
-    <section className="min-h-screen py-16 bg-white font-sans overflow-hidden">
-      <div className="container mx-auto px-4">
+  <section className="min-h-0 pt-16 pb-0 bg-white font-sans overflow-hidden">
+  <div className="container mx-auto px-4 pb-0">
         {/* Banner Section (copied from BestServices.tsx) */}
         <motion.div
           initial={{ opacity: 0, y: 50 }}

@@ -133,7 +133,7 @@ export function AstrologyQuiz() {
   const optionLetters = ['A', 'B', 'C', 'D']
 
   return (
-    <section className="py-4 sm:py-12 md:py-16 rounded-3xl relative bg-[#FEFBF2] min-h-fit sm:min-h-screen sm:flex sm:items-center sm:justify-center overflow-hidden">
+    <section className="py-8 sm:py-12 md:py-16 rounded-3xl relative bg-[#FEFBF2] min-h-fit sm:min-h-screen sm:flex sm:items-center sm:justify-center overflow-hidden">
 
       {/* Floating cards, hidden on xs screens for clarity */}
       <div className="hidden xs:block">
