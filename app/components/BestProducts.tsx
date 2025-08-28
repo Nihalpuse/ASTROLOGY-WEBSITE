@@ -108,7 +108,7 @@ export function BestProducts() {
         </motion.div>
 
         {/* Products Section */}
-        <div className="mb-12" ref={desktopContainerRef}>
+  <div ref={desktopContainerRef}>
           {/* Header with controls */}
           <div className="mb-6 flex justify-end">
             <div className="flex items-center gap-0">
@@ -242,7 +242,7 @@ export function BestProducts() {
               <div
                 ref={scrollContainerRef}
                 onScroll={checkScrollButtonsMobile}
-                className="flex gap-3 overflow-x-auto snap-x snap-mandatory px-2"
+                className="flex gap-3 overflow-x-auto snap-x snap-mandatory px-2 mb-1"
                 style={{
                   scrollSnapType: 'x mandatory',
                   scrollbarWidth: 'none',

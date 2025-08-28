@@ -86,7 +86,7 @@ export function BestServices() {
   };
 
   return (
-    <section className="min-h-screen py-16 bg-white font-sans overflow-hidden">
+    <section className="min-h-[400px] py-0 bg-white font-sans overflow-hidden">
       <div className="container mx-auto px-4">
 
         {/* Banner Section */}

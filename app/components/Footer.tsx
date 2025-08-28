@@ -141,7 +141,7 @@ export default function Footer() {
       {/* Scroll to top button */}
       <button
         onClick={scrollToTop}
-        className="fixed bottom-20 right-5 bg-gradient-to-r from-violet-500 to-pink-500 text-white p-3 rounded-full shadow-xl z-50 transition-transform hover:-translate-y-1 focus:outline-none focus:ring-2 focus:ring-violet-300"
+        className="fixed bottom-20 right-5 bg-gradient-to-r from-green-800 via-green-600 to-green-500 text-white p-3 rounded-full shadow-xl z-50 transition-transform hover:-translate-y-1 focus:outline-none focus:ring-2 focus:ring-green-300"
         aria-label={t('footer.scrollToTop')}
       >
         <ArrowUp size={24} />
