@@ -38,7 +38,7 @@ export function AstrologerProfile() {
     const checkViewport = () => {
       const width = window.innerWidth;
       setIsMobile(width <= 767);
-      setIsTablet(width >= 768 && width <= 1023);
+      setIsTablet(width >= 768 && width <= 1366); // Updated to include iPad Pro, Nest Hub, Nest Hub Max
     };
     checkViewport();
     window.addEventListener('resize', checkViewport);

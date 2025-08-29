@@ -2,14 +2,9 @@ import React from "react";
 import NewHeroSection from "./components/NewHeroSection";
 import dynamic from "next/dynamic";
 import { ScrollAnimation } from "./components/ScrollAnimation";
+import { ExploreMoreInsights } from './components/ExploreMoreInsights';
 
-const LifeChangingSolutions = dynamic(
-  () =>
-    import("./components/LifeChangingSolutions").then(
-      (mod) => mod.LifeChangingSolutions
-    ),
-  { loading: () => <div>Loading...</div>, ssr: false }
-);
+
 const AstrologerProfile = dynamic(
   () =>
     import("./components/AstrologerProfile").then(
@@ -89,7 +84,7 @@ export default function HomePage() {
         </ScrollAnimation>
 
         <ScrollAnimation>
-          <LifeChangingSolutions />
+          <ExploreMoreInsights />
         </ScrollAnimation>
 
         <ScrollAnimation>

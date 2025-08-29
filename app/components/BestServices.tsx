@@ -154,7 +154,7 @@ export function BestServices() {
             </div>
           </div>
 
-          {/* Responsive Carousel: Desktop (unchanged), Mobile (scrollable like LifeChangingSolutions) */}
+          {/* Responsive Carousel: Desktop (unchanged), Mobile (scrollable) */}
           {/* Desktop: show as before, but nav arrows are now in header */}
           <div className="hidden lg:block">
             <div
