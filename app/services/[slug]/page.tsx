@@ -5,34 +5,35 @@ import Image from "next/image";
 import { motion, AnimatePresence } from 'framer-motion';
 import { notFound } from 'next/navigation';
 import { FaClock, FaStar, FaVideo, FaShoppingCart, FaShieldAlt, FaRegStar, FaRegLightbulb, FaRegSmile, FaRegHeart, FaRegComments, FaRegSun, FaRegGem } from 'react-icons/fa';
-import { services, getServiceBySlug } from '@/data/services';
 import { UniversalCartButton } from '@/app/components/UniversalCartButton';
-import ProductAssuranceBar from '@/app/components/ProductAssuranceBar';
-import ServiceCarousels from '@/app/components/ServiceCarousels';
-import NakshatraGyaanBanner from '@/app/components/NakshatraGyaanBanner';
-import SpiritualJourneyBanner from '@/app/components/SpiritualJourneyBanner';
-import { Testimonials } from '@/app/components/Testimonials';
-import { Statistics } from '@/app/components/Statistics';
-import { AboutSummary } from '@/app/components/AboutSummary';
-import { Button } from '@/components/ui/button';
-import { useLanguage } from '@/app/contexts/useLanguage';
-import { CTASection } from '@/app/components/CTASection';
 import RelatedServices from '@/app/components/RelatedServices';
 import Link from 'next/link';
 
-// Define Service interface
+// Define Service interface based on backend schema
 interface Service {
-  id: string;
+  id: number;
   title: string;
   description: string;
   slug: string;
   price: number;
-  originalPrice?: number;
-  duration: string;
-  consultationType: string;
-  features?: string[];
-  images?: string[];
-  category?: string;
+  duration?: string;
+  delivery_type?: string;
+  is_active: boolean;
+  created_at?: string;
+  updated_at?: string;
+  service_media?: ServiceMedia[];
+}
+
+interface ServiceMedia {
+  id: number;
+  service_id: number;
+  media_type: string;
+  media_url: string;
+  alt_text?: string;
+  title?: string;
+  sort_order: number;
+  is_primary: boolean;
+  is_active: boolean;
 }
 
 // Generic FAQs for services
@@ -43,11 +44,11 @@ const getServiceFaqs = (service: Service) => [
   },
   {
     question: `How long is the ${service.title} session?`,
-    answer: `The session duration is ${service.duration}. This gives our expert astrologers enough time to thoroughly analyze your birth chart and provide comprehensive guidance.`,
+    answer: `The session duration is ${service.duration || 'as per consultation'}. This gives our expert astrologers enough time to thoroughly analyze your birth chart and provide comprehensive guidance.`,
   },
   {
     question: `What type of consultation is this?`,
-    answer: `This is a ${service.consultationType} session. You can choose the format that's most convenient for you, and our astrologers will provide the same quality of guidance regardless of the medium.`,
+    answer: `This is a ${service.delivery_type || 'online'} session. You can choose the format that's most convenient for you, and our astrologers will provide the same quality of guidance regardless of the medium.`,
   },
   {
     question: "What information do I need to provide?",
@@ -73,9 +74,70 @@ export default function ServicePage({ params }: { params: { slug: string } }) {
   const [openFaqs, setOpenFaqs] = useState<Set<number>>(new Set());
   const [descriptionOpen, setDescriptionOpen] = useState(false);
   const [activeTab, setActiveTab] = useState('Overview');
+  const [service, setService] = useState<Service | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  const service = getServiceBySlug(params.slug);
-  if (!service) return notFound();
+  // Fetch service data from backend
+  useEffect(() => {
+    const fetchService = async () => {
+      try {
+        setLoading(true);
+        setError(null);
+        
+        const response = await fetch(`/api/services/slug/${params.slug}`);
+        
+        if (!response.ok) {
+          if (response.status === 404) {
+            setError('Service not found');
+            return;
+          }
+          throw new Error('Failed to fetch service');
+        }
+        
+        const data = await response.json();
+        setService(data.service);
+      } catch (err) {
+        console.error('Error fetching service:', err);
+        setError(err instanceof Error ? err.message : 'Failed to load service');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchService();
+  }, [params.slug]);
+
+  // Show loading state
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-white flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900 mx-auto mb-4"></div>
+          <p className="text-gray-600">Loading service details...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Show error state
+  if (error || !service) {
+    return (
+      <div className="min-h-screen bg-white flex items-center justify-center">
+        <div className="text-center">
+          <div className="text-6xl mb-4">⚠️</div>
+          <h3 className="text-xl font-semibold text-gray-900 mb-2">Service not found</h3>
+          <p className="text-gray-600 mb-6">{error || 'The requested service could not be found.'}</p>
+          <Link 
+            href="/services/all"
+            className="bg-green-800 text-white px-6 py-3 rounded-lg font-medium hover:bg-green-900 transition-colors"
+          >
+            Browse All Services
+          </Link>
+        </div>
+      </div>
+    );
+  }
 
   // Helper function for default detailed description
   const getDefaultDetailedDescription = (service: Service) => {
@@ -86,7 +148,9 @@ export default function ServicePage({ params }: { params: { slug: string } }) {
         
         <h4 style="font-size: 1.25rem; font-weight: 600; color: #23244a; margin-top: 1.5rem; margin-bottom: 0.75rem;">What You'll Get:</h4>
         <ul style="margin-bottom: 1.5rem; padding-left: 1.5rem;">
-          ${service.features?.map((feature: string) => `<li style="margin-bottom: 0.5rem; color: #4b5563;">${feature}</li>`).join('') || '<li style="margin-bottom: 0.5rem; color: #4b5563;">Personalized consultation based on your birth chart</li><li style="margin-bottom: 0.5rem; color: #4b5563;">Expert guidance from experienced astrologers</li><li style="margin-bottom: 0.5rem; color: #4b5563;">Practical remedies and solutions</li>'}
+          <li style="margin-bottom: 0.5rem; color: #4b5563;">Personalized consultation based on your birth chart</li>
+          <li style="margin-bottom: 0.5rem; color: #4b5563;">Expert guidance from experienced astrologers</li>
+          <li style="margin-bottom: 0.5rem; color: #4b5563;">Practical remedies and solutions</li>
         </ul>
         
         <h4 style="font-size: 1.25rem; font-weight: 600; color: #23244a; margin-top: 1.5rem; margin-bottom: 0.75rem;">Benefits:</h4>
@@ -99,24 +163,26 @@ export default function ServicePage({ params }: { params: { slug: string } }) {
         </ul>
         
         <h4 style="font-size: 1.25rem; font-weight: 600; color: #23244a; margin-top: 1.5rem; margin-bottom: 0.75rem;">Consultation Process:</h4>
-        <p style="margin-bottom: 1rem; color: #4b5563;">Our consultation is conducted through ${service.consultationType} and lasts ${service.duration}. You'll receive personalized insights based on your birth chart analysis and can ask questions throughout the session.</p>
+        <p style="margin-bottom: 1rem; color: #4b5563;">Our consultation is conducted through ${service.delivery_type || 'online'} and lasts ${service.duration || 'as per consultation'}. You'll receive personalized insights based on your birth chart analysis and can ask questions throughout the session.</p>
       </div>
     `;
   };
 
-  // Create service images array
-  const serviceImages = service.images && service.images.length > 0 
-    ? service.images 
-    : ['/images/placeholder.jpg', '/images/placeholder.jpg', '/images/placeholder.jpg'];
+  // Create service images array from backend media
+  const serviceImages = service.service_media && service.service_media.length > 0 
+    ? service.service_media
+        .filter(media => media.is_active)
+        .sort((a, b) => (b.is_primary ? 1 : 0) - (a.is_primary ? 1 : 0))
+        .map(media => media.media_url)
+    : ['/images/astro.jpg'];
 
-  // Calculate discount percentage
+  // Calculate discount percentage (if needed)
   const getDiscountPercentage = () => {
-    if (!service.originalPrice || service.originalPrice <= service.price) return null;
-    return Math.round(((service.originalPrice - service.price) / service.originalPrice) * 100);
+    // Since we don't have originalPrice in backend, return null
+    return null;
   };
 
   const discount = getDiscountPercentage();
-
   const serviceFaqs = getServiceFaqs(service);
 
   return (
@@ -148,18 +214,20 @@ export default function ServicePage({ params }: { params: { slug: string } }) {
                 priority
               />
             </div>
-            <div className="flex flex-row gap-2 w-full overflow-x-auto pb-2 justify-center">
-              {serviceImages.map((img, idx) => (
-                <button
-                  key={`${img}-${idx}`}
-                  onClick={() => setSelectedImage(idx)}
-                  className={`rounded-lg border-2 ${selectedImage === idx ? 'border-black' : 'border-transparent'} overflow-hidden focus:outline-none`}
-                  style={{ minWidth: 64, minHeight: 64 }}
-                >
-                  <Image src={img} alt={service.title} width={64} height={64} className="object-cover w-full h-full" />
-                </button>
-              ))}
-            </div>
+            {serviceImages.length > 1 && (
+              <div className="flex flex-row gap-2 w-full overflow-x-auto pb-2 justify-center">
+                {serviceImages.map((img, idx) => (
+                  <button
+                    key={`${img}-${idx}`}
+                    onClick={() => setSelectedImage(idx)}
+                    className={`rounded-lg border-2 ${selectedImage === idx ? 'border-black' : 'border-transparent'} overflow-hidden focus:outline-none`}
+                    style={{ minWidth: 64, minHeight: 64 }}
+                  >
+                    <Image src={img} alt={service.title} width={64} height={64} className="object-cover w-full h-full" />
+                  </button>
+                ))}
+              </div>
+            )}
           </div>
 
           {/* Right: Scrollable Service Info Section */}
@@ -167,52 +235,32 @@ export default function ServicePage({ params }: { params: { slug: string } }) {
             <h1 className="text-2xl md:text-3xl font-semibold text-[#23244a]" style={{ fontFamily: 'Playfair Display, serif', fontWeight: 500 }}>{service.title}</h1>
             <div className="flex items-center gap-2 mt-1">
               <span className="text-[#FFD700] text-lg">&#9733;</span>
-              <span className="text-base font-medium text-[#23244a]">{service.rating}</span>
-              <span className="text-sm text-[#23244a]">({service.reviewsCount} reviews)</span>
+              <span className="text-base font-medium text-[#23244a]">4.5</span>
+              <span className="text-sm text-[#23244a]">(50+ reviews)</span>
             </div>
             <div className="flex gap-2 mt-2">
-              <span className="px-3 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">{service.category}</span>
-              <span className="px-3 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">{service.consultationType}</span>
-              <span className="px-3 py-0.5 rounded-full text-xs font-medium bg-purple-100 text-purple-800">{service.duration}</span>
+              <span className="px-3 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">{service.delivery_type || 'Online'}</span>
+              <span className="px-3 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">{service.delivery_type || 'Online'}</span>
+              <span className="px-3 py-0.5 rounded-full text-xs font-medium bg-purple-100 text-purple-800">{service.duration || 'Flexible'}</span>
             </div>
             <div className="flex items-end gap-3 mt-3">
               <span className="text-xl font-bold text-black" style={{ fontFamily: 'Playfair Display, serif', fontWeight: 500 }}>₹{service.price}</span>
-              {service.originalPrice && service.originalPrice > service.price && (
-                <>
-                  <span className="text-base text-gray-400 line-through">₹{service.originalPrice}</span>
-                  {discount && <span className="text-base font-semibold text-green-700">{discount}% OFF</span>}
-                </>
-              )}
             </div>
-            {service.discount && service.discount !== 'Free' && (
-              <div className="text-red-600 font-medium text-sm mt-1">
-                {service.discount} - Limited time offer!
-              </div>
-            )}
             
             <div className="text-xs text-gray-600 mt-1">
-              {service.ordersCount} consultations booked • Highly rated astrologers
+              Expert astrologers • Personalized guidance
             </div>
             
-            {/* Service Stats */}
-            <div className="mt-3 bg-gray-100 rounded-lg p-3 flex flex-col gap-2">
-              <span className="text-xs font-medium text-[#23244a]">SERVICE DETAILS</span>
-              <div className="grid grid-cols-2 gap-2 text-xs">
+            {/* Service Details */}
+            <div className="mt-3 bg-gray-50 rounded-lg p-4">
+              <div className="grid grid-cols-2 gap-4 text-sm">
                 <div className="flex items-center gap-2">
                   <FaClock className="text-purple-500" />
-                  <span>Duration: {service.duration}</span>
+                  <span className="text-gray-700">Duration: {service.duration || 'Flexible'}</span>
                 </div>
                 <div className="flex items-center gap-2">
                   <FaVideo className="text-green-500" />
-                  <span>{service.consultationType}</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <FaStar className="text-yellow-500" />
-                  <span>Rating: {service.rating}/5</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <FaShoppingCart className="text-blue-500" />
-                  <span>{service.ordersCount} bookings</span>
+                  <span className="text-gray-700">{service.delivery_type || 'Online'}</span>
                 </div>
               </div>
             </div>
@@ -220,7 +268,7 @@ export default function ServicePage({ params }: { params: { slug: string } }) {
             {/* Book Now Button */}
             <div className="flex gap-3 mt-5">
               <UniversalCartButton
-                productId={service.id}
+                productId={service.id.toString()}
                 productName={service.title}
                 price={service.price}
                 className="flex-1 bg-black text-white py-3 rounded-md font-semibold text-base hover:bg-[#23244a] transition"
@@ -259,7 +307,7 @@ export default function ServicePage({ params }: { params: { slug: string } }) {
                           color: '#374151'
                         }}
                         dangerouslySetInnerHTML={{ 
-                          __html: service.detailedDescription || getDefaultDetailedDescription(service)
+                          __html: getDefaultDetailedDescription(service)
                         }}
                       />
                     </div>
@@ -500,8 +548,8 @@ export default function ServicePage({ params }: { params: { slug: string } }) {
 
           {/* Related Services */}
           <RelatedServices 
-            currentServiceId={service.id}
-            category={service.category}
+            currentServiceId={service.id.toString()}
+            category={service.delivery_type || 'Astrology'}
             title="Related Services"
             maxItems={4}
             className="mt-8"
