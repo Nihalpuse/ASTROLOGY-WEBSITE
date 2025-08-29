@@ -264,22 +264,35 @@ export function DailyHoroscope() {
   const checkScrollButtons = () => {
     if (scrollContainerRef.current) {
       const { scrollLeft, scrollWidth, clientWidth } = scrollContainerRef.current;
+      const isMobile = window.innerWidth < 768; // md breakpoint
+
+      // More sensitive threshold for tablet to allow scrolling when even 1 card is partially hidden
+      const threshold = isMobile ? 1 : 50; // 50px threshold for tablet, 1px for mobile
+
       setCanScrollLeft(scrollLeft > 0);
-      setCanScrollRight(scrollLeft < scrollWidth - clientWidth - 1);
+      setCanScrollRight(scrollLeft < scrollWidth - clientWidth - threshold);
     }
   };
 
   const scrollLeft = () => {
     if (scrollContainerRef.current) {
-      const cardWidth = scrollContainerRef.current.clientWidth / 2;
-      scrollContainerRef.current.scrollBy({ left: -cardWidth, behavior: 'smooth' });
+      // Responsive scroll distance: mobile shows ~2 cards, tablet shows ~4 cards
+      const isMobile = window.innerWidth < 768; // md breakpoint
+      const scrollDistance = isMobile
+        ? scrollContainerRef.current.clientWidth / 2  // Scroll by half width on mobile
+        : scrollContainerRef.current.clientWidth / 3; // Scroll by third width on tablet
+      scrollContainerRef.current.scrollBy({ left: -scrollDistance, behavior: 'smooth' });
     }
   };
 
   const scrollRight = () => {
     if (scrollContainerRef.current) {
-      const cardWidth = scrollContainerRef.current.clientWidth / 2;
-      scrollContainerRef.current.scrollBy({ left: cardWidth, behavior: 'smooth' });
+      // Responsive scroll distance: mobile shows ~2 cards, tablet shows ~4 cards
+      const isMobile = window.innerWidth < 768; // md breakpoint
+      const scrollDistance = isMobile
+        ? scrollContainerRef.current.clientWidth / 2  // Scroll by half width on mobile
+        : scrollContainerRef.current.clientWidth / 3; // Scroll by third width on tablet
+      scrollContainerRef.current.scrollBy({ left: scrollDistance, behavior: 'smooth' });
     }
   };
 
@@ -326,10 +339,128 @@ export function DailyHoroscope() {
             </p>
           </div>
 
+          {/* Know Your Sign Section - Full width on mobile/tablet, constrained on desktop */}
+          <div className="w-full lg:hidden mb-8">
+            <Card className="bg-white shadow-lg border border-gray-200 rounded-2xl p-4 xs:p-6">
+              <h3 className="text-xl xs:text-2xl font-bold text-black mb-3">
+                {t('dailyHoroscope.knowYourSign')}
+              </h3>
+              <div className="mb-4">
+                <label htmlFor="zodiac-sign" className="block text-sm font-medium mb-2 text-black">
+                  {t('dailyHoroscope.selectSign')}
+                </label>
+                <Select onValueChange={setSelectedSign}>
+                  <SelectTrigger className="w-full bg-gray-100 text-black border border-gray-300 rounded-xl px-3 py-2 hover:bg-gray-200 transition-all text-sm xs:text-base">
+                    <SelectValue placeholder={t('dailyHoroscope.chooseSign')} />
+                  </SelectTrigger>
+                  <SelectContent className="bg-white border border-gray-200 rounded-xl shadow-lg max-h-60 overflow-y-auto">
+                    {zodiacSigns.map((sign) => (
+                      <SelectItem
+                        key={sign.value}
+                        value={sign.value}
+                        className="px-4 py-2 text-sm text-black hover:bg-gray-100 cursor-pointer rounded-xl"
+                      >
+                        {getLocalizedText(sign.label, lang)}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <Button
+                onClick={getHoroscope}
+                disabled={!selectedSign}
+                className={`w-full px-4 py-2 rounded-xl border text-sm font-semibold mb-4 transition-all
+                ${!selectedSign
+                    ? 'bg-gray-200 text-gray-500 border-gray-300 cursor-not-allowed'
+                    : 'bg-black text-white border-[#E0E0E0] hover:bg-gray-800'}
+                shadow-md`}
+              >
+                {t('dailyHoroscope.viewHoroscope')}
+              </Button>
+
+              {horoscope && (
+                <p className="text-black whitespace-pre-wrap mt-4 font-serif text-base xs:text-lg">{horoscope}</p>
+              )}
+            </Card>
+          </div>
+
+          {/* Mobile/Tablet View - Full Width Horizontal Scroll */}
+          <div className="lg:hidden mb-8">
+            <div className="relative">
+              {/* Navigation Arrows */}
+              <button
+                onClick={scrollLeft}
+                disabled={!canScrollLeft}
+                className={`absolute left-0 top-32 -translate-y-1/2 z-10 w-10 h-10 rounded-full bg-white shadow-lg flex items-center justify-center transition-opacity ${canScrollLeft ? 'opacity-100 hover:bg-gray-50' : 'opacity-50 cursor-not-allowed'
+                  }`}
+                style={{ marginLeft: '-20px' }}
+              >
+                <ChevronLeft className="w-5 h-5 text-gray-600" />
+              </button>
+
+              <button
+                onClick={scrollRight}
+                disabled={!canScrollRight}
+                className={`absolute right-0 top-32 -translate-y-1/2 z-10 w-10 h-10 rounded-full bg-white shadow-lg flex items-center justify-center transition-opacity ${canScrollRight ? 'opacity-100 hover:bg-gray-50' : 'opacity-50 cursor-not-allowed'
+                  }`}
+                style={{ marginRight: '-20px' }}
+              >
+                <ChevronRight className="w-5 h-5 text-gray-600" />
+              </button>
+
+              {/* Scrollable Container */}
+              <div
+                ref={scrollContainerRef}
+                onScroll={checkScrollButtons}
+                className="flex gap-3 overflow-x-auto snap-x snap-mandatory px-2"
+                style={{
+                  scrollSnapType: 'x mandatory',
+                  scrollbarWidth: 'none',
+                  msOverflowStyle: 'none',
+                  WebkitOverflowScrolling: 'touch'
+                }}
+              >
+                {horoscopeCards.map((card, index) => (
+                  <div
+                    key={`mobile-${index}`}
+                    className="flex-none w-[calc(58%-6px)] md:w-[calc(26%-9px)] min-w-[185px] md:min-w-[190px] snap-start"
+                  >
+                    <div className="bg-white rounded-xl shadow-lg overflow-hidden h-[330px] flex flex-col">
+                      <div className="relative w-full h-36 flex-shrink-0">
+                        <Image
+                          src={card.image}
+                          alt={getLocalizedText(card.title, lang)}
+                          fill
+                          className="object-cover"
+                        />
+                      </div>
+                      <div className="p-3 flex flex-col flex-1">
+                        <h3 className="text-sm font-bold text-gray-900 mb-2 line-clamp-2 leading-tight">
+                          {getLocalizedText(card.title, lang)}
+                        </h3>
+                        <p className="text-xs text-gray-600 mb-3 line-clamp-3 flex-1">
+                          {getLocalizedText(card.description, lang)}
+                        </p>
+                        <div className="mt-auto">
+                          <Link href={card.href}>
+                            <Button className="w-full px-3 py-2 rounded-lg bg-black text-white text-xs font-semibold text-center hover:bg-gray-800 transition-all">
+                              {t('dailyHoroscope.learnMore')}
+                            </Button>
+                          </Link>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+
           <div className="flex flex-col lg:flex-row gap-8">
-            {/* Left/Main Content */}
+            {/* Left/Main Content - Desktop Only */}
             <div className="w-full lg:w-2/3">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="hidden lg:grid grid-cols-1 md:grid-cols-2 gap-6">
                 <Card className="col-span-1 md:col-span-2 bg-white shadow-lg border border-gray-200 rounded-2xl p-4 xs:p-6">
                   <h3 className="text-xl xs:text-2xl font-bold text-black mb-3">
                     {t('dailyHoroscope.knowYourSign')}
@@ -361,8 +492,8 @@ export function DailyHoroscope() {
                     disabled={!selectedSign}
                     className={`w-full px-4 py-2 rounded-xl border text-sm font-semibold mb-4 transition-all
                     ${!selectedSign
-                      ? 'bg-gray-200 text-gray-500 border-gray-300 cursor-not-allowed'
-                      : 'bg-black text-white border-[#E0E0E0] hover:bg-gray-800'}
+                        ? 'bg-gray-200 text-gray-500 border-gray-300 cursor-not-allowed'
+                        : 'bg-black text-white border-[#E0E0E0] hover:bg-gray-800'}
                     shadow-md`}
                   >
                     {t('dailyHoroscope.viewHoroscope')}
@@ -374,7 +505,7 @@ export function DailyHoroscope() {
                 </Card>
 
                 {/* Desktop View - Grid */}
-                <div className="hidden md:contents">
+                <div className="hidden lg:contents">
                   {horoscopeCards.map((card, index) => (
                     <motion.div
                       key={index}
@@ -406,79 +537,7 @@ export function DailyHoroscope() {
                   ))}
                 </div>
 
-                {/* Mobile View - Horizontal Scroll */}
-                <div className="md:hidden col-span-1">
-                  <div className="relative">
-                    {/* Navigation Arrows */}
-                    <button
-                      onClick={scrollLeft}
-                      disabled={!canScrollLeft}
-                      className={`absolute left-0 top-32 -translate-y-1/2 z-10 w-10 h-10 rounded-full bg-white shadow-lg flex items-center justify-center transition-opacity ${
-                        canScrollLeft ? 'opacity-100 hover:bg-gray-50' : 'opacity-50 cursor-not-allowed'
-                      }`}
-                      style={{ marginLeft: '-20px' }}
-                    >
-                      <ChevronLeft className="w-5 h-5 text-gray-600" />
-                    </button>
-                    
-                    <button
-                      onClick={scrollRight}
-                      disabled={!canScrollRight}
-                      className={`absolute right-0 top-32 -translate-y-1/2 z-10 w-10 h-10 rounded-full bg-white shadow-lg flex items-center justify-center transition-opacity ${
-                        canScrollRight ? 'opacity-100 hover:bg-gray-50' : 'opacity-50 cursor-not-allowed'
-                      }`}
-                      style={{ marginRight: '-20px' }}
-                    >
-                      <ChevronRight className="w-5 h-5 text-gray-600" />
-                    </button>
 
-                    {/* Scrollable Container */}
-                    <div
-                      ref={scrollContainerRef}
-                      onScroll={checkScrollButtons}
-                      className="flex gap-3 overflow-x-auto snap-x snap-mandatory px-2"
-                      style={{ 
-                        scrollSnapType: 'x mandatory', 
-                        scrollbarWidth: 'none', 
-                        msOverflowStyle: 'none',
-                        WebkitOverflowScrolling: 'touch'
-                      }}
-                    >
-                      {horoscopeCards.map((card, index) => (
-                        <div
-                          key={`mobile-${index}`}
-                          className="flex-none w-[calc(58%-6px)] min-w-[185px] snap-start"
-                        >
-                          <div className="bg-white rounded-xl shadow-lg overflow-hidden h-[330px] flex flex-col">
-                            <div className="relative w-full h-36 flex-shrink-0">
-                              <Image 
-                                src={card.image} 
-                                alt={getLocalizedText(card.title, lang)} 
-                                fill 
-                                className="object-cover" 
-                              />
-                            </div>
-                            <div className="p-3 flex flex-col flex-1">
-                              <h3 className="text-sm font-bold text-gray-900 mb-2 line-clamp-2 leading-tight">
-                                {getLocalizedText(card.title, lang)}
-                              </h3>
-                              <p className="text-xs text-gray-600 mb-3 line-clamp-3 flex-1">
-                                {getLocalizedText(card.description, lang)}
-                              </p>
-                              <div className="mt-auto">
-                                <Link href={card.href}>
-                                  <Button className="w-full px-3 py-2 rounded-lg bg-black text-white text-xs font-semibold text-center hover:bg-gray-800 transition-all">
-                                    {t('dailyHoroscope.learnMore')}
-                                  </Button>
-                                </Link>
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                </div>
               </div>
             </div>
 
@@ -536,8 +595,8 @@ export function DailyHoroscope() {
                   ))}
                 </div>
               </Card>
-              {/* Product Image Cards: vertical column below FAQ - Hidden on mobile */}
-              <div className="hidden md:flex flex-col gap-4 xs:gap-6 mt-4 xs:mt-6 w-full max-w-full md:max-w-[420px] mx-auto">
+              {/* Product Image Cards: vertical column below FAQ - Hidden on mobile and tablet (show only on desktop) */}
+              <div className="hidden lg:flex flex-col gap-4 xs:gap-6 mt-4 xs:mt-6 w-full max-w-full md:max-w-[420px] mx-auto">
                 {[0, 1, 2].map((cardIdx) => {
                   const variants = [
                     { initial: { y: -80, opacity: 0 }, animate: { y: 0, opacity: 1 }, exit: { y: 80, opacity: 0 } },
