@@ -102,10 +102,10 @@ export default function OrderConfirmationPage({ params }: { params: { id: string
   };
 
   return (
-    <div className="relative min-h-screen overflow-hidden bg-gradient-to-b from-golden-amber-dark via-sunburst-yellow to-golden-amber-dark">
+  <div className="relative min-h-screen overflow-hidden bg-gradient-to-b from-golden-amber-dark via-sunburst-yellow to-golden-amber-dark text-black">
       <AnimatedStars />
       <MysticBackground>
-        <div className="container mx-auto pt-32 px-4 py-16 relative z-10">
+        <div className="container mx-auto pt-32 px-4 py-16 relative z-10 text-black">
           {loading ? (
             <div className="flex justify-center items-center h-64">
               <div className="animate-spin rounded-full h-32 w-32 border-t-2 border-b-2 border-gold"></div>
@@ -116,10 +116,10 @@ export default function OrderConfirmationPage({ params }: { params: { id: string
                 <div className="inline-flex justify-center items-center p-4 bg-emerald-100 rounded-full mb-6">
                   <CheckCircle className="h-16 w-16 text-emerald-600" />
                 </div>
-                <h1 className="text-5xl md:text-6xl font-serif font-bold mb-4 text-mystic-brown">
+                <h1 className="text-5xl md:text-6xl font-serif font-bold mb-4 text-black">
                   Order Confirmed!
                 </h1>
-                <p className="text-xl text-mystic-brown">
+                <p className="text-xl text-black">
                   Thank you for your purchase. We&apos;ve received your order and will process it shortly.
                 </p>
               </div>
@@ -129,9 +129,9 @@ export default function OrderConfirmationPage({ params }: { params: { id: string
                 <CardContent className="p-6">
                   <div className="flex flex-col md:flex-row md:justify-between md:items-center mb-6">
                     <div>
-                      <h2 className="text-2xl font-serif font-semibold text-gold">Order Details</h2>
+                      <h2 className="text-2xl font-serif font-semibold text-black">Order Details</h2>
                       <div className="flex items-center mt-2">
-                        <p className="text-lavender mr-2">Order #{order.order_number}</p>
+                        <p className="text-black mr-2">Order #{order.order_number}</p>
                         <Button 
                           variant="ghost" 
                           size="icon" 
@@ -154,74 +154,74 @@ export default function OrderConfirmationPage({ params }: { params: { id: string
                     <div className="flex items-start">
                       <Calendar className="h-5 w-5 text-celestial-blue mr-3 mt-0.5" />
                       <div>
-                        <p className="text-lavender font-medium">Order Date</p>
-                        <p className="text-gold">{formatDate(order.order_date)}</p>
+                        <p className="text-black font-medium">Order Date</p>
+                        <p className="text-black">{formatDate(order.order_date)}</p>
                       </div>
                     </div>
                     
                     <div className="flex items-start">
                       <Clock className="h-5 w-5 text-celestial-blue mr-3 mt-0.5" />
                       <div>
-                        <p className="text-lavender font-medium">Estimated Delivery</p>
-                        <p className="text-gold">{order.estimated_delivery}</p>
+                        <p className="text-black font-medium">Estimated Delivery</p>
+                        <p className="text-black">{order.estimated_delivery}</p>
                       </div>
                     </div>
                     
                     <div className="flex items-start">
                       <CreditCard className="h-5 w-5 text-celestial-blue mr-3 mt-0.5" />
                       <div>
-                        <p className="text-lavender font-medium">Payment Method</p>
-                        <p className="text-gold">{order.payment_method}</p>
-                        <p className="text-sm text-lavender/70">Status: {order.payment_status}</p>
+                        <p className="text-black font-medium">Payment Method</p>
+                        <p className="text-black">{order.payment_method}</p>
+                        <p className="text-sm text-black/70">Status: {order.payment_status}</p>
                       </div>
                     </div>
                     
                     <div className="flex items-start">
                       <MapPin className="h-5 w-5 text-celestial-blue mr-3 mt-0.5" />
                       <div>
-                        <p className="text-lavender font-medium">Shipping Address</p>
-                        <p className="text-gold">{order.shipping_address.fullName}</p>
-                        <p className="text-lavender/70">{order.shipping_address.addressLine1}</p>
+                        <p className="text-black font-medium">Shipping Address</p>
+                        <p className="text-black">{order.shipping_address.fullName}</p>
+                        <p className="text-black/70">{order.shipping_address.addressLine1}</p>
                         {order.shipping_address.addressLine2 && (
-                          <p className="text-lavender/70">{order.shipping_address.addressLine2}</p>
+                          <p className="text-black/70">{order.shipping_address.addressLine2}</p>
                         )}
-                        <p className="text-lavender/70">
+                        <p className="text-black/70">
                           {order.shipping_address.city}, {order.shipping_address.state}, {order.shipping_address.pincode}
                         </p>
-                        <p className="text-lavender/70">Phone: {order.shipping_address.phone}</p>
+                        <p className="text-black/70">Phone: {order.shipping_address.phone}</p>
                       </div>
                     </div>
                   </div>
                   
-                  <h3 className="text-xl font-serif font-semibold mb-4 text-gold">Order Items</h3>
+                  <h3 className="text-xl font-serif font-semibold mb-4 text-black">Order Items</h3>
                   <div className="overflow-x-auto">
                     <Table>
                       <TableHeader>
                         <TableRow>
-                          <TableHead className="text-lavender">Product</TableHead>
-                          <TableHead className="text-lavender text-right">Price</TableHead>
-                          <TableHead className="text-lavender text-center">Quantity/Carats</TableHead>
-                          <TableHead className="text-lavender text-right">Total</TableHead>
+                          <TableHead className="text-black">Product</TableHead>
+                          <TableHead className="text-black text-right">Price</TableHead>
+                          <TableHead className="text-black text-center">Quantity/Carats</TableHead>
+                          <TableHead className="text-black text-right">Total</TableHead>
                         </TableRow>
                       </TableHeader>
                       <TableBody>
                         {order.items.map((item) => (
                           <TableRow key={item.id}>
-                            <TableCell className="text-lavender font-medium">
+                            <TableCell className="text-black font-medium">
                               {item.product_name}
                             </TableCell>
-                            <TableCell className="text-lavender text-right">
+                            <TableCell className="text-black text-right">
                               ₹{item.unit_price.toLocaleString('en-IN')}
                               {item.is_stone && <span className="text-sm">/carat</span>}
                             </TableCell>
-                            <TableCell className="text-center text-lavender">
+                            <TableCell className="text-center text-black">
                               {item.is_stone ? (
                                 <span>{item.carats} carats</span>
                               ) : (
                                 <span>{item.quantity}</span>
                               )}
                             </TableCell>
-                            <TableCell className="text-gold text-right">
+                            <TableCell className="text-black text-right">
                               ₹{item.total_price.toLocaleString('en-IN')}
                             </TableCell>
                           </TableRow>
@@ -232,16 +232,16 @@ export default function OrderConfirmationPage({ params }: { params: { id: string
                   
                   <div className="mt-6 space-y-2">
                     <div className="flex justify-between">
-                      <span className="text-lavender">Subtotal</span>
-                      <span className="text-gold">₹{order.subtotal.toLocaleString('en-IN')}</span>
+                      <span className="text-black">Subtotal</span>
+                      <span className="text-black">₹{order.subtotal.toLocaleString('en-IN')}</span>
                     </div>
                     <div className="flex justify-between">
-                      <span className="text-lavender">Shipping</span>
-                      <span className="text-gold">Free</span>
+                      <span className="text-black">Shipping</span>
+                      <span className="text-black">Free</span>
                     </div>
                     <div className="border-t border-gold/30 pt-2 mt-2 flex justify-between">
-                      <span className="text-lg text-lavender font-bold">Total</span>
-                      <span className="text-lg text-gold font-bold">₹{order.total.toLocaleString('en-IN')}</span>
+                      <span className="text-lg text-black font-bold">Total</span>
+                      <span className="text-lg text-black font-bold">₹{order.total.toLocaleString('en-IN')}</span>
                     </div>
                   </div>
                 </CardContent>
@@ -252,10 +252,10 @@ export default function OrderConfirmationPage({ params }: { params: { id: string
                 <CardContent className="p-6">
                   <div className="flex items-center mb-4">
                     <Sparkles className="h-6 w-6 text-celestial-blue mr-3" />
-                    <h3 className="text-xl font-serif font-semibold text-gold">Preparation in Progress</h3>
+                    <h3 className="text-xl font-serif font-semibold text-black">Preparation in Progress</h3>
                   </div>
                   
-                  <p className="text-lavender mb-6">
+                  <p className="text-black mb-6">
                     Our expert gemologists are preparing your items with utmost care. Each item is cleansed, energized, and blessed following ancient rituals to enhance their natural healing properties before being shipped to you.
                   </p>
                   
@@ -279,7 +279,7 @@ export default function OrderConfirmationPage({ params }: { params: { id: string
             </div>
           ) : (
             <div className="text-center p-8">
-              <p className="text-xl text-mystic-brown mb-8">Order not found</p>
+              <p className="text-xl text-black mb-8">Order not found</p>
               <Button 
                 onClick={() => router.push('/orders')}
                 className="bg-black text-white hover:bg-gray-800"

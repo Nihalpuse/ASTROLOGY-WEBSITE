@@ -53,10 +53,10 @@ export default function CheckoutPage() {
   
   useEffect(() => {
     // Redirect if not authenticated
-    if (status === 'unauthenticated') {
-      router.push('/signin?redirect=checkout');
-      return;
-    }
+    // if (status === 'unauthenticated') {
+    //   router.push('/signin?redirect=checkout');
+    //   return;
+    // }
     
     const fetchCheckoutData = async () => {
       try {
@@ -256,10 +256,11 @@ export default function CheckoutPage() {
   const subtotal = items.reduce((sum, item) => sum + calculateTotalPrice(item), 0);
   
   return (
-    <div className="relative min-h-screen overflow-hidden bg-gradient-to-b from-golden-amber-dark via-sunburst-yellow to-golden-amber-dark">
-      <AnimatedStars />
-      <MysticBackground>
-        <div className="container mx-auto pt-32 px-4 py-16 relative z-10">
+    <div className="text-black">
+      <div className="relative min-h-screen overflow-hidden bg-gradient-to-b from-golden-amber-dark via-sunburst-yellow to-golden-amber-dark">
+        <AnimatedStars />
+        <MysticBackground>
+          <div className="container mx-auto pt-32 px-4 py-16 relative z-10">
           <h1 className="text-5xl md:text-6xl font-serif font-bold mb-6 text-center text-mystic-brown">
             Checkout
           </h1>
@@ -565,7 +566,8 @@ export default function CheckoutPage() {
             </div>
           )}
         </div>
-      </MysticBackground>
+        </MysticBackground>
+      </div>
     </div>
   );
 }
