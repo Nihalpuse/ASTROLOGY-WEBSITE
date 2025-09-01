@@ -28,19 +28,37 @@ model page_visits {
 
 model services {
   id             Int       @id @default(autoincrement())
-  title_hi       String    @db.VarChar(255)
-  title_en       String    @db.VarChar(255)
+  title          String    @db.VarChar(255)
   slug           String    @unique(map: "slug") @db.VarChar(255)
-  description_hi String    @db.Text
-  description_en String    @db.Text
+  description    String    @db.Text
   price          Decimal   @db.Decimal(10, 2)
-  icon_type      String    @db.VarChar(50)
-  icon_path      String    @db.VarChar(255)
-  benefits_hi    String?   @db.Text
-  benefits_en    String?   @db.Text
-  priority       Int?      @default(100)
+  duration       String?   @db.VarChar(100) // e.g., "30 minutes", "1 hour", "2 hours"
+  delivery_type  String?   @db.VarChar(50) // e.g., "online", "offline", "hybrid", "chat", "video", "audio"
+  is_active      Boolean   @default(true)
   created_at     DateTime? @default(now()) @db.Timestamp(0)
   updated_at     DateTime? @default(now()) @db.Timestamp(0)
+  
+  // Relations
+  service_media  service_media[]
+}
+
+model service_media {
+  id          Int       @id @default(autoincrement())
+  service_id  Int
+  media_type  String    @db.VarChar(50) // 'image', 'video', 'document'
+  media_url   String    @db.VarChar(500)
+  alt_text    String?   @db.VarChar(255)
+  title       String?   @db.VarChar(255)
+  sort_order  Int       @default(0)
+  is_primary  Boolean   @default(false)
+  is_active   Boolean   @default(true)
+  created_at  DateTime? @default(now()) @db.Timestamp(0)
+  updated_at  DateTime? @default(now()) @db.Timestamp(0)
+  
+  // Relations
+  services    services   @relation(fields: [service_id], references: [id], onDelete: Cascade)
+  
+  @@index([service_id])
 }
 
 model users {

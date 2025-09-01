@@ -9,36 +9,52 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { Trash2, Edit, Plus, Sun } from 'lucide-react';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Switch } from '@/components/ui/switch';
+import { Trash2, Edit, Plus, Clock, Globe, Image, Upload, X, CheckCircle } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 
-// Define the Service interface
+// Define the Service interface based on the new schema
 interface Service {
   id: number;
-  title_hi: string;
-  title_en: string;
+  title: string;
   slug: string;
-  description_hi: string;
-  description_en: string;
+  description: string;
   price: number;
-  icon_type: string;
-  icon_path: string;
-  priority: number;
+  duration?: string;
+  delivery_type?: string;
+  is_active: boolean;
+  created_at?: string;
+  updated_at?: string;
+  service_media?: ServiceMedia[];
+}
+
+interface ServiceMedia {
+  id: number;
+  service_id: number;
+  media_type: string;
+  media_url: string;
+  alt_text?: string;
+  title?: string;
+  sort_order: number;
+  is_primary: boolean;
+  is_active: boolean;
 }
 
 export default function AdminServicesPage() {
   const [services, setServices] = useState<Service[]>([]);
   const [loading, setLoading] = useState(true);
+  const [uploading, setUploading] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState<Record<number, number>>({});
   const [formData, setFormData] = useState({
-    title_hi: '',
-    title_en: '',
+    title: '',
     slug: '',
-    description_hi: '',
-    description_en: '',
+    description: '',
     price: '',
-    icon_type: 'lucide',
-    icon_path: 'Sun',
-    priority: 100
+    duration: '',
+    delivery_type: 'online',
+    is_active: true,
+    images: [] as string[]
   });
   const [editingId, setEditingId] = useState<number | null>(null);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
@@ -60,7 +76,7 @@ export default function AdminServicesPage() {
       }
       
       const data = await response.json();
-      setServices(data);
+      setServices(data.services || data);
     } catch (error) {
       console.error('Error fetching services:', error);
       toast({
@@ -73,22 +89,120 @@ export default function AdminServicesPage() {
     }
   };
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
+  const handleSelectChange = (name: string, value: string) => {
+    setFormData((prev) => ({ ...prev, [name]: value }));
+  };
+
+  const handleSwitchChange = (checked: boolean) => {
+    setFormData((prev) => ({ ...prev, is_active: checked }));
+  };
+
+  // Handle image upload to Cloudinary
+  const handleImageUpload = async (files: FileList) => {
+    setUploading(true);
+    const newImages: string[] = [];
+    const fileArray = Array.from(files);
+
+    for (let i = 0; i < fileArray.length; i++) {
+      const file = fileArray[i];
+      setUploadProgress(prev => ({ ...prev, [i]: 0 }));
+
+      try {
+        // Convert file to base64 for Cloudinary upload
+        const base64 = await new Promise<string>((resolve) => {
+          const reader = new FileReader();
+          reader.onload = () => resolve(reader.result as string);
+          reader.readAsDataURL(file);
+        });
+
+        // Upload to Cloudinary using the existing utility
+        const response = await fetch('/api/upload-image', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            image: base64,
+            folder: 'services'
+          }),
+        });
+
+        if (!response.ok) {
+          throw new Error('Upload failed');
+        }
+
+        const data = await response.json();
+        newImages.push(data.url);
+        setUploadProgress(prev => ({ ...prev, [i]: 100 }));
+
+      } catch (error) {
+        console.error('Image upload error:', error);
+        setUploadProgress(prev => ({ ...prev, [i]: -1 })); // Error state
+        toast({
+          title: 'Upload Error',
+          description: `Failed to upload ${file.name}`,
+          variant: 'destructive',
+        });
+      }
+    }
+
+    // Add new images to existing ones (limit to 5 images)
+    const currentImages = formData.images || [];
+    const totalImages = [...currentImages, ...newImages];
+    const limitedImages = totalImages.slice(0, 5); // Limit to 5 images
+    setFormData(prev => ({ ...prev, images: limitedImages }));
+    setUploading(false);
+    setUploadProgress({});
+  };
+
+  // Remove image
+  const removeImage = (index: number) => {
+    const currentImages = formData.images || [];
+    const updatedImages = currentImages.filter((_, i) => i !== index);
+    setFormData(prev => ({ ...prev, images: updatedImages }));
+  };
+
+  // Handle file input change
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files.length > 0) {
+      handleImageUpload(e.target.files);
+    }
+  };
+
+  // Handle drag and drop
+  const handleDragOver = (e: React.DragEvent) => {
+    e.preventDefault();
+  };
+
+  const handleDrop = (e: React.DragEvent) => {
+    e.preventDefault();
+    if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+      handleImageUpload(e.dataTransfer.files);
+    }
+  };
+
+  const handleDragAreaClick = () => {
+    const fileInput = document.getElementById('image-upload');
+    if (fileInput) {
+      fileInput.click();
+    }
+  };
+
   const handleAddNew = () => {
     setFormData({
-      title_hi: '',
-      title_en: '',
+      title: '',
       slug: '',
-      description_hi: '',
-      description_en: '',
+      description: '',
       price: '',
-      icon_type: 'lucide',
-      icon_path: 'Sun',
-      priority: 100
+      duration: '',
+      delivery_type: 'online',
+      is_active: true,
+      images: []
     });
     setEditingId(null);
     setIsDialogOpen(true);
@@ -96,15 +210,14 @@ export default function AdminServicesPage() {
 
   const handleEdit = (service: Service) => {
     setFormData({
-      title_hi: service.title_hi,
-      title_en: service.title_en,
+      title: service.title,
       slug: service.slug,
-      description_hi: service.description_hi,
-      description_en: service.description_en,
+      description: service.description,
       price: service.price.toString(),
-      icon_type: service.icon_type,
-      icon_path: service.icon_path,
-      priority: service.priority || 100
+      duration: service.duration || '',
+      delivery_type: service.delivery_type || 'online',
+      is_active: service.is_active,
+      images: service.service_media?.map(media => media.media_url) || []
     });
     setEditingId(service.id);
     setIsDialogOpen(true);
@@ -174,12 +287,12 @@ export default function AdminServicesPage() {
     }
   };
 
-  // Generate slug from English title
+  // Generate slug from title
   const generateSlug = () => {
-    const englishTitle = formData.title_en;
-    if (!englishTitle) return;
+    const title = formData.title;
+    if (!title) return;
     
-    const slug = englishTitle
+    const slug = title
       .toLowerCase()
       .replace(/[^\w\s-]/g, '')
       .replace(/\s+/g, '-');
@@ -187,10 +300,29 @@ export default function AdminServicesPage() {
     setFormData(prev => ({ ...prev, slug }));
   };
 
+  const deliveryTypeOptions = [
+    { value: 'online', label: 'Online' },
+    { value: 'offline', label: 'Offline' },
+    { value: 'hybrid', label: 'Hybrid' },
+    { value: 'chat', label: 'Chat' },
+    { value: 'video', label: 'Video Call' },
+    { value: 'audio', label: 'Audio Call' }
+  ];
+
+  const durationOptions = [
+    { value: '15 minutes', label: '15 minutes' },
+    { value: '30 minutes', label: '30 minutes' },
+    { value: '45 minutes', label: '45 minutes' },
+    { value: '60 minutes', label: '1 hour' },
+    { value: '90 minutes', label: '1.5 hours' },
+    { value: '120 minutes', label: '2 hours' },
+    { value: '180 minutes', label: '3 hours' }
+  ];
+
   return (
-    <div className="container mx-auto ">
+    <div className="container mx-auto p-6">
       <div className="flex justify-between items-center mb-6">
-        <h1 className="text-3xl font-bold">Manage Services</h1>
+        <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Manage Services</h1>
         <Button onClick={handleAddNew} className="bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700 transition-colors flex items-center gap-2">
           <Plus className="h-4 w-4" /> Add New Service
         </Button>
@@ -207,31 +339,53 @@ export default function AdminServicesPage() {
             </div>
           ) : (
             <div className="overflow-x-auto">
-              <table className="w-full">
-                <thead className="bg-gray-50 dark:bg-[#1e293b]">
-                  <tr>
-                    <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-600 dark:text-gray-400">Title (Hindi)</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-600 dark:text-gray-400">Title (English)</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-600 dark:text-gray-400">Slug</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-600 dark:text-gray-400">Price</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-600 dark:text-gray-400">Priority</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-600 dark:text-gray-400">Actions</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-gray-200 dark:divide-[#1f2937]">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Title</TableHead>
+                    <TableHead>Slug</TableHead>
+                    <TableHead>Price</TableHead>
+                    <TableHead>Duration</TableHead>
+                    <TableHead>Delivery Type</TableHead>
+                    <TableHead>Status</TableHead>
+                    <TableHead>Actions</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
                   {services.length === 0 ? (
-                    <tr>
-                      <td colSpan={6} className="text-center py-8 text-gray-500 dark:text-gray-400">No services found</td>
-                    </tr>
+                    <TableRow>
+                      <TableCell colSpan={7} className="text-center py-8 text-gray-500 dark:text-gray-400">
+                        No services found
+                      </TableCell>
+                    </TableRow>
                   ) : (
                     services.map((service) => (
-                      <tr key={service.id} className="hover:bg-gray-50 dark:hover:bg-[#1e293b] transition-colors">
-                        <td className="px-6 py-4 whitespace-nowrap text-gray-900 dark:text-white">{service.title_hi}</td>
-                        <td className="px-6 py-4 whitespace-nowrap text-gray-900 dark:text-white">{service.title_en}</td>
-                        <td className="px-6 py-4 whitespace-nowrap font-mono text-sm text-gray-900 dark:text-white">{service.slug}</td>
-                        <td className="px-6 py-4 whitespace-nowrap text-gray-900 dark:text-white">₹{service.price}</td>
-                        <td className="px-6 py-4 whitespace-nowrap text-gray-900 dark:text-white">{service.priority}</td>
-                        <td className="px-6 py-4 whitespace-nowrap">
+                      <TableRow key={service.id} className="hover:bg-gray-50 dark:hover:bg-[#1e293b] transition-colors">
+                        <TableCell className="font-medium text-gray-900 dark:text-white">
+                          {service.title}
+                        </TableCell>
+                        <TableCell className="font-mono text-sm text-gray-600 dark:text-gray-400">
+                          {service.slug}
+                        </TableCell>
+                        <TableCell className="text-gray-900 dark:text-white">
+                          ₹{service.price}
+                        </TableCell>
+                        <TableCell className="text-gray-600 dark:text-gray-400">
+                          {service.duration || 'Not specified'}
+                        </TableCell>
+                        <TableCell className="text-gray-600 dark:text-gray-400">
+                          <span className="capitalize">{service.delivery_type || 'Not specified'}</span>
+                        </TableCell>
+                        <TableCell>
+                          <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                            service.is_active 
+                              ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200'
+                              : 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200'
+                          }`}>
+                            {service.is_active ? 'Active' : 'Inactive'}
+                          </span>
+                        </TableCell>
+                        <TableCell>
                           <div className="flex space-x-2">
                             <Button variant="outline" size="sm" onClick={() => handleEdit(service)} className="border-muted-foreground/30">
                               <Edit className="h-4 w-4 text-blue-500" />
@@ -240,19 +394,19 @@ export default function AdminServicesPage() {
                               <Trash2 className="h-4 w-4 text-red-500" />
                             </Button>
                           </div>
-                        </td>
-                      </tr>
+                        </TableCell>
+                      </TableRow>
                     ))
                   )}
-                </tbody>
-              </table>
+                </TableBody>
+              </Table>
             </div>
           )}
         </div>
       </div>
       
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto border-0 shadow-lg">
+        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto border-0 shadow-lg">
           <DialogHeader>
             <DialogTitle className="text-xl font-bold">
               {editingId ? 'Edit Service' : 'Add New Service'}
@@ -261,39 +415,24 @@ export default function AdminServicesPage() {
           <form onSubmit={handleSubmit} className="space-y-6">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
-                <label className="block text-sm font-medium mb-1" htmlFor="title_hi">
-                  Title (Hindi)
+                <label className="block text-sm font-medium mb-2" htmlFor="title">
+                  Service Title *
                 </label>
                 <Input
-                  id="title_hi"
-                  name="title_hi"
-                  value={formData.title_hi}
-                  onChange={handleInputChange}
-                  placeholder="ज्योतिष परामर्श"
-                  className="w-full border-0 focus:ring-2 focus:ring-primary"
-                  required
-                />
-              </div>
-              
-              <div>
-                <label className="block text-sm font-medium mb-1" htmlFor="title_en">
-                  Title (English)
-                </label>
-                <Input
-                  id="title_en"
-                  name="title_en"
-                  value={formData.title_en}
+                  id="title"
+                  name="title"
+                  value={formData.title}
                   onChange={handleInputChange}
                   onBlur={generateSlug}
-                  placeholder="Astrology Consultation"
-                  className="w-full border-0 focus:ring-2 focus:ring-primary"
+                  placeholder="Birth Chart Analysis"
+                  className="w-full"
                   required
                 />
               </div>
               
               <div>
-                <label className="block text-sm font-medium mb-1" htmlFor="slug">
-                  Slug
+                <label className="block text-sm font-medium mb-2" htmlFor="slug">
+                  Slug *
                 </label>
                 <div className="flex">
                   <Input
@@ -301,8 +440,8 @@ export default function AdminServicesPage() {
                     name="slug"
                     value={formData.slug}
                     onChange={handleInputChange}
-                    placeholder="astrology-consultation"
-                    className="w-full font-mono border-0 focus:ring-2 focus:ring-primary"
+                    placeholder="birth-chart-analysis"
+                    className="w-full font-mono"
                     required
                   />
                   <Button 
@@ -317,109 +456,167 @@ export default function AdminServicesPage() {
               </div>
               
               <div>
-                <label className="block text-sm font-medium mb-1" htmlFor="price">
-                  Price (₹)
+                <label className="block text-sm font-medium mb-2" htmlFor="price">
+                  Price (₹) *
                 </label>
                 <Input
                   id="price"
                   name="price"
                   type="number"
+                  step="0.01"
                   value={formData.price}
                   onChange={handleInputChange}
-                  placeholder="1999"
-                  className="w-full border-0 focus:ring-2 focus:ring-primary"
+                  placeholder="2999.00"
+                  className="w-full"
                   required
                 />
               </div>
               
               <div>
-                <label className="block text-sm font-medium mb-1" htmlFor="icon_type">
-                  Icon Type
+                <label className="block text-sm font-medium mb-2" htmlFor="duration">
+                  Duration
                 </label>
-                <select
-                  id="icon_type"
-                  name="icon_type"
-                  value={formData.icon_type}
-                  onChange={handleInputChange}
-                  className="w-full p-2 border-0 rounded-md focus:ring-2 focus:ring-primary"
-                  required
-                >
-                  <option value="lucide">Lucide Icon</option>
-                  <option value="svg">Custom SVG Path</option>
-                </select>
+                <Select value={formData.duration} onValueChange={(value) => handleSelectChange('duration', value)}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select duration" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {durationOptions.map((option) => (
+                      <SelectItem key={option.value} value={option.value}>
+                        {option.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </div>
               
               <div>
-                <label className="block text-sm font-medium mb-1" htmlFor="icon_path">
-                  {formData.icon_type === 'lucide' ? 'Icon Name' : 'SVG Path'}
+                <label className="block text-sm font-medium mb-2" htmlFor="delivery_type">
+                  Delivery Type
                 </label>
-                <div className="flex items-center">
-                  <Input
-                    id="icon_path"
-                    name="icon_path"
-                    value={formData.icon_path}
-                    onChange={handleInputChange}
-                    placeholder={formData.icon_type === 'lucide' ? 'Sun' : 'M12,2L2,22h20L12,2z'}
-                    className="w-full border-0 focus:ring-2 focus:ring-primary"
-                    required
-                  />
-                  {formData.icon_type === 'lucide' && formData.icon_path && (
-                    <div className="ml-2">
-                      <Sun className="h-6 w-6 text-sunburst-yellow" />
-                    </div>
-                  )}
-                </div>
-                <p className="text-xs text-muted-foreground mt-1">
-                  {formData.icon_type === 'lucide' ? 'E.g. Sun, Moon, Star' : 'SVG path data'}
+                <Select value={formData.delivery_type} onValueChange={(value) => handleSelectChange('delivery_type', value)}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select delivery type" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {deliveryTypeOptions.map((option) => (
+                      <SelectItem key={option.value} value={option.value}>
+                        {option.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              
+              <div className="flex items-center space-x-2">
+                <Switch
+                  id="is_active"
+                  checked={formData.is_active}
+                  onCheckedChange={handleSwitchChange}
+                />
+                <label htmlFor="is_active" className="text-sm font-medium">
+                  Active Service
+                </label>
+              </div>
+            </div>
+            
+            <div>
+              <label className="block text-sm font-medium mb-2" htmlFor="description">
+                Description *
+              </label>
+              <Textarea
+                id="description"
+                name="description"
+                value={formData.description}
+                onChange={handleInputChange}
+                placeholder="Comprehensive analysis of your birth chart to understand your personality, strengths, and life path..."
+                className="w-full"
+                rows={4}
+                required
+              />
+            </div>
+
+            {/* Image Upload Section */}
+            <div>
+              <label className="block text-sm font-medium mb-2">
+                Service Images (Max 5)
+              </label>
+              
+              {/* Drag and Drop Area */}
+              <div
+                className={`border-2 border-dashed rounded-lg p-6 text-center transition-colors cursor-pointer ${
+                  uploading 
+                    ? 'border-blue-300 bg-blue-50 dark:bg-blue-900/20' 
+                    : 'border-gray-300 dark:border-gray-600 hover:border-purple-400 dark:hover:border-purple-500'
+                }`}
+                onClick={handleDragAreaClick}
+                onDragOver={handleDragOver}
+                onDrop={handleDrop}
+              >
+                <Upload className="mx-auto h-12 w-12 text-gray-400 mb-4" />
+                <p className="text-sm text-gray-600 dark:text-gray-400 mb-2">
+                  Drag and drop images here, or click to select
                 </p>
-              </div>
-              
-              <div>
-                <label className="block text-sm font-medium mb-1" htmlFor="priority">
-                  Priority (lower = higher position)
-                </label>
-                <Input
-                  id="priority"
-                  name="priority"
-                  type="number"
-                  value={formData.priority}
-                  onChange={handleInputChange}
-                  placeholder="100"
-                  className="w-full border-0 focus:ring-2 focus:ring-primary"
+                <input
+                  type="file"
+                  multiple
+                  accept="image/*"
+                  onChange={handleFileChange}
+                  className="hidden"
+                  id="image-upload"
+                  disabled={uploading}
                 />
+                <div className={`inline-flex items-center px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors ${
+                  uploading ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'
+                }`}>
+                  {uploading ? 'Uploading...' : 'Choose Images'}
+                </div>
               </div>
-            </div>
-            
-            <div>
-              <label className="block text-sm font-medium mb-1" htmlFor="description_hi">
-                Description (Hindi)
-              </label>
-              <Textarea
-                id="description_hi"
-                name="description_hi"
-                value={formData.description_hi}
-                onChange={handleInputChange}
-                placeholder="अपने जीवन पथ, संबंधों और करियर के बारे में व्यक्तिगत ज्योतिषीय पठन के माध्यम से अंतर्दृष्टि प्राप्त करें।"
-                className="w-full border-0 focus:ring-2 focus:ring-primary"
-                rows={3}
-                required
-              />
-            </div>
-            
-            <div>
-              <label className="block text-sm font-medium mb-1" htmlFor="description_en">
-                Description (English)
-              </label>
-              <Textarea
-                id="description_en"
-                name="description_en"
-                value={formData.description_en}
-                onChange={handleInputChange}
-                placeholder="Gain insights into your life path, relationships, and career through personalized astrological readings."
-                className="w-full border-0 focus:ring-2 focus:ring-primary"
-                rows={3}
-                required
-              />
+
+              {/* Upload Progress */}
+              {Object.keys(uploadProgress).length > 0 && (
+                <div className="mt-4 space-y-2">
+                  {Object.entries(uploadProgress).map(([index, progress]) => (
+                    <div key={index} className="flex items-center space-x-2">
+                      <div className="flex-1 bg-gray-200 dark:bg-gray-700 rounded-full h-2">
+                        <div 
+                          className={`h-2 rounded-full transition-all ${
+                            progress === -1 ? 'bg-red-500' : progress === 100 ? 'bg-green-500' : 'bg-blue-500'
+                          }`}
+                          style={{ width: `${Math.abs(progress)}%` }}
+                        />
+                      </div>
+                      {progress === 100 && <CheckCircle className="h-4 w-4 text-green-500" />}
+                      {progress === -1 && <X className="h-4 w-4 text-red-500" />}
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              {/* Image Preview */}
+              {formData.images && formData.images.length > 0 && (
+                <div className="mt-4">
+                  <h4 className="text-sm font-medium mb-2">Uploaded Images:</h4>
+                  <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
+                    {formData.images.map((image, index) => (
+                      <div key={index} className="relative group">
+                        <img
+                          src={image}
+                          alt={`Service image ${index + 1}`}
+                          className="w-full h-24 object-cover rounded-lg border"
+                        />
+                        <button
+                          type="button"
+                          onClick={() => removeImage(index)}
+                          className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity"
+                        >
+                          <X className="h-3 w-3" />
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
             </div>
             
             <DialogFooter className="gap-2 sm:gap-0">
@@ -434,6 +631,7 @@ export default function AdminServicesPage() {
               <Button 
                 type="submit"
                 className="bg-primary hover:bg-primary/90"
+                disabled={uploading}
               >
                 {editingId ? 'Update Service' : 'Create Service'}
               </Button>

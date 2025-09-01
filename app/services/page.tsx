@@ -1,6 +1,5 @@
 "use client";
-import { useState } from 'react';
-import Link from 'next/link';
+import { useState, useEffect } from 'react';
 import { AnimatedStars } from '../components/AnimatedStars'
 import { MysticBackground } from '../components/MysticBackground'
 import dynamic from 'next/dynamic';
@@ -12,77 +11,113 @@ import ServiceShowcase from '../components/ServiceShowcase'
 import ServiceCarousels from '../components/ServiceCarousels'
 import NakshatraGyaanBanner from '../components/NakshatraGyaanBanner'
 import ProductAssuranceBar from '../components/ProductAssuranceBar'
-import { services } from '../data/servicesData'
+
+// Define Service interface based on backend schema
+interface Service {
+  id: number;
+  title: string;
+  description: string;
+  slug: string;
+  price: number;
+  duration?: string;
+  delivery_type?: string;
+  is_active: boolean;
+  created_at?: string;
+  updated_at?: string;
+  service_media?: ServiceMedia[];
+}
+
+interface ServiceMedia {
+  id: number;
+  service_id: number;
+  media_type: string;
+  media_url: string;
+  alt_text?: string;
+  title?: string;
+  sort_order: number;
+  is_primary: boolean;
+  is_active: boolean;
+}
 
 const CTASection = dynamic(() => import('../components/CTASection').then(mod => mod.CTASection), { loading: () => <div>Loading...</div>, ssr: false });
 const SpiritualJourneyBanner = dynamic(() => import('../components/SpiritualJourneyBanner'), { loading: () => <div>Loading...</div>, ssr: false });
 export default function ServicesPage() {
   const [search, setSearch] = useState('');
+  const [services, setServices] = useState<Service[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  // Fetch services from backend
+  useEffect(() => {
+    const fetchServices = async () => {
+      try {
+        setLoading(true);
+        setError(null);
+        
+        const response = await fetch('/api/services?limit=100&is_active=true');
+        
+        if (!response.ok) {
+          throw new Error('Failed to fetch services');
+        }
+        
+        const data = await response.json();
+        setServices(data.services || []);
+      } catch (err) {
+        console.error('Error fetching services:', err);
+        setError(err instanceof Error ? err.message : 'Failed to load services');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchServices();
+  }, []);
 
   const filteredServices = services.filter(service =>
     service.title.toLowerCase().includes(search.toLowerCase()) ||
     service.description.toLowerCase().includes(search.toLowerCase())
   );
 
-  // Normalized list for ServiceShowcase (expects numeric price) while retaining original for first grid
-  const toNumber = (val: string | number | undefined): number => {
-    if (typeof val === 'number') return val;
-    if (typeof val === 'string') {
-      const cleaned = val.replace(/[^0-9.]/g, '');
-      const n = Number(cleaned);
-      return isNaN(n) ? 0 : n;
-    }
-    return 0;
-  };
 
-  const getServiceDetails = (slug: string, index: number) => {
+
+  // Transform backend services to match ServiceShowcase expectations
+  const transformServiceForShowcase = (service: Service, index: number) => {
     const consultationTypes = ['Video Call', 'Phone Call', 'In Person'];
-    const durations = ['30 mins', '45 mins', '60 mins', '90 mins'];
     const ratings = [4.2, 4.5, 4.7, 4.8, 4.9];
 
-    // Assign specific details based on service type
-    let consultationType = consultationTypes[index % consultationTypes.length];
-    let duration = durations[index % durations.length];
+    // Use backend data or fallback to defaults
+    const consultationType = service.delivery_type || consultationTypes[index % consultationTypes.length];
+    const duration = service.duration || '45 mins';
     const rating = ratings[index % ratings.length];
 
-    // Customize based on service slug
-    if (slug.includes('puja') || slug.includes('online')) {
-      consultationType = 'Video Call';
-      duration = '60 mins';
-    } else if (slug.includes('kundali') || slug.includes('matching')) {
-      consultationType = 'Video Call';
-      duration = '90 mins';
-    } else if (slug.includes('career') || slug.includes('numerology')) {
-      consultationType = 'Phone Call';
-      duration = '45 mins';
-    }
+    // Get primary image from service media
+    const primaryImage = service.service_media?.find(media => media.is_primary)?.media_url || 
+                        service.service_media?.[0]?.media_url || 
+                        '/images/astro.jpg';
 
-    return { consultationType, duration, rating };
+
+
+    return {
+      id: service.id.toString(),
+      title: service.title,
+      description: service.description,
+      slug: service.slug,
+      price: service.price,
+      originalPrice: undefined, // Backend doesn't have this field
+      rating: rating,
+      reviewsCount: Math.floor(Math.random() * 100) + 20,
+      duration: duration,
+      consultationType: consultationType,
+      availability: 'available' as const,
+      image: primaryImage,
+      images: service.service_media?.map(media => media.media_url) || [primaryImage],
+    };
   };
 
-  const showcaseServices = filteredServices.map((s, index) => {
-    const serviceDetails = getServiceDetails(s.slug, index);
-    return {
-      ...s,
-      price: toNumber((s as typeof services[0]).price),
-      originalPrice: (s as typeof services[0]).originalPrice !== undefined ? toNumber((s as typeof services[0]).originalPrice) : undefined,
-      rating: serviceDetails.rating,
-      reviewsCount: Math.floor(Math.random() * 100) + 20,
-      duration: serviceDetails.duration,
-      consultationType: serviceDetails.consultationType,
-      availability: 'available' as const,
-    };
-  });
+  const showcaseServices = filteredServices.map(transformServiceForShowcase);
 
-  // Service segmentation:
-  // - First 3: static horizontal grid
-  // - Next 12: Featured (paginated single-row showcase)
-  // - Next 6: Expert Consultations
-  // - Next 6: Specialized Services
-  const firstThreeServices = filteredServices.slice(0, 3); // keep original shape for UniversalServiceCardGrid
-  const featuredServices = showcaseServices.slice(3, 15); // up to 12 items
-  const expertConsultations = showcaseServices.slice(15, 21);
-  const specializedServices = showcaseServices.slice(21, 27);
+  // Show all services in the main section
+  const allServices = showcaseServices;
 
   return (
     <div className="relative min-h-screen overflow-hidden bg-gradient-to-br from-amber-50 via-white to-orange-50 -mt-4">
@@ -109,64 +144,56 @@ export default function ServicesPage() {
           Embark on a transformative journey with our comprehensive range of spiritual services. Let our expert astrologers and spiritual guides illuminate your path to self-discovery and enlightenment.
         </p>
 
-        {/* Services Search with CTA */}
-  <div className="flex flex-col items-center justify-center gap-3 mb-8 w-full md:gap-3 gap-5">
-          <Link
-            href="/services/all"
-            className="inline-block bg-green-800 hover:bg-green-900 text-white font-semibold px-6 py-3 rounded-full transition-colors duration-200 text-base whitespace-nowrap text-center"
-            style={{ lineHeight: '1.5', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
-          >
-            View All Services
-          </Link>
-          <div className="w-full max-w-md">
-            <ServicesSearch onSearchChange={setSearch} className="mb-0 w-full" />
+        {/* Services Search */}
+        <ServicesSearch onSearchChange={setSearch} />
+
+        {/* Loading State */}
+        {loading && (
+          <div className="text-center py-16">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900 mx-auto mb-4"></div>
+            <p className="text-gray-600">Loading services...</p>
+            <p className="text-sm text-gray-500 mt-2">Please wait while we fetch your services</p>
           </div>
-        </div>
+        )}
 
-        {/* First 3 cards in horizontal grid
-        <UniversalServiceCardGrid
-          services={firstThreeServices}
-          className=""
-          maxCards={3}
-          gridCols="grid-cols-1 sm:grid-cols-2 md:grid-cols-3"
-        /> */}
+        {/* Error State */}
+        {error && (
+          <div className="text-center py-16">
+            <div className="text-6xl mb-4">⚠️</div>
+            <h3 className="text-xl font-semibold text-gray-900 mb-2">Failed to load services</h3>
+            <p className="text-gray-600 mb-6">{error}</p>
+            <button 
+              onClick={() => window.location.reload()} 
+              className="bg-green-800 text-white px-6 py-3 rounded-lg font-medium hover:bg-green-900 transition-colors"
+            >
+              Try Again
+            </button>
+          </div>
+        )}
 
-        {/* Featured Services (expanded & paginated) */}
-        <ServiceShowcase
-          title="Featured Services"
-          subtitle="Discover our most popular spiritual services and expert consultations"
-          services={featuredServices}
-          cardsPerView={5}
-          scrollStep={1}
-        />
+                 {/* Services Content */}
+         {!loading && !error && (
+           <>
+             {/* All Services */}
+             <ServiceShowcase
+               title="Our Services"
+               subtitle="Discover our complete collection of spiritual services and expert consultations"
+               services={allServices}
+               cardsPerView={5}
+               scrollStep={1}
+             />
 
-        {/* Service Carousels (Top-Selling Section) */}
-        <div className="mt-16 mb-8">
-          <ServiceCarousels />
-        </div>
+             {/* Service Carousels (Top-Selling Section) */}
+             <div className="mt-16 mb-32">
+               <ServiceCarousels />
+             </div>
 
-        {/* Nakshatra Gyaan Banner */}
-        <div className="mt-16 mb-8">
-          <NakshatraGyaanBanner />
-        </div>
-
-        {/* Expert Services */}
-        <ServiceShowcase
-          title="Expert Consultations"
-          subtitle="Get guidance from our top astrologers, numerologists, and vastu experts"
-          services={expertConsultations}
-          cardsPerView={5}
-          scrollStep={1}
-        />
-
-        {/* Specialized Services */}
-        <ServiceShowcase
-          title="Specialized Services"
-          subtitle="Unique spiritual offerings tailored to your needs"
-          services={specializedServices}
-          cardsPerView={5}
-          scrollStep={1}
-        />
+             {/* Nakshatra Gyaan Banner */}
+             <div className="mt-16 mb-32">
+               <NakshatraGyaanBanner />
+             </div>
+           </>
+         )}
 
         {/* Product Assurance Bar */}
         <ProductAssuranceBar />

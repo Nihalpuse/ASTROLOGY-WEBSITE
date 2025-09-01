@@ -4,22 +4,53 @@ import { useState, useEffect, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Search, Filter, X, Grid3X3, List } from 'lucide-react';
 import { ReusableServiceGrid } from '@/app/components/service-cards';
-import { services } from '@/data/services';
 import { AnimatedStars } from '@/app/components/AnimatedStars';
 import { MysticBackground } from '@/app/components/MysticBackground';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 
-// Filter option builders (similar structure to products page)
-const buildFilterOptions = () => {
-  const categories = [...new Set(services.map(s => s.category).filter(Boolean))].sort();
-  const consultationTypes = ['Video Call', 'Phone Call', 'In Person'];
+// Define the Service interface based on the backend schema
+interface Service {
+  id: number;
+  title: string;
+  slug: string;
+  description: string;
+  price: number;
+  duration?: string;
+  delivery_type?: string;
+  is_active: boolean;
+  created_at?: string;
+  updated_at?: string;
+  service_media?: ServiceMedia[];
+}
+
+interface ServiceMedia {
+  id: number;
+  service_id: number;
+  media_type: string;
+  media_url: string;
+  alt_text?: string;
+  title?: string;
+  sort_order: number;
+  is_primary: boolean;
+  is_active: boolean;
+}
+
+// Filter option builders based on real service data
+const buildFilterOptions = (services: Service[]) => {
+  const deliveryTypes = [...new Set(services.map(s => s.delivery_type).filter(Boolean))].sort() as string[];
+  const durations = [...new Set(services.map(s => s.duration).filter(Boolean))].sort() as string[];
+  
   const priceRanges = ['Under ₹500', '₹500 - ₹1000', '₹1000 - ₹2000', 'Above ₹2000'];
-  const rating = ['4+ Stars', '3+ Stars', '2+ Stars', '1+ Stars'];
-  return { category: categories, consultationType: consultationTypes, priceRange: priceRanges, rating };
+  
+  return { 
+    deliveryType: deliveryTypes, 
+    duration: durations, 
+    priceRange: priceRanges
+  };
 };
 
-type SortOption = 'featured' | 'price-low' | 'price-high' | 'name' | 'rating';
+type SortOption = 'featured' | 'price-low' | 'price-high' | 'name' | 'newest';
 type ViewMode = 'grid' | 'list';
 
 // Sidebar component similar to products page
@@ -40,13 +71,12 @@ const FilterSidebar = ({
   isOpen: boolean;
   onClose: () => void;
 }) => {
-  const [activeTab, setActiveTab] = useState('category');
+  const [activeTab, setActiveTab] = useState('deliveryType');
   
   const tabLabels = {
-    category: 'Category',
-    consultationType: 'Consultation Type',
-    priceRange: 'Price Range',
-    rating: 'Rating'
+    deliveryType: 'Delivery Type',
+    duration: 'Duration',
+    priceRange: 'Price Range'
   };
 
   return (
@@ -183,6 +213,7 @@ const FilterSidebar = ({
 };
 
 export default function AllServicesPage() {
+  const [services, setServices] = useState<Service[]>([]);
   const [filters, setFilters] = useState<Record<string, string[]>>({});
   const [searchQuery, setSearchQuery] = useState('');
   const [sortOption, setSortOption] = useState<SortOption>('featured');
@@ -190,9 +221,36 @@ export default function AllServicesPage() {
   const [showFilters, setShowFilters] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const servicesPerPage = 12;
 
-  const filterOptions = useMemo(() => buildFilterOptions(), []);
+  // Fetch services from backend
+  useEffect(() => {
+    const fetchServices = async () => {
+      try {
+        setLoading(true);
+        setError(null);
+        
+        const response = await fetch('/api/services?limit=100&is_active=true');
+        
+        if (!response.ok) {
+          throw new Error('Failed to fetch services');
+        }
+        
+        const data = await response.json();
+        setServices(data.services || []);
+      } catch (err) {
+        console.error('Error fetching services:', err);
+        setError(err instanceof Error ? err.message : 'Failed to load services');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchServices();
+  }, []);
+
+  const filterOptions = useMemo(() => buildFilterOptions(services), [services]);
 
   // Initialize filters
   useEffect(() => {
@@ -201,40 +259,32 @@ export default function AllServicesPage() {
     setFilters(initial);
   }, [filterOptions]);
 
-  // Simulate loading
-  useEffect(() => {
-    const t = setTimeout(() => setLoading(false), 800);
-    return () => clearTimeout(t);
-  }, []);
-
   const filteredAndSortedServices = useMemo(() => {
     const result = services.filter(service => {
+      // Only show active services
+      if (!service.is_active) return false;
+      
       // Search
       if (searchQuery) {
         const q = searchQuery.toLowerCase();
         if (!(
           service.title.toLowerCase().includes(q) ||
           service.description.toLowerCase().includes(q) ||
-          service.category?.toLowerCase().includes(q) ||
-          service.tags?.some(tag => tag.toLowerCase().includes(q))
+          service.delivery_type?.toLowerCase().includes(q) ||
+          service.duration?.toLowerCase().includes(q)
         )) return false;
       }
-      // Category
-      if (filters.category?.length) {
-        if (!filters.category.includes(service.category || '')) return false;
+      
+      // Delivery type
+      if (filters.deliveryType?.length) {
+        if (!filters.deliveryType.includes(service.delivery_type || '')) return false;
       }
-      // Consultation type
-      if (filters.consultationType?.length) {
-        const ct = service.consultationType?.toLowerCase() || '';
-        const matches = filters.consultationType.some(opt => {
-          const o = opt.toLowerCase();
-            if (o.includes('video')) return ct.includes('video');
-            if (o.includes('phone')) return ct.includes('phone') || ct.includes('audio');
-            if (o.includes('person')) return ct.includes('person');
-            return false;
-        });
-        if (!matches) return false;
+      
+      // Duration
+      if (filters.duration?.length) {
+        if (!filters.duration.includes(service.duration || '')) return false;
       }
+      
       // Price range
       if (filters.priceRange?.length) {
         const price = service.price;
@@ -249,14 +299,7 @@ export default function AllServicesPage() {
         });
         if (!prMatch) return false;
       }
-      // Rating
-      if (filters.rating?.length) {
-        const ratingMatch = filters.rating.some(r => {
-          const min = parseInt(r.charAt(0));
-          return (service.rating || 0) >= min;
-        });
-        if (!ratingMatch) return false;
-      }
+      
       return true;
     });
 
@@ -269,13 +312,14 @@ export default function AllServicesPage() {
         sorted.sort((a, b) => b.price - a.price); break;
       case 'name':
         sorted.sort((a, b) => a.title.localeCompare(b.title)); break;
-      case 'rating':
-        sorted.sort((a, b) => (b.rating || 0) - (a.rating || 0)); break;
+      case 'newest':
+        sorted.sort((a, b) => new Date(b.created_at || '').getTime() - new Date(a.created_at || '').getTime()); break;
       default:
+        // Featured: keep original order (most recently added first from API)
         break;
     }
     return sorted;
-  }, [filters, searchQuery, sortOption]);
+  }, [services, filters, searchQuery, sortOption]);
 
   // Pagination
   const totalPages = Math.ceil(filteredAndSortedServices.length / servicesPerPage) || 1;
@@ -303,6 +347,47 @@ export default function AllServicesPage() {
   };
 
   const getActiveFiltersCount = () => Object.values(filters).reduce((s, arr) => s + arr.length, 0);
+
+  // Transform services for the ReusableServiceGrid component
+  const transformedServices = paginatedServices.map(service => {
+    // Get the primary image or first available image
+    const primaryImage = service.service_media?.find(media => media.is_primary && media.is_active)?.media_url;
+    const firstImage = service.service_media?.find(media => media.is_active)?.media_url;
+    const imageUrl = primaryImage || firstImage || '/images/astro.jpg'; // Using existing image as fallback
+    
+    console.log(`Service ${service.id} media:`, service.service_media); // Debug log
+    
+    return {
+      id: service.id.toString(),
+      title: service.title,
+      description: service.description,
+      price: service.price,
+      images: [imageUrl], // Changed from 'image' to 'images' array
+      category: service.delivery_type || 'General',
+      consultationType: service.delivery_type || 'Online',
+      rating: 4.5, // Default rating since not in schema
+      tags: [service.duration, service.delivery_type].filter(Boolean) as string[],
+      slug: service.slug
+    };
+  });
+
+  if (error) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="text-6xl mb-4">⚠️</div>
+          <h3 className="text-xl font-semibold text-gray-900 mb-2">Error loading services</h3>
+          <p className="text-gray-600 mb-6">{error}</p>
+          <button 
+            onClick={() => window.location.reload()} 
+            className="bg-green-800 text-white px-6 py-3 rounded-lg font-medium hover:bg-green-900 transition-colors"
+          >
+            Try Again
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   return (
   <div className="min-h-screen bg-gray-50">
@@ -452,7 +537,7 @@ export default function AllServicesPage() {
                         <option value="price-low">Price: Low to High</option>
                         <option value="price-high">Price: High to Low</option>
                         <option value="name">Name: A to Z</option>
-                        <option value="rating">Rating</option>
+                        <option value="newest">Newest First</option>
                       </select>
                     </div>
                   </div>
@@ -478,7 +563,7 @@ export default function AllServicesPage() {
 
                 {/* Services Grid/List */}
                 <ReusableServiceGrid
-                  services={paginatedServices}
+                  services={transformedServices}
                   viewMode={viewMode}
                   columns={4}
                   mobileColumns={2}
