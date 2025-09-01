@@ -3,23 +3,21 @@ import { PrismaClient } from '@prisma/client';
 
 const prisma = new PrismaClient();
 
-// GET single product by ID
+// GET single product by ID or slug
 export async function GET(
   request: NextRequest,
   { params }: { params: { id: string } }
 ) {
   try {
-    const id = parseInt(params.id);
+    const { id } = params;
+    let product;
 
-    if (isNaN(id)) {
-      return NextResponse.json(
-        { error: 'Invalid product ID' },
-        { status: 400 }
-      );
-    }
-
-    const product = await prisma.products.findUnique({
-      where: { id },
+    // Check if the ID is numeric or a slug
+    if (/^\d+$/.test(id)) {
+      // It's a numeric ID
+      const numericId = parseInt(id);
+      product = await prisma.products.findUnique({
+        where: { id: numericId },
       include: {
         category: true,
         zodiac: true,
@@ -38,6 +36,29 @@ export async function GET(
         }
       }
     });
+    } else {
+      // It's a slug
+      product = await prisma.products.findFirst({
+        where: { slug: id },
+        include: {
+          category: true,
+          zodiac: true,
+          product_media: {
+            where: {
+              is_active: true
+            },
+            orderBy: {
+              sort_order: 'asc'
+            }
+          },
+          product_meta: true,
+          product_shipping: true,
+          product_stock: {
+            take: 1
+          }
+        }
+      });
+    }
 
     if (!product) {
       return NextResponse.json(

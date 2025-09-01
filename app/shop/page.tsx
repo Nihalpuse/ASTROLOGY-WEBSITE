@@ -1,8 +1,8 @@
 'use client';
 
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import dynamic from 'next/dynamic';
-import { products } from '../../data/products';
+import { useProducts } from '../../hooks/useProducts';
 
 const ProductOfTheDay = dynamic(() => import('../components/ProductOfTheDay'), { loading: () => <div>Loading...</div>, ssr: false });
 const CelestialJourneyMainGrid = dynamic(() => import('../components/Hero/CelestialJourneyMainGrid'), { loading: () => <div>Loading...</div>, ssr: false });
@@ -19,6 +19,8 @@ const SpiritualJourneyBanner = dynamic(() => import('../components/SpiritualJour
 
 
 export default function ShopPage() {
+  const { products, loading, error } = useProducts(8);
+  
   useEffect(() => {
     const observer = new IntersectionObserver((entries) => {
       entries.forEach(entry => {
@@ -69,13 +71,42 @@ export default function ShopPage() {
           {/* Removed duplicate <h1>Spiritual Shop</h1> here */}
           {/* Full-width Product Carousel (dynamically imported) */}
           {/* New Best Seller Cards with RecentPosts Layout */}
-          <ProductShowcase 
-            products={products}
-            title="Best Selling Products" 
-            subtitle="Explore our most loved and trusted spiritual items"
-            cardsPerView={5}
-            scrollStep={1}
-          />
+          {loading ? (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-6">
+              {[...Array(8)].map((_, i) => (
+                <div key={i} className="h-80 bg-gray-200 animate-pulse rounded-xl"></div>
+              ))}
+            </div>
+          ) : error ? (
+            <div className="text-center py-16">
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">Unable to load products</h3>
+              <p className="text-gray-600">{error}</p>
+            </div>
+          ) : (
+            <ProductShowcase 
+              products={products.map(product => ({
+                id: product.id,
+                title: product.name,
+                description: product.description,
+                price: `₹${product.price}`,
+                originalPrice: product.original_price ? `₹${product.original_price}` : undefined,
+                slug: product.slug,
+                image: product.product_media.length > 0 
+                  ? (product.product_media[0].media_url || product.product_media[0].url || '/images/placeholder.jpg')
+                  : '/images/placeholder.jpg',
+                category: product.category?.name,
+                rating: 4.5,
+                reviewCount: 50,
+                inStock: product.product_stock.length > 0 ? product.product_stock[0].quantity > 0 : true,
+                isNew: true,
+                isFeatured: true
+              }))}
+              title="Best Selling Products" 
+              subtitle="Explore our most loved and trusted spiritual items"
+              cardsPerView={5}
+              scrollStep={1}
+            />
+          )}
           {/* <FeaturedProducts /> */}
           {/* Product Of The Day Section */}
           <ProductOfTheDay />

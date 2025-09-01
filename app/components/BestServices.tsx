@@ -5,11 +5,12 @@ import { motion } from 'framer-motion'
 import { ArrowLeft, ArrowRight } from 'lucide-react'
 import { useState, useRef, useEffect } from 'react'
 import Link from 'next/link'
-import { services as servicesData } from '../../data/services.js'
 import { ReusableServiceCard } from './ReusableServiceCard'
+import { useServices, type Service } from '../../hooks/useServices'
 
 export function BestServices() {
   const { t } = useLanguage();
+  const { services, loading, error } = useServices(6);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [responsiveCardsPerView, setResponsiveCardsPerView] = useState(5);
   const desktopContainerRef = useRef<HTMLDivElement | null>(null);
@@ -37,11 +38,35 @@ export function BestServices() {
     return () => window.removeEventListener('resize', updateCardsPerView);
   }, []);
 
+  // Transform API service data to match ReusableServiceCard interface
+  const transformServiceData = (service: Service) => {
+    const images = service.service_media
+      .filter(media => media.is_active)
+      .sort((a, b) => a.sort_order - b.sort_order)
+      .map(media => media.media_url);
+    
+    return {
+      id: service.id,
+      title: service.title,
+      description: service.description,
+      price: service.price,
+      slug: service.slug,
+      duration: service.duration,
+      consultationType: service.delivery_type,
+      images: images.length > 0 ? images : ['/images/placeholder.jpg'],
+      rating: 4.8, // Default rating since API doesn't provide this yet
+      reviewsCount: 100, // Default review count
+      ordersCount: 50, // Default order count
+      isPopular: true, // Mark as popular for display
+      availability: 'available' as const
+    };
+  };
 
-  // Use imported services data and select the first 6 services for display
-  const displayServices = servicesData.slice(0, 6);
+  // Use transformed services data
+  const displayServices = services.map(transformServiceData);
   const totalCards = displayServices.length;
   const maxIndex = Math.max(0, totalCards - responsiveCardsPerView);
+  
   // Desktop scroll logic
   const canScrollLeftDesktop = currentIndex > 0;
   const canScrollRightDesktop = currentIndex < maxIndex;
@@ -88,7 +113,7 @@ export function BestServices() {
 
   useEffect(() => {
     checkScrollButtonsMobile();
-  }, []);
+  }, [services]);
 
   const handleScroll = (direction: 'left' | 'right') => {
     if (direction === 'left' && canScrollLeftDesktop) {
@@ -97,6 +122,52 @@ export function BestServices() {
       setCurrentIndex(Math.min(maxIndex, currentIndex + scrollStep));
     }
   };
+
+  // Loading state
+  if (loading) {
+    return (
+      <section className="min-h-[400px] py-0 bg-white font-sans overflow-hidden">
+        <div className="w-full max-w-7xl mx-auto px-4">
+          <div className="mb-12">
+            <div className="h-32 bg-gray-200 animate-pulse rounded-3xl mb-12"></div>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-6">
+              {[...Array(6)].map((_, i) => (
+                <div key={i} className="h-80 bg-gray-200 animate-pulse rounded-xl"></div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </section>
+    );
+  }
+
+  // Error state
+  if (error) {
+    return (
+      <section className="min-h-[400px] py-0 bg-white font-sans overflow-hidden">
+        <div className="w-full max-w-7xl mx-auto px-4">
+          <div className="text-center py-16">
+            <h3 className="text-lg font-semibold text-gray-900 mb-2">Unable to load services</h3>
+            <p className="text-gray-600">{error}</p>
+          </div>
+        </div>
+      </section>
+    );
+  }
+
+  // Empty state
+  if (displayServices.length === 0) {
+    return (
+      <section className="min-h-[400px] py-0 bg-white font-sans overflow-hidden">
+        <div className="w-full max-w-7xl mx-auto px-4">
+          <div className="text-center py-16">
+            <h3 className="text-lg font-semibold text-gray-900 mb-2">No services available</h3>
+            <p className="text-gray-600">Please check back later for our latest services.</p>
+          </div>
+        </div>
+      </section>
+    );
+  }
 
   return (
     <section className="min-h-[400px] py-0 bg-white font-sans overflow-hidden">
