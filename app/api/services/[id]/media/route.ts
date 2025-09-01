@@ -3,6 +3,15 @@ import { PrismaClient } from '@prisma/client';
 
 const prisma = new PrismaClient();
 
+type MediaItem = {
+  type?: string;
+  url: string;
+  alt_text?: string | null;
+  title?: string | null;
+  sort_order?: number;
+  is_primary?: boolean;
+};
+
 // POST - Add media to a service
 export async function POST(
   request: NextRequest,
@@ -41,7 +50,7 @@ export async function POST(
 
     // Create media records
     const mediaRecords = await Promise.all(
-      media.map(async (mediaItem: any) => {
+      media.map(async (mediaItem: MediaItem) => {
         return await prisma.service_media.create({
           data: {
             service_id: serviceId,
@@ -117,7 +126,7 @@ export async function PUT(
 
     // Create new media records
     const mediaRecords = await Promise.all(
-      media.map(async (mediaItem: any) => {
+      media.map(async (mediaItem: MediaItem) => {
         return await prisma.service_media.create({
           data: {
             service_id: serviceId,
