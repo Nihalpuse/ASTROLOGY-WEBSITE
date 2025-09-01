@@ -76,17 +76,10 @@ export function Header() {
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [isStudyDropdownOpen, setIsStudyDropdownOpen] = useState(false);
-  const [isShopDropdownOpen, setIsShopDropdownOpen] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
   const [isConsultationOpen, setIsConsultationOpen] = useState(false);
   // Add state for mobile nav bar consultations dropdown
   const [isConsultationBarOpen, setIsConsultationBarOpen] = useState(false);
-  // Add state for mobile nav bar shop dropdown
-  const [isShopBarOpen, setIsShopBarOpen] = useState(false);
-  // Add state for mobile Services dropdown
-  const [isServicesBarOpen, setIsServicesBarOpen] = useState(false);
-  // Add state for desktop Services dropdown
-  const [isServicesDropdownOpen, setIsServicesDropdownOpen] = useState(false);
   // Add state for mobile menu Study dropdown
   const [isStudyOpen, setIsStudyOpen] = useState(false);
   // Add state for mobile menu Shop dropdown
@@ -174,7 +167,7 @@ export function Header() {
   return (
     <>
       <div
-  className="fixed top-0 left-0 right-0 z-50 flex items-center justify-between w-full px-4 py-2 lg:hidden"
+        className="fixed top-0 left-0 right-0 z-50 flex items-center justify-between w-full px-4 py-2 lg:hidden"
         style={{ background: '#FEFBF2' }}
       >
         {/* Left: Logo */}
@@ -241,10 +234,10 @@ export function Header() {
         </div>
       </div>
       {/* Spacer for fixed mobile header and nav bar */}
-  <div className="lg:hidden" style={{ height: '104px' }} />
+      <div className="lg:hidden" style={{ height: '104px' }} />
       {/* Mobile horizontal nav bar (below top bar) */}
       <div
-  className="fixed top-[56px] left-0 right-0 z-50 lg:hidden w-full flex justify-center items-center gap-2 px-2 py-2"
+        className="fixed top-[56px] left-0 right-0 z-50 lg:hidden w-full flex justify-center items-center gap-2 px-2 py-2"
         style={{ background: '#FEFBF2', boxShadow: '0 2px 8px 0 rgba(36,34,68,0.04)' }}
       >
         {/* Consultations dropdown trigger */}
@@ -253,13 +246,7 @@ export function Header() {
           className="flex-1 text-sm font-bold text-black px-2 py-1 rounded transition-colors flex items-center gap-1 justify-center"
           style={{ fontFamily: 'Playfair Display, serif', color: '#000', fontWeight: 700 }}
           onClick={() => {
-            setIsConsultationBarOpen((prev) => {
-              if (!prev) {
-                setIsShopBarOpen(false);
-                setIsServicesBarOpen(false);
-              }
-              return !prev;
-            });
+            setIsConsultationBarOpen((prev) => !prev);
           }}
         >
           {t("header.nav.consultations")}
@@ -272,184 +259,95 @@ export function Header() {
         >
           {t("header.nav.chat_mobile")}
         </Link>
-        <button
-          type="button"
-          className="flex-1 text-sm font-bold text-black px-2 py-1 rounded transition-colors flex items-center gap-1 justify-center"
+        <Link
+          href="/shop"
+          className="flex-1 text-sm font-bold text-black px-2 py-1 rounded transition-colors flex items-center justify-center"
           style={{ fontFamily: 'Playfair Display, serif', color: '#000', fontWeight: 700 }}
-          onClick={() => {
-            setIsShopBarOpen((prev) => {
-              if (!prev) {
-                setIsConsultationBarOpen(false);
-                setIsServicesBarOpen(false);
-              }
-              return !prev;
-            });
-          }}
         >
           {t("header.nav.products_mobile")}
-          <ChevronDown className={`ml-1 w-4 h-4 transition-transform ${isShopBarOpen ? 'rotate-180' : ''}`} style={{ color: '#77A656' }} />
-        </button>
-        <button
-          type="button"
-          className="flex-1 text-sm font-bold text-black px-2 py-1 rounded transition-colors flex items-center gap-1 justify-center"
+        </Link>
+        <Link
+          href="/services"
+          className="flex-1 text-sm font-bold text-black px-2 py-1 rounded transition-colors flex items-center justify-center"
           style={{ fontFamily: 'Playfair Display, serif', color: '#000', fontWeight: 700 }}
-          onClick={() => {
-            setIsServicesBarOpen((prev) => {
-              if (!prev) {
-                setIsConsultationBarOpen(false);
-                setIsShopBarOpen(false);
-              }
-              return !prev;
-            });
-          }}
         >
           {t("header.nav.services_mobile")}
-          <ChevronDown className={`ml-1 w-4 h-4 transition-transform ${isServicesBarOpen ? 'rotate-180' : ''}`} style={{ color: '#77A656' }} />
-        </button>
-  {/* Consultations Dropdown below nav bar */}
-  {/* Services dropdown below nav bar */}
-  <div className={`absolute left-0 top-full w-full z-40 transition-all duration-300 ${isServicesBarOpen ? 'max-h-[400px] opacity-100' : 'max-h-0 opacity-0 pointer-events-none'}`} style={{ background: '#FDF9EF', borderRadius: '0 0 1rem 1rem', boxShadow: isServicesBarOpen ? '0 4px 24px 0 rgba(36,34,68,0.08)' : 'none', overflow: 'hidden' }}>
-    <div className="py-2 px-2 flex flex-col gap-2 items-center">
-      <div className="w-full flex flex-col items-center">
-        <div className="text-base font-bold mb-1 text-center" style={{ color: '#77A656', fontFamily: 'Playfair Display, serif' }}>{t('header.nav.our_services')}</div>
-        <ul className="flex flex-col gap-1 w-full items-center">
-          <li className="w-full flex justify-center">
-            <Link
-              href="/services"
-              onClick={() => setIsServicesBarOpen(false)}
-              className="block text-black px-3 py-2 rounded-md text-base font-medium hover:bg-[#e9eafc] transition-all text-center w-full"
-              style={{ fontFamily: 'Playfair Display, serif' }}
-            >
-              {t('header.nav.home')}
-            </Link>
-          </li>
-          <li className="w-full flex justify-center">
-            <Link
-              href="/services/all"
-              onClick={() => setIsServicesBarOpen(false)}
-              className="block text-black px-3 py-2 rounded-md text-base font-medium hover:bg-[#e9eafc] transition-all text-center w-full"
-              style={{ fontFamily: 'Playfair Display, serif' }}
-            >
-              {t('header.nav.all_services')}
-            </Link>
-          </li>
-        </ul>
-      </div>
-    </div>
-  </div>
-  <div className={`absolute left-0 top-full w-full z-40 transition-all duration-300 ${isConsultationBarOpen ? 'max-h-[800px] opacity-100' : 'max-h-0 opacity-0 pointer-events-none'}`} style={{ background: '#FDF9EF', borderRadius: '0 0 1rem 1rem', boxShadow: isConsultationBarOpen ? '0 4px 24px 0 rgba(36,34,68,0.08)' : 'none', overflow: 'hidden' }}>
-    <div className="py-2 px-2 flex flex-col gap-2">
-      {/* First row: Consultations and Horoscopes */}
-  <div className="flex flex-row gap-2 justify-center">
-        {/* Consultations group */}
-        <div className="flex-1 max-w-[260px]" style={{ flex: '0 1 260px' }}>
-          <div className="text-base font-bold mb-1 text-center" style={{ color: '#77A656', fontFamily: 'Playfair Display, serif' }}>{t('header.mega_menu.consultations.title')}</div>
-          <ul className="flex flex-col gap-1">
-            {servicesMegaMenu.consultations.items.map((item) => (
-              <li key={item.key}>
-                <Link
-                  href={item.href}
-                  onClick={() => setIsConsultationBarOpen(false)}
-                  className="block text-black px-3 py-2 rounded-md text-base font-medium hover:bg-[#e9eafc] transition-all text-center"
-                  style={{ fontFamily: 'Playfair Display, serif' }}
-                >
-                  {t(`header.mega_menu.consultations.items.${item.key}`)}
-                </Link>
-              </li>
-            ))}
-          </ul>
+        </Link>
+        {/* Consultations Dropdown below nav bar */}
+
+        <div className={`absolute left-0 top-full w-full z-40 transition-all duration-300 ${isConsultationBarOpen ? 'max-h-[800px] opacity-100' : 'max-h-0 opacity-0 pointer-events-none'}`} style={{ background: '#FDF9EF', borderRadius: '0 0 1rem 1rem', boxShadow: isConsultationBarOpen ? '0 4px 24px 0 rgba(36,34,68,0.08)' : 'none', overflow: 'hidden' }}>
+          <div className="py-2 px-2 flex flex-col gap-2">
+            {/* First row: Consultations and Horoscopes */}
+            <div className="flex flex-row gap-2 justify-center">
+              {/* Consultations group */}
+              <div className="flex-1 max-w-[260px]" style={{ flex: '0 1 260px' }}>
+                <div className="text-base font-bold mb-1 text-center" style={{ color: '#77A656', fontFamily: 'Playfair Display, serif' }}>{t('header.mega_menu.consultations.title')}</div>
+                <ul className="flex flex-col gap-1">
+                  {servicesMegaMenu.consultations.items.map((item) => (
+                    <li key={item.key}>
+                      <Link
+                        href={item.href}
+                        onClick={() => setIsConsultationBarOpen(false)}
+                        className="block text-black px-3 py-2 rounded-md text-base font-medium hover:bg-[#e9eafc] transition-all text-center"
+                        style={{ fontFamily: 'Playfair Display, serif' }}
+                      >
+                        {t(`header.mega_menu.consultations.items.${item.key}`)}
+                      </Link>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+              {/* Horoscopes group */}
+              <div className="flex-1 max-w-[260px]" style={{ flex: '0 1 260px' }}>
+                <div className="text-base font-bold mb-1 text-center" style={{ color: '#77A656', fontFamily: 'Playfair Display, serif' }}>{t('header.mega_menu.horoscopes.title')}</div>
+                <ul className="flex flex-col gap-1">
+                  {servicesMegaMenu.horoscopes.items.map((item) => (
+                    <li key={item.key}>
+                      <Link
+                        href={item.href}
+                        onClick={() => setIsConsultationBarOpen(false)}
+                        className="block text-black px-3 py-2 rounded-md text-base font-medium hover:bg-[#e9eafc] transition-all text-center"
+                        style={{ fontFamily: 'Playfair Display, serif' }}
+                      >
+                        {t(`header.mega_menu.horoscopes.items.${item.key}`)}
+                      </Link>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            </div>
+            {/* Second row: Puja & Rituals group centered */}
+            <div className="flex flex-row gap-2 mt-2 justify-center">
+              <div className="flex-1 max-w-[260px]" style={{ flex: '0 1 260px' }}>
+                <div className="text-base font-bold mb-1 text-center" style={{ color: '#77A656', fontFamily: 'Playfair Display, serif' }}>{t('header.mega_menu.puja_rituals.title')}</div>
+                <ul className="flex flex-col gap-1">
+                  {servicesMegaMenu.puja_rituals.items.map((item) => (
+                    <li key={item.key}>
+                      <Link
+                        href={item.href}
+                        onClick={() => setIsConsultationBarOpen(false)}
+                        className="block text-black px-3 py-2 rounded-md text-base font-medium hover:bg-[#e9eafc] transition-all text-center"
+                        style={{ fontFamily: 'Playfair Display, serif' }}
+                      >
+                        {t(`header.mega_menu.puja_rituals.items.${item.key}`)}
+                      </Link>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            </div>
+          </div>
         </div>
-        {/* Horoscopes group */}
-        <div className="flex-1 max-w-[260px]" style={{ flex: '0 1 260px' }}>
-          <div className="text-base font-bold mb-1 text-center" style={{ color: '#77A656', fontFamily: 'Playfair Display, serif' }}>{t('header.mega_menu.horoscopes.title')}</div>
-          <ul className="flex flex-col gap-1">
-            {servicesMegaMenu.horoscopes.items.map((item) => (
-              <li key={item.key}>
-                <Link
-                  href={item.href}
-                  onClick={() => setIsConsultationBarOpen(false)}
-                  className="block text-black px-3 py-2 rounded-md text-base font-medium hover:bg-[#e9eafc] transition-all text-center"
-                  style={{ fontFamily: 'Playfair Display, serif' }}
-                >
-                  {t(`header.mega_menu.horoscopes.items.${item.key}`)}
-                </Link>
-              </li>
-            ))}
-          </ul>
-        </div>
+
+
       </div>
-      {/* Second row: Puja & Rituals group centered */}
-      <div className="flex flex-row gap-2 mt-2 justify-center">
-        <div className="flex-1 max-w-[260px]" style={{ flex: '0 1 260px' }}>
-          <div className="text-base font-bold mb-1 text-center" style={{ color: '#77A656', fontFamily: 'Playfair Display, serif' }}>{t('header.mega_menu.puja_rituals.title')}</div>
-          <ul className="flex flex-col gap-1">
-            {servicesMegaMenu.puja_rituals.items.map((item) => (
-              <li key={item.key}>
-                <Link
-                  href={item.href}
-                  onClick={() => setIsConsultationBarOpen(false)}
-                  className="block text-black px-3 py-2 rounded-md text-base font-medium hover:bg-[#e9eafc] transition-all text-center"
-                  style={{ fontFamily: 'Playfair Display, serif' }}
-                >
-                  {t(`header.mega_menu.puja_rituals.items.${item.key}`)}
-                </Link>
-              </li>
-            ))}
-          </ul>
-        </div>
-      </div>
-    </div>
-  </div>
-  
-  {/* Shop dropdown below nav bar */}
-  <div className={`absolute left-0 top-full w-full z-40 transition-all duration-300 ${isShopBarOpen ? 'max-h-[400px] opacity-100' : 'max-h-0 opacity-0 pointer-events-none'}`} style={{ background: '#FDF9EF', borderRadius: '0 0 1rem 1rem', boxShadow: isShopBarOpen ? '0 4px 24px 0 rgba(36,34,68,0.08)' : 'none', overflow: 'hidden' }}>
-    <div className="py-2 px-2 flex flex-col gap-2 items-center">
-      {/* Shop items */}
-      <div className="w-full flex flex-col items-center">
-        <div className="text-base font-bold mb-1 text-center" style={{ color: '#77A656', fontFamily: 'Playfair Display, serif' }}>Shop Collections</div>
-        <ul className="flex flex-col gap-1 w-full items-center">
-          <li className="w-full flex justify-center">
-            <Link
-              href="/shop"
-              onClick={() => setIsShopBarOpen(false)}
-              className="block text-black px-3 py-2 rounded-md text-base font-medium hover:bg-[#e9eafc] transition-all text-center w-full"
-              style={{ fontFamily: 'Playfair Display, serif' }}
-            >
-               Shop Home
-            </Link>
-          </li>
-          <li className="w-full flex justify-center">
-            <Link
-              href="/shop/all-products"
-              onClick={() => setIsShopBarOpen(false)}
-              className="block text-black px-3 py-2 rounded-md text-base font-medium hover:bg-[#e9eafc] transition-all text-center w-full"
-              style={{ fontFamily: 'Playfair Display, serif' }}
-            >
-               All Products
-            </Link>
-          </li>
-          <li className="w-full flex justify-center">
-            <Link
-              href="/shop/categories"
-              onClick={() => setIsShopBarOpen(false)}
-              className="block text-black px-3 py-2 rounded-md text-base font-medium hover:bg-[#e9eafc] transition-all text-center w-full"
-              style={{ fontFamily: 'Playfair Display, serif' }}
-            >
-               Browse Categories
-            </Link>
-          </li>
-        </ul>
-      </div>
-    </div>
-  </div>
-</div>
 
       {/* 2. Desktop header/nav: Only show on md+ screens */}
       <motion.header
         initial={{ y: -100, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
         transition={{ duration: 0.5, ease: "easeOut" }}
-  className="sticky top-0 left-0 right-0 w-full z-50 shadow-lg hidden lg:block"
+        className="sticky top-0 left-0 right-0 w-full z-50 shadow-lg hidden lg:block"
         style={{
           background: "#FEFBF2",
           boxShadow: "0 4px 24px 0 rgba(36, 34, 68, 0.08)",
@@ -481,7 +379,7 @@ export function Header() {
               alt="Logo"
               width={38}
               height={38}
-              style={{ borderRadius: '0.5rem', objectFit: 'cover', background: '#fff'}}
+              style={{ borderRadius: '0.5rem', objectFit: 'cover', background: '#fff' }}
               className="inline-block align-middle shadow-sm"
             />
             {t('header.logo.line2')}
@@ -723,121 +621,22 @@ export function Header() {
             <span className="relative z-10">{t("header.nav.chat_with_astrologer")}</span>
             <span className="absolute left-0 -bottom-1 w-full h-0.5 bg-gradient-to-r from-green-800 to-green-800 scale-x-0 group-hover:scale-x-100 transition-transform origin-left duration-200 z-0" />
           </Link>
-          {/* Shop Dropdown */}
-          <div
-            className="relative"
-            onMouseEnter={() => setIsShopDropdownOpen(true)}
-            onMouseLeave={() => setTimeout(() => setIsShopDropdownOpen(false), 120)}
+          <Link
+            href="/shop"
+            className="text-base font-bold text-black px-2 py-1 relative group transition-all duration-300 hover:text-green-700 hover:translate-x-1"
+            style={{ fontFamily: 'Playfair Display, serif', color: '#000', fontWeight: 700 }}
           >
-            <Link
-              href="/shop"
-              className="flex items-center text-base font-bold px-2 py-1 relative group transition-colors focus:outline-none"
-              style={{ fontFamily: 'Playfair Display, serif', color: '#000', background: 'transparent', fontWeight: 700 }}
-            >
-              <span className="relative z-10">{t("header.nav.buy_products")}</span>
-              <ChevronDown className={`ml-1 w-4 h-4 transition-transform ${isShopDropdownOpen ? 'rotate-180' : ''}`} style={{ color: '#000' }} />
-              <span className="absolute left-0 -bottom-1 w-full h-0.5 bg-gradient-to-r from-[#77A656] to-[#77A656] scale-x-0 group-hover:scale-x-100 transition-transform origin-left duration-200 z-0" />
-            </Link>
-            <AnimatePresence>
-              {isShopDropdownOpen && (
-                <motion.div
-                  id="shop-menu"
-                  initial={{ opacity: 0, y: 10, scale: 0.95 }}
-                  animate={{ opacity: 1, y: 0, scale: 1 }}
-                  exit={{ opacity: 0, y: 10, scale: 0.95 }}
-                  transition={{ duration: 0.15, ease: "easeOut" }}
-                  className="absolute left-1/2 -translate-x-1/2 mt-2 rounded-lg shadow-lg border border-gray-200 z-50 px-4 py-3"
-                  style={{ background: '#FEFBF2' }}
-                  tabIndex={-1}
-                  onKeyDown={e => { if (e.key === 'Escape') setIsShopDropdownOpen(false); }}
-                >
-                  <div className="flex flex-nowrap items-stretch gap-2">
-                    <Link
-                      href="/shop"
-                      onClick={() => setIsShopDropdownOpen(false)}
-                      className="px-4 py-2 text-sm font-semibold text-gray-900 hover:bg-gray-50 rounded-md transition-colors whitespace-nowrap"
-                      style={{ fontFamily: 'Playfair Display, serif' }}
-                    >
-                      Home
-                    </Link>
-                    <Link
-                      href="/shop/categories"
-                      onClick={() => setIsShopDropdownOpen(false)}
-                      className="px-4 py-2 text-sm font-semibold text-gray-900 hover:bg-gray-50 rounded-md transition-colors whitespace-nowrap"
-                      style={{ fontFamily: 'Playfair Display, serif' }}
-                    >
-                      Categories
-                    </Link>
-                    <Link
-                      href="/shop/all-products"
-                      onClick={() => setIsShopDropdownOpen(false)}
-                      className="px-4 py-2 text-sm font-semibold text-gray-900 hover:bg-gray-50 rounded-md transition-colors whitespace-nowrap"
-                      style={{ fontFamily: 'Playfair Display, serif' }}
-                    >
-                      All Products
-                    </Link>
-                  </div>
-                </motion.div>
-              )}
-            </AnimatePresence>
-          </div>
-          <div
-            className="relative"
-            onMouseEnter={() => setIsServicesDropdownOpen(true)}
-            onMouseLeave={() => setTimeout(() => setIsServicesDropdownOpen(false), 120)}
+            <span className="relative z-10">{t("header.nav.buy_products")}</span>
+            <span className="absolute left-0 -bottom-1 w-full h-0.5 bg-gradient-to-r from-green-800 to-green-800 scale-x-0 group-hover:scale-x-100 transition-transform origin-left duration-200 z-0" />
+          </Link>
+          <Link
+            href="/services"
+            className="text-base font-bold text-black px-2 py-1 relative group transition-all duration-300 hover:text-green-700 hover:translate-x-1"
+            style={{ fontFamily: 'Playfair Display, serif', color: '#000', fontWeight: 700 }}
           >
-            <button
-              onClick={() => setIsServicesDropdownOpen((prev) => !prev)}
-              className="flex items-center text-base font-bold px-2 py-1 relative group transition-colors focus:outline-none"
-              style={{ fontFamily: 'Playfair Display, serif', color: '#000', background: 'transparent', fontWeight: 700 }}
-              aria-haspopup="true"
-              aria-expanded={isServicesDropdownOpen}
-              aria-controls="services-menu"
-              tabIndex={0}
-              onKeyDown={e => {
-                if (e.key === 'Escape') setIsServicesDropdownOpen(false);
-                if (e.key === 'Enter' || e.key === ' ') setIsServicesDropdownOpen(v => !v);
-              }}
-            >
-              <span className="relative z-10">{t("header.nav.our_services")}</span>
-              <ChevronDown className={`ml-1 w-4 h-4 transition-transform ${isServicesDropdownOpen ? 'rotate-180' : ''}`} style={{ color: '#000' }} />
-              <span className="absolute left-0 -bottom-1 w-full h-0.5 bg-gradient-to-r from-[#77A656] to-[#77A656] scale-x-0 group-hover:scale-x-100 transition-transform origin-left duration-200 z-0" />
-            </button>
-            <AnimatePresence>
-              {isServicesDropdownOpen && (
-                <motion.div
-                  id="services-menu"
-                  initial={{ opacity: 0, y: 10, scale: 0.95 }}
-                  animate={{ opacity: 1, y: 0, scale: 1 }}
-                  exit={{ opacity: 0, y: 10, scale: 0.95 }}
-                  transition={{ duration: 0.15, ease: "easeOut" }}
-                  className="absolute left-1/2 -translate-x-1/2 mt-2 rounded-lg shadow-lg border border-gray-200 z-50 px-4 py-3"
-                  style={{ background: '#FEFBF2' }}
-                  tabIndex={-1}
-                  onKeyDown={e => { if (e.key === 'Escape') setIsServicesDropdownOpen(false); }}
-                >
-                  <div className="flex flex-nowrap items-stretch gap-2">
-                    <Link
-                      href="/services"
-                      onClick={() => setIsServicesDropdownOpen(false)}
-                      className="px-4 py-2 text-sm font-semibold text-gray-900 hover:bg-gray-50 rounded-md transition-colors whitespace-nowrap"
-                      style={{ fontFamily: 'Playfair Display, serif' }}
-                    >
-                      {t('header.nav.home')}
-                    </Link>
-                    <Link
-                      href="/services/all"
-                      onClick={() => setIsServicesDropdownOpen(false)}
-                      className="px-4 py-2 text-sm font-semibold text-gray-900 hover:bg-gray-50 rounded-md transition-colors whitespace-nowrap"
-                      style={{ fontFamily: 'Playfair Display, serif' }}
-                    >
-                      {t('header.nav.all_services')}
-                    </Link>
-                  </div>
-                </motion.div>
-              )}
-            </AnimatePresence>
-          </div>
+            <span className="relative z-10">{t("header.nav.our_services")}</span>
+            <span className="absolute left-0 -bottom-1 w-full h-0.5 bg-gradient-to-r from-green-800 to-green-800 scale-x-0 group-hover:scale-x-100 transition-transform origin-left duration-200 z-0" />
+          </Link>
           {/* Language Selector Icon (moved here) */}
           <div className="relative ml-2" ref={langDropdownRef}>
             {/* Language Button: Yellow, Dropdown White, Items Black */}
@@ -854,7 +653,7 @@ export function Header() {
                 if (e.key === 'Enter' || e.key === ' ') setIsLangDropdownOpen(v => !v);
               }}
             >
-              <span className="relative z-10 flex items-center" style={{lineHeight:1}}>{(LANGUAGE_NAMES as Record<string, string>)[lang] || t('header.language_selector.button') || 'Select Language'}</span>
+              <span className="relative z-10 flex items-center" style={{ lineHeight: 1 }}>{(LANGUAGE_NAMES as Record<string, string>)[lang] || t('header.language_selector.button') || 'Select Language'}</span>
               {/* Dropdown arrow styled to match Consultations menu, perfectly centered */}
               <ChevronDown className={`ml-1 w-4 h-4 transition-transform ${isLangDropdownOpen ? 'rotate-180' : ''}`} style={{ color: 'rgb(22 101 52)', display: 'flex', alignItems: 'center', marginTop: '1px' }} />
               <span className="absolute left-0 -bottom-1 w-full h-0.5 bg-gradient-to-r from-green-800 to-green-800 scale-x-0 group-hover:scale-x-100 transition-transform origin-left duration-200 z-0" />
