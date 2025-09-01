@@ -9,6 +9,7 @@ import { CTASection } from '../../components/CTASection';
 import { motion } from 'framer-motion';
 
 const post = blogPosts['gemstones-and-powers'];
+const nextInSeries = blogPosts['numerology-basics'];
 const tabs = ['Overview', 'Gemstone Guide', 'Remedies', 'FAQs'];
 
 export default function GemstonesAndPowersPage() {
@@ -160,7 +161,7 @@ export default function GemstonesAndPowersPage() {
                 <Link href="/blog/numerology-basics" className="block">
                   <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 sm:gap-4">
                     <div className="relative w-16 h-16 xs:w-20 xs:h-20 rounded-lg overflow-hidden bg-indigo-100 mx-auto sm:mx-0">
-                      <Image src="/images/Numerology.svg" alt="Numerology" fill className="object-cover" />
+                      <Image src={nextInSeries.imageUrl} alt="Numerology" fill className="object-cover" />
                     </div>
                     <div className="flex-1 w-full">
                       <p className="text-xs xs:text-sm text-indigo-600 font-medium mb-1">Next in Series</p>

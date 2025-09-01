@@ -9,6 +9,7 @@ import { CTASection } from '../../components/CTASection';
 import { motion } from 'framer-motion';
 
 const post = blogPosts['understanding-vedic-astrology'];
+const nextInSeries = blogPosts['gemstones-and-powers']
 const tabs = ['Overview', 'Principles', 'Remedies', 'FAQs'];
 
 export default function UnderstandingVedicAstrologyPage() {
@@ -25,18 +26,15 @@ export default function UnderstandingVedicAstrologyPage() {
   return (
     <div className="min-h-screen bg-white pt-0 md:pt-2">
       <div className="max-w-7xl mx-auto px-4 py-8">
-        {/* Banner Heading */}
-        <div className="w-full rounded-3xl bg-gradient-to-r from-[#fdf6f2] via-[#f3e8ff] to-[#e0f2fe] py-12 px-4 md:px-16 mb-12 flex flex-col items-center justify-center shadow-md border border-[#f3e8ff]">
-          <h1 className="text-5xl md:text-6xl font-extrabold text-black mb-4 text-center drop-shadow-lg tracking-tight">Understanding Vedic Astrology</h1>
-          <p className="text-lg md:text-2xl text-gray-700 text-center max-w-2xl">Explore the ancient science of Jyotish, decode your birth chart, and discover how Vedic astrology can guide your life&apos;s
-          journey.</p>
-        </div>
         <div className="grid lg:grid-cols-3 gap-8">
           {/* Main Content */}
           <div className="lg:col-span-2">
             {/* Header Section */}
             <div className="mb-8">
-              <div className="flex items-center gap-6 text-sm text-gray-500 mb-6">
+              <h1 className="text-5xl md:text-6xl font-extrabold text-black mb-4 leading-tight">
+                {post.title.en}
+              </h1>
+              <div className="flex flex-col xs:flex-row xs:items-center gap-2 xs:gap-6 text-sm text-gray-500 mb-6">
                 <span className="flex items-center gap-1"><User className="w-4 h-4" /> {post.author.en}</span>
                 <span className="flex items-center gap-1"><Calendar className="w-4 h-4" /> {post.date}</span>
                 <span className="flex items-center gap-1"><BookOpen className="w-4 h-4" /> {post.category}</span>
@@ -69,23 +67,23 @@ export default function UnderstandingVedicAstrologyPage() {
               </div>
             </div>
 
+            {/* Key Takeaway */}
+            <div className="bg-indigo-50 border-l-4 border-indigo-400 p-4 mb-6 rounded-lg">
+              <p className="text-gray-700">
+                <span className="text-indigo-600 font-medium">Key Takeaway:</span> Vedic astrology is a profound science that reveals your life&apos;s blueprint, helping you understand your strengths, challenges, and the timing of important events.
+              </p>
+            </div>
             {/* Tabs */}
-            <div className="flex flex-wrap gap-2 mb-6 border-b border-gray-200">
+            <div className="flex flex-nowrap gap-1 sm:gap-2 mb-6 border-b border-gray-200 overflow-x-auto">
               {tabs.map((tab) => (
                 <button
                   key={tab}
                   onClick={() => setActiveTab(tab)}
-                  className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors ${activeTab === tab ? 'border-indigo-500 text-indigo-600' : 'border-transparent text-gray-600 hover:text-gray-900'}`}
+                  className={`px-2 xs:px-3 sm:px-4 py-1.5 xs:py-2 text-sm xs:text-base font-medium border-b-2 transition-colors whitespace-nowrap ${activeTab === tab ? 'border-indigo-500 text-indigo-600' : 'border-transparent text-gray-600 hover:text-gray-900'}`}
                 >
                   {tab}
                 </button>
               ))}
-            </div>
-            {/* Key Takeaway */}
-            <div className="bg-indigo-50 border-l-4 border-indigo-400 p-4 mb-8 rounded-lg">
-              <p className="text-gray-700">
-                <span className="text-indigo-600 font-medium">Key Takeaway:</span> Vedic astrology is a profound science that reveals your life&apos;s blueprint, helping you understand your strengths, challenges, and the timing of important events.
-              </p>
             </div>
             {/* Tab Content */}
             {activeTab === 'Overview' && (
@@ -181,21 +179,27 @@ export default function UnderstandingVedicAstrologyPage() {
               </motion.section>
             )}
             <CTASection />
-            
+
             {/* Next Blog Section */}
             <section className="mt-16 pt-8 border-t border-gray-200">
               <h2 className="text-2xl font-bold text-black mb-6">Continue Your Astrological Journey</h2>
-              <motion.div initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.7 }} className="bg-gradient-to-r from-purple-50 to-indigo-50 rounded-xl p-6 border border-purple-100 hover:shadow-lg transition-all cursor-pointer">
+              <motion.div
+                initial={{ opacity: 0, y: 30 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.7 }}
+                className="bg-gradient-to-r from-indigo-50 to-purple-50 rounded-xl p-4 xs:p-6 border border-indigo-100 hover:shadow-lg transition-all cursor-pointer"
+              >
                 <Link href="/blog/gemstones-and-their-powers" className="block">
-                  <div className="flex items-center gap-4">
-                    <div className="relative w-20 h-20 rounded-lg overflow-hidden bg-purple-100">
-                      <Image src="/images/gemstones.jpg" alt="Gemstones" fill className="object-cover" />
+                  <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 sm:gap-4">
+                    <div className="relative w-16 h-16 xs:w-20 xs:h-20 rounded-lg overflow-hidden bg-indigo-100 mx-auto sm:mx-0">
+                      <Image src={nextInSeries.imageUrl} alt="Gemstones" fill className="object-cover" />
                     </div>
-                    <div className="flex-1">
-                      <p className="text-sm text-purple-600 font-medium mb-1">Next in Series</p>
-                      <h3 className="text-xl font-bold text-black mb-2">Gemstones and Their Powers</h3>
-                      <p className="text-gray-700 text-sm mb-3">Discover the mystical properties of gemstones and how they can enhance your life through their planetary connections.</p>
-                      <div className="flex items-center gap-4 text-sm text-gray-600">
+                    <div className="flex-1 w-full">
+                      <p className="text-xs xs:text-sm text-indigo-600 font-medium mb-1">Next in Series</p>
+                      <h3 className="text-lg xs:text-xl font-bold text-black mb-2">Gemstones and Their Powers</h3>
+                      <p className="text-gray-700 text-xs xs:text-sm mb-3">Discover the mystical properties of gemstones and how they can enhance your life through their planetary connections.</p>
+                      <div className="flex flex-row items-center gap-2 xs:gap-4 text-xs xs:text-sm text-gray-600">
                         <span className="flex items-center gap-1">
                           <Calendar className="w-4 h-4" />
                           <span>12 April, 2024</span>
@@ -204,122 +208,93 @@ export default function UnderstandingVedicAstrologyPage() {
                           <BookOpen className="w-4 h-4" />
                           <span>6 min read</span>
                         </span>
+                        <span className="flex items-center ml-auto text-indigo-600 sm:hidden">
+                          <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                          </svg>
+                        </span>
                       </div>
                     </div>
-                    <div className="flex-shrink-0">
-                      <div className="w-10 h-10 rounded-full bg-purple-100 flex items-center justify-center">
-                        <svg className="w-5 h-5 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                        </svg>
-                      </div>
+                    <div className="hidden sm:flex text-indigo-600">
+                      <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                      </svg>
                     </div>
                   </div>
                 </Link>
               </motion.div>
             </section>
-            
-            {/* Resources Section */}
-            <section className="mt-16 pt-8 border-t border-gray-200">
-              <h2 className="text-2xl font-bold text-black mb-6">Additional Resources</h2>
-              <div className="grid md:grid-cols-2 gap-6">
-                {[
-                  {
-                    title: 'Birth Chart Calculator',
-                    description: 'Calculate your Vedic birth chart to understand your planetary positions.',
-                    link: '/astrology-calculator',
-                    icon: '📊'
-                  },
-                  {
-                    title: 'Daily Horoscope',
-                    description: 'Get your daily horoscope based on Vedic astrology principles.',
-                    link: '/daily-horoscope',
-                    icon: '🌟'
-                  },
-                  {
-                    title: 'Consultation Services',
-                    description: 'Book a consultation with our expert Vedic astrologers.',
-                    link: '/services/astrology',
-                    icon: '🔮'
-                  },
-                  {
-                    title: 'Astrology Courses',
-                    description: 'Learn Vedic astrology through our comprehensive courses.',
-                    link: '/courses',
-                    icon: '📚'
-                  }
-                ].map((resource) => (
-                  <Link key={resource.title} href={resource.link} className="block bg-white rounded-xl p-6 shadow-lg border border-gray-100 hover:shadow-xl transition-shadow">
-                    <div className="flex items-center gap-4">
-                      <div className="text-3xl">{resource.icon}</div>
-                      <div>
-                        <h3 className="font-bold text-black text-lg mb-2">{resource.title}</h3>
-                        <p className="text-gray-700 text-sm">{resource.description}</p>
-                      </div>
-                    </div>
-                  </Link>
-                ))}
-              </div>
-            </section>
           </div>
-          
+
           {/* Sidebar */}
           <div className="lg:col-span-1">
-            <div className="sticky top-8 space-y-6">
-              {/* Author Info */}
-              <div className="bg-white rounded-xl p-6 shadow-lg border border-gray-100">
-                <h3 className="font-bold text-black text-lg mb-4">About the Author</h3>
-                <div className="flex items-center gap-4">
-                  <div className="w-16 h-16 rounded-full overflow-hidden">
-                    <Image src="/images/astrologer.jpg" alt="Vedic Astrologer" width={64} height={64} className="object-cover" />
-                  </div>
-                  <div>
-                    <p className="font-semibold text-black">Dr. Narendra Kumar</p>
-                    <p className="text-gray-600 text-sm">Expert Vedic Astrologer</p>
-                    <p className="text-gray-600 text-sm">20+ years of experience</p>
-                  </div>
+            {/* Author Info */}
+            <Link href="/about" className="block bg-indigo-50 rounded-lg p-6 mb-8 hover:shadow-lg transition-shadow cursor-pointer">
+              <div className="flex items-start gap-4 mb-4">
+                <div className="w-16 h-16 bg-indigo-200 rounded-full flex items-center justify-center">
+                  <User className="w-8 h-8 text-indigo-700" />
+                </div>
+                <div>
+                  <p className="text-sm text-gray-600 mb-1">
+                    <span className="text-indigo-700 font-medium">Astrological Review by</span> <br />
+                    <span className="font-semibold text-indigo-900">Dr. Narendra Kumar Sharma</span>
+                  </p>
+                  <p className="text-sm text-gray-600 flex items-center gap-1">
+                    <Calendar className="w-3 h-3" />
+                    <span>Updated on 15 April, 2024</span>
+                  </p>
                 </div>
               </div>
-              
-              {/* Related Topics */}
-              <div className="bg-white rounded-xl p-6 shadow-lg border border-gray-100">
-                <h3 className="font-bold text-black text-lg mb-4">Related Topics</h3>
-                <div className="space-y-3">
-                  <Link href="/blog/numerology-basics" className="block text-indigo-600 hover:text-indigo-800 transition-colors">
-                    Numerology Basics
-                  </Link>
-                  <Link href="/blog/gemstones-and-their-powers" className="block text-indigo-600 hover:text-indigo-800 transition-colors">
-                    Gemstones and Their Powers
-                  </Link>
-                  <Link href="/blog/understanding-your-birth-chart" className="block text-indigo-600 hover:text-indigo-800 transition-colors">
-                    Understanding Your Birth Chart
-                  </Link>
-                  <Link href="/blog/astrology-remedies-for-life" className="block text-indigo-600 hover:text-indigo-800 transition-colors">
-                    Astrology Remedies for Life
-                  </Link>
-                </div>
-              </div>
-              
-              {/* Newsletter Signup */}
-              <div className="bg-gradient-to-r from-indigo-50 to-purple-50 rounded-xl p-6 border border-indigo-100">
-                <h3 className="font-bold text-black text-lg mb-3">Stay Updated</h3>
-                <p className="text-gray-700 text-sm mb-4">Get the latest insights on Vedic astrology and cosmic wisdom.</p>
-                <form onSubmit={handleEmailSubmit} className="space-y-3">
-                  <input
-                    type="email"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    placeholder="Enter your email"
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
-                    required
-                  />
-                  <button
-                    type="submit"
-                    className="w-full bg-indigo-600 text-white py-2 px-4 rounded-lg hover:bg-indigo-700 transition-colors"
-                  >
-                    Subscribe
-                  </button>
-                </form>
-              </div>
+            </Link>
+            {/* Newsletter */}
+            <div className="bg-orange-50 rounded-lg p-6 mb-8">
+              <h3 className="text-lg font-bold text-orange-900 mb-4">Get Weekly Astrology Insights</h3>
+              <p className="text-gray-700 mb-4">Sign up for our newsletter and receive cosmic tips, remedies, and predictions every week.</p>
+              <form onSubmit={handleEmailSubmit} className="space-y-3">
+                <input
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder="Your email address"
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent text-sm"
+                  required
+                />
+                <button
+                  type="submit"
+                  className="w-full bg-orange-500 hover:bg-orange-600 text-white font-medium py-2 px-4 rounded-lg transition-colors text-sm"
+                >
+                  Subscribe Now
+                </button>
+              </form>
+            </div>
+            {/* Common Myths */}
+            <div className="bg-yellow-50 rounded-lg p-6 mb-8">
+              <h3 className="text-lg font-bold text-yellow-900 mb-4">Common Astrology Myths</h3>
+              <ul className="list-disc list-inside text-gray-700 space-y-2">
+                <li>Vedic astrology is just superstition (it&apos;s based on ancient wisdom and observation)</li>
+                <li>Remedies are instant (patience and faith are key)</li>
+                <li>All bad events are due to planets (karma and choices matter too)</li>
+                <li>Birth charts are fixed destiny (free will plays a role)</li>
+              </ul>
+            </div>
+            {/* Resources */}
+            <div className="bg-indigo-50 rounded-lg p-6">
+              <h3 className="text-lg font-bold text-indigo-900 mb-4">Recommended Resources</h3>
+              <ul className="space-y-3">
+                {[
+                  ['The Influence of Planets', '/blog/the-influence-of-planets'],
+                  ['Gemstones and Their Powers', '/blog/gemstones-and-their-powers'],
+                  ['Numerology Basics', '/blog/numerology-basics'],
+                  ['Understanding Your Birth Chart', '/blog/understanding-your-birth-chart'],
+                ].map(([title, link]) => (
+                  <li key={title}>
+                    <Link href={link} className="text-indigo-700 hover:underline flex items-start">
+                      <span className="text-indigo-500 mr-2">→</span>
+                      <span>{title}</span>
+                    </Link>
+                  </li>
+                ))}
+              </ul>
             </div>
           </div>
         </div>
