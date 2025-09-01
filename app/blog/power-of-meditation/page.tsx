@@ -25,20 +25,26 @@ export default function PowerOfMeditationPage() {
   return (
     <div className="min-h-screen bg-white pt-0 md:pt-2">
       <div className="max-w-7xl mx-auto px-4 py-8">
-        {/* Banner Heading */}
-        <div className="w-full rounded-3xl bg-gradient-to-r from-[#fdf6f2] via-[#f3e8ff] to-[#e0f2fe] py-12 px-4 md:px-16 mb-12 flex flex-col items-center justify-center shadow-md border border-[#f3e8ff]">
-          <h1 className="text-5xl md:text-6xl font-extrabold text-black mb-4 text-center drop-shadow-lg tracking-tight" style={{ fontFamily: 'Georgia, serif' }}>The Power of Meditation</h1>
-          <p className="text-lg md:text-2xl text-gray-700 text-center max-w-3xl leading-relaxed">Discover the ancient practice that brings peace to mind and body. Learn how meditation can transform your life, enhance your spiritual journey, and unlock your inner potential.</p>
-        </div>
         <div className="grid lg:grid-cols-3 gap-8">
           {/* Main Content */}
           <div className="lg:col-span-2">
+            {/* Header Section */}
+            <div className="mb-8">
+              <h1 className="text-5xl md:text-6xl font-extrabold text-black mb-4 leading-tight">
+                {post.title.en}
+              </h1>
+              <div className="flex flex-col xs:flex-row xs:items-center gap-2 xs:gap-6 text-sm text-gray-500 mb-6">
+                <span className="flex items-center gap-1"><User className="w-4 h-4" /> Dr. Narendra Kumar Sharma</span>
+                <span className="flex items-center gap-1"><Calendar className="w-4 h-4" /> 15 April, 2024</span>
+                <span className="flex items-center gap-1"><BookOpen className="w-4 h-4" /> Spirituality</span>
+              </div>
+            </div>
             {/* Hero Image */}
-            <motion.div initial={{ opacity: 0, scale: 0.95 }} whileInView={{ opacity: 1, scale: 1 }} viewport={{ once: true }} transition={{ duration: 0.7 }} className="w-full h-64 md:h-96 relative mb-8 rounded-lg overflow-hidden shadow-lg">
+            <div className="w-full h-64 md:h-96 relative mb-8 rounded-lg overflow-hidden shadow-lg">
               <Image src="https://res.cloudinary.com/dxwspucxw/image/upload/c_crop,w_1000,h_563,ar_16:9,g_auto/v1752049127/meditation_b2qe9b.jpg" alt={post.title.en} fill className="object-cover" />
-            </motion.div>
+            </div>
             {/* Intro */}
-            <motion.div initial={{ opacity: 0, y: 40 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.7 }} className="mb-8 text-lg leading-relaxed text-gray-700 space-y-6">
+            <div className="mb-8 text-lg leading-relaxed text-gray-700 space-y-6 text-justify">
               <p className="text-xl leading-relaxed">
                 {post.content.en.split('\n')[0]}
               </p>
@@ -69,26 +75,26 @@ export default function PowerOfMeditationPage() {
               <div className="bg-gradient-to-r from-yellow-50 to-orange-50 border-l-4 border-orange-400 p-6 rounded-lg">
                 <span className="text-orange-700 font-bold text-lg">Pro Tip:</span> <span className="text-black font-semibold">Start with just 5-10 minutes daily. Consistency is more important than duration. Choose a technique that resonates with you and practice regularly.</span>
               </div>
-            </motion.div>
+            </div>
 
+            {/* Key Takeaway */}
+            <div className="bg-indigo-50 border-l-4 border-indigo-400 p-4 mb-6 rounded-lg">
+              <p className="text-gray-700">
+                <span className="text-indigo-600 font-medium">Key Takeaway:</span> Meditation is not about emptying your mind, but about becoming aware of your thoughts and finding inner peace. Even 10 minutes of daily practice can transform your mental clarity, emotional balance, and spiritual connection.
+              </p>
+            </div>
             {/* Tabs */}
-            <div className="flex flex-wrap gap-2 mb-6 border-b border-gray-200">
+            <div className="flex flex-nowrap gap-1 sm:gap-2 mb-6 border-b border-gray-200 overflow-x-auto">
               {tabs.map((tab) => (
                 <button
                   key={tab}
                   onClick={() => setActiveTab(tab)}
-                  className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors ${activeTab === tab ? 'border-indigo-500 text-indigo-600' : 'border-transparent text-gray-600 hover:text-gray-900'}`}
+                  className={`px-2 xs:px-3 sm:px-4 py-1.5 xs:py-2 text-sm xs:text-base font-medium border-b-2 transition-colors whitespace-nowrap ${activeTab === tab ? 'border-indigo-500 text-indigo-600' : 'border-transparent text-gray-600 hover:text-gray-900'}`}
                 >
                   {tab}
                 </button>
               ))}
             </div>
-            {/* Key Takeaway */}
-            <motion.div initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.6 }} className="bg-gradient-to-r from-indigo-50 to-purple-50 border-l-4 border-indigo-400 p-6 mb-8 rounded-lg shadow-sm">
-              <p className="text-gray-700 text-lg leading-relaxed">
-                <span className="text-indigo-600 font-bold text-xl">Key Takeaway:</span> Meditation is not about emptying your mind, but about becoming aware of your thoughts and finding inner peace. Even 10 minutes of daily practice can transform your mental clarity, emotional balance, and spiritual connection.
-              </p>
-            </motion.div>
             {/* Tab Content */}
             {activeTab === 'Overview' && (
               <section className="mb-16">
@@ -240,18 +246,24 @@ export default function PowerOfMeditationPage() {
             
             {/* Next Blog Section */}
             <section className="mt-16 pt-8 border-t border-gray-200">
-              <h2 className="text-2xl font-bold text-black mb-6">Continue Your Spiritual Journey</h2>
-              <motion.div initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.7 }} className="bg-gradient-to-r from-emerald-50 to-green-50 rounded-xl p-6 border border-emerald-100 hover:shadow-lg transition-all cursor-pointer">
+              <h2 className="text-2xl font-bold text-black mb-6">Continue Your Astrological Journey</h2>
+              <motion.div
+                initial={{ opacity: 0, y: 30 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.7 }}
+                className="bg-gradient-to-r from-indigo-50 to-purple-50 rounded-xl p-4 xs:p-6 border border-indigo-100 hover:shadow-lg transition-all cursor-pointer"
+              >
                 <Link href="/blog" className="block">
-                  <div className="flex items-center gap-4">
-                    <div className="relative w-20 h-20 rounded-lg overflow-hidden bg-emerald-100">
-                      <Image src="/images/astrology.svg" alt="Astrology Blog" fill className="object-cover" />
+                  <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 sm:gap-4">
+                    <div className="relative w-16 h-16 xs:w-20 xs:h-20 rounded-lg overflow-hidden bg-indigo-100 mx-auto sm:mx-0">
+                      <Image src="https://res.cloudinary.com/dxwspucxw/image/upload/v1756710344/astrology-blogs_qw76yd.png" alt="Astrology Blog" fill className="object-cover" />
                     </div>
-                    <div className="flex-1">
-                      <p className="text-sm text-emerald-600 font-medium mb-1">Explore More</p>
-                      <h3 className="text-xl font-bold text-black mb-2">Astrology Blog Collection</h3>
-                      <p className="text-gray-700 text-sm mb-3">Discover our complete collection of astrology articles, from planetary influences to birth chart analysis and spiritual practices.</p>
-                      <div className="flex items-center gap-4 text-sm text-gray-600">
+                    <div className="flex-1 w-full">
+                      <p className="text-xs xs:text-sm text-indigo-600 font-medium mb-1">Explore More</p>
+                      <h3 className="text-lg xs:text-xl font-bold text-black mb-2">Astrology Blog Collection</h3>
+                      <p className="text-gray-700 text-xs xs:text-sm mb-3">Discover our complete collection of astrology articles, from planetary influences to birth chart analysis and spiritual practices.</p>
+                      <div className="flex flex-row items-center gap-2 xs:gap-4 text-xs xs:text-sm text-gray-600">
                         <span className="flex items-center gap-1">
                           <Calendar className="w-4 h-4" />
                           <span>15 April, 2024</span>
@@ -260,9 +272,14 @@ export default function PowerOfMeditationPage() {
                           <BookOpen className="w-4 h-4" />
                           <span>Complete Series</span>
                         </span>
+                        <span className="flex items-center ml-auto text-indigo-600 sm:hidden">
+                          <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                          </svg>
+                        </span>
                       </div>
                     </div>
-                    <div className="text-emerald-600">
+                    <div className="hidden sm:flex text-indigo-600">
                       <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
                       </svg>
