@@ -71,7 +71,20 @@ export async function GET(req: NextRequest) {
             WHEN c.is_stone = 1 THEN s.price_per_carat
             WHEN c.is_service = 1 THEN srv.price
             ELSE p.price
-          END as unit_price
+          END as unit_price,
+          CASE 
+            WHEN c.is_stone = 1 THEN NULL
+            WHEN c.is_service = 1 THEN (
+              SELECT sm.media_url FROM service_media sm 
+              WHERE sm.service_id = c.product_id AND sm.is_active = 1 
+              ORDER BY sm.is_primary DESC, sm.sort_order ASC LIMIT 1
+            )
+            ELSE (
+              SELECT pm.url FROM product_media pm 
+              WHERE pm.product_id = c.product_id 
+              ORDER BY pm.sort_order ASC LIMIT 1
+            )
+          END as image_url
         FROM cart c
         LEFT JOIN products p ON c.product_id = p.id AND c.is_stone = 0 AND c.is_service = 0
         LEFT JOIN stones s ON c.product_id = s.id AND c.is_stone = 1 AND c.is_service = 0

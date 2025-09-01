@@ -4,137 +4,92 @@ import Image from 'next/image';
 import { motion, useInView, AnimatePresence } from 'framer-motion';
 import { useRef, useState, useEffect } from 'react';
 
-const categories = [
-  {
-    name: 'Gemstones & Crystals',
-    image: 'https://res.cloudinary.com/dxwspucxw/image/upload/v1752753177/naturalstones_xsst5z.jpg',
-    slug: 'gemstones-crystals',
-    description: 'Healing stones & sacred crystals',
-    color: 'from-emerald-500 to-teal-600',
-    icon: '💎'
-  },
-  {
-    name: 'Rudraksha & Malas',
-    image: 'https://res.cloudinary.com/dxwspucxw/image/upload/v1752753830/rudrakshamala_pibmxj.jpg',
-    slug: 'rudraksha-malas',
-    description: 'Sacred beads & prayer malas',
-    color: 'from-amber-500 to-orange-600',
-    icon: '📿'
-  },
-  {
-    name: 'Spiritual Bracelets',
-    image: 'https://res.cloudinary.com/dxwspucxw/image/upload/v1753181211/bracelets_lqvtwk.png',
-    slug: 'bracelets',
-    description: 'Energy bracelets & accessories',
-    color: 'from-purple-500 to-indigo-600',
-    icon: '⚡'
-  },
-  {
-    name: 'Sacred Yantras',
-    image: 'https://res.cloudinary.com/dxwspucxw/image/upload/v1752754014/yantra_kppksi.jpg',
-    slug: 'yantras-plates',
-    description: 'Mystical diagrams & plates',
-    color: 'from-yellow-500 to-amber-600',
-    icon: '🔯'
-  },
-  {
-    name: 'Astrology Reports',
-    image: 'https://res.cloudinary.com/dxwspucxw/image/upload/v1753178112/astrology_report_paqulv.png',
-    slug: 'astrology-reports',
-    description: 'Personalized cosmic insights',
-    color: 'from-blue-500 to-cyan-600',
-    icon: '🌟'
-  },
-  {
-    name: 'Puja Essentials',
-    image: 'https://res.cloudinary.com/dxwspucxw/image/upload/v1752754218/puja_samagri_sc0vpt.jpg',
-    slug: 'puja-essentials',
-    description: 'Complete ritual kits',
-    color: 'from-rose-500 to-pink-600',
-    icon: '🕯️'
-  },
-  {
-    name: 'Feng Shui Items',
-    image: 'https://res.cloudinary.com/dxwspucxw/image/upload/v1753092133/feng_shui_vzelik.jpg',
-    slug: 'feng-shui',
-    description: 'Harmony & prosperity items',
-    color: 'from-green-500 to-emerald-600',
-    icon: '🏮'
-  },
-  {
-    name: 'Meditation Tools',
-    image: 'https://res.cloudinary.com/dxwspucxw/image/upload/v1753181389/meditation_tools_vuwblt.png',
-    slug: 'meditation-tools',
-    description: 'Mindfulness & peace aids',
-    color: 'from-violet-500 to-purple-600',
-    icon: '🧘'
-  },
-  // Additional categories (initially hidden)
-  {
-    name: 'Vastu Solutions',
-    image: 'https://res.cloudinary.com/dxwspucxw/image/upload/v1753079524/Vastu_Shastra_f0haqy.jpg',
-    slug: 'vastu-solutions',
-    description: 'Home harmony products',
-    color: 'from-indigo-500 to-blue-600',
-    icon: '🏘️'
-  },
-  {
-    name: 'Spiritual Books',
-    image: 'https://res.cloudinary.com/dxwspucxw/image/upload/v1753092132/book_collection_xmxrru.jpg',
-    slug: 'spiritual-books',
-    description: 'Sacred texts & wisdom',
-    color: 'from-orange-500 to-red-600',
-    icon: '📚'
-  },
-  {
-    name: 'Healing Remedies',
-    image: 'https://res.cloudinary.com/dxwspucxw/image/upload/v1753178835/healing_d4zat3.png',
-    slug: 'healing-remedies',
-    description: 'Natural healing solutions',
-    color: 'from-teal-500 to-green-600',
-    icon: '🌿'
-  },
-  {
-    name: 'Cosmic Jewelry',
-    image: 'https://res.cloudinary.com/dxwspucxw/image/upload/v1753092130/jewelery_tbvrw1.jpg',
-    slug: 'cosmic-jewelry',
-    description: 'Celestial accessories',
-    color: 'from-pink-500 to-rose-600',
-    icon: '✨'
-  },
-  {
-    name: 'Tarot & Divination',
-    image: 'https://res.cloudinary.com/dxwspucxw/image/upload/v1753179851/tarot_bcbqeh.png',
-    slug: 'tarot-divination',
-    description: 'Cards & divination tools',
-    color: 'from-purple-600 to-indigo-700',
-    icon: '🔮'
-  },
-  {
-    name: 'Incense & Aromatherapy',
-    image: 'https://res.cloudinary.com/dxwspucxw/image/upload/v1753092130/natural_incense_sticks_xa8jr6.jpg',
-    slug: 'incense-aromatherapy',
-    description: 'Sacred scents & oils',
-    color: 'from-amber-600 to-yellow-600',
-    icon: '🌸'
-  },
-  {
-    name: 'Protection Amulets',
-    image: 'https://res.cloudinary.com/dxwspucxw/image/upload/v1753179309/amulets_wsxif3.png',
-    slug: 'protection-amulets',
-    description: 'Shields & protective charms',
-    color: 'from-red-500 to-pink-600',
-    icon: '🛡️'
-  },
-  {
-    name: 'Chakra Healing',
-    image: 'https://res.cloudinary.com/dxwspucxw/image/upload/v1753179627/chakra_healing_zg9orn.png',
-    slug: 'chakra-healing',
-    description: 'Energy center alignment',
-    color: 'from-rainbow-gradient',
-    icon: '🌈'
-  }
-];
+// Category icons mapping based on slug
+const categoryIcons: Record<string, string> = {
+  'gemstones-crystals': '💎',
+  'rudraksha-malas': '📿',
+  'bracelets': '⚡',
+  'yantras-plates': '🔯',
+  'astrology-reports': '🌟',
+  'puja-essentials': '🕯️',
+  'feng-shui': '🏮',
+  'meditation-tools': '🧘',
+  'vastu-solutions': '🏘️',
+  'spiritual-books': '📚',
+  'healing-remedies': '🌿',
+  'cosmic-jewelry': '✨',
+  'tarot-divination': '🔮',
+  'incense-aromatherapy': '🌸',
+  'protection-amulets': '🛡️',
+  'chakra-healing': '🌈',
+  // Default icon for any other categories
+  'default': '✨'
+};
+
+// Category colors mapping based on slug
+const categoryColors: Record<string, string> = {
+  'gemstones-crystals': 'from-emerald-500 to-teal-600',
+  'rudraksha-malas': 'from-amber-500 to-orange-600',
+  'bracelets': 'from-purple-500 to-indigo-600',
+  'yantras-plates': 'from-yellow-500 to-amber-600',
+  'astrology-reports': 'from-blue-500 to-cyan-600',
+  'puja-essentials': 'from-rose-500 to-pink-600',
+  'feng-shui': 'from-green-500 to-emerald-600',
+  'meditation-tools': 'from-violet-500 to-purple-600',
+  'vastu-solutions': 'from-indigo-500 to-blue-600',
+  'spiritual-books': 'from-orange-500 to-red-600',
+  'healing-remedies': 'from-teal-500 to-green-600',
+  'cosmic-jewelry': 'from-pink-500 to-rose-600',
+  'tarot-divination': 'from-purple-600 to-indigo-700',
+  'incense-aromatherapy': 'from-amber-600 to-yellow-600',
+  'protection-amulets': 'from-red-500 to-pink-600',
+  'chakra-healing': 'from-rainbow-gradient',
+  // Default color for any other categories
+  'default': 'from-gray-500 to-gray-600'
+};
+
+// Interface for API category data
+interface ApiCategory {
+  id: number;
+  name: string;
+  slug: string;
+  description: string | null;
+  image_url: string | null;
+  banner_url?: string | null;
+  tags?: string[] | null;
+  gradient_from?: string | null;
+  gradient_to?: string | null;
+  subcategories?: Array<{
+    id: number;
+    name: string;
+    slug: string;
+    image_url?: string | null;
+  }>;
+}
+
+// Interface for display category with UI enhancements
+interface DisplayCategory {
+  id: number;
+  name: string;
+  image: string;
+  slug: string;
+  description: string;
+  color: string;
+  icon: string;
+}
+
+// Function to transform API category to display category
+const transformCategory = (category: ApiCategory): DisplayCategory => {
+  return {
+    id: category.id,
+    name: category.name,
+    image: category.image_url || '/images/products/default-category.jpg',
+    slug: category.slug,
+    description: category.description || 'Explore our spiritual collection',
+    color: categoryColors[category.slug] || categoryColors.default,
+    icon: categoryIcons[category.slug] || categoryIcons.default
+  };
+};
 
 // Animation variants - FASTER ANIMATIONS
 const containerVariants = {
@@ -198,6 +153,41 @@ export default function ShopByCategory({ limit }: { limit?: number }) {
   // CINEMATIC PAGE ENTRANCE STATE
   const [isPageEntering, setIsPageEntering] = useState(true);
   
+  // API data states
+  const [categories, setCategories] = useState<DisplayCategory[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  
+  // Fetch categories from API
+  useEffect(() => {
+    const fetchCategories = async () => {
+      try {
+        setLoading(true);
+        setError(null);
+        
+        const response = await fetch('/api/categories');
+        
+        if (!response.ok) {
+          throw new Error('Failed to fetch categories');
+        }
+        
+        const data: ApiCategory[] = await response.json();
+        
+        // Transform API categories to display categories
+        const transformedCategories = data.map(transformCategory);
+        
+        setCategories(transformedCategories);
+      } catch (err) {
+        console.error('Error fetching categories:', err);
+        setError(err instanceof Error ? err.message : 'Failed to fetch categories');
+      } finally {
+        setLoading(false);
+      }
+    };
+    
+    fetchCategories();
+  }, []);
+  
   // Show limited categories initially, or all when expanded
   const shownCategories = limit && !showAll 
     ? categories.slice(0, limit) 
@@ -222,6 +212,73 @@ export default function ShopByCategory({ limit }: { limit?: number }) {
       };
     }
   }, [limit]);
+
+  // Show loading state
+  if (loading) {
+    return (
+      <div className="w-full py-20 bg-gradient-to-b from-slate-50 via-white to-purple-50/30 relative overflow-hidden">
+        <div className="max-w-7xl mx-auto px-4 relative z-10">
+          <div className="text-center mb-16">
+            <h2 className="text-4xl md:text-6xl font-light mb-4 bg-gradient-to-r from-slate-800 via-purple-800 to-slate-800 bg-clip-text text-transparent leading-tight">
+              Explore Sacred Realms
+            </h2>
+            <div className="w-32 h-1 bg-gradient-to-r from-amber-400 via-purple-500 to-amber-400 mx-auto mb-6 rounded-full"></div>
+            <p className="text-lg text-slate-600 max-w-2xl mx-auto leading-relaxed">
+              Loading our curated collection of spiritual treasures...
+            </p>
+          </div>
+          
+          <div className="flex items-center justify-center py-12">
+            <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-purple-700 mx-auto"></div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+  
+  // Show error state
+  if (error) {
+    return (
+      <div className="w-full py-20 bg-gradient-to-b from-slate-50 via-white to-purple-50/30 relative overflow-hidden">
+        <div className="max-w-7xl mx-auto px-4 relative z-10">
+          <div className="text-center mb-16">
+            <h2 className="text-4xl md:text-6xl font-light mb-4 bg-gradient-to-r from-slate-800 via-purple-800 to-slate-800 bg-clip-text text-transparent leading-tight">
+              Explore Sacred Realms
+            </h2>
+            <div className="w-32 h-1 bg-gradient-to-r from-amber-400 via-purple-500 to-amber-400 mx-auto mb-6 rounded-full"></div>
+            <p className="text-lg text-red-600 max-w-2xl mx-auto leading-relaxed mb-6">
+              {error}
+            </p>
+            <button 
+              onClick={() => window.location.reload()} 
+              className="px-6 py-3 bg-gradient-to-r from-purple-600 to-indigo-600 text-white rounded-full hover:from-purple-700 hover:to-indigo-700 transition-all duration-200"
+            >
+              Try Again
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+  
+  // Show empty state if no categories found
+  if (categories.length === 0) {
+    return (
+      <div className="w-full py-20 bg-gradient-to-b from-slate-50 via-white to-purple-50/30 relative overflow-hidden">
+        <div className="max-w-7xl mx-auto px-4 relative z-10">
+          <div className="text-center mb-16">
+            <h2 className="text-4xl md:text-6xl font-light mb-4 bg-gradient-to-r from-slate-800 via-purple-800 to-slate-800 bg-clip-text text-transparent leading-tight">
+              Explore Sacred Realms
+            </h2>
+            <div className="w-32 h-1 bg-gradient-to-r from-amber-400 via-purple-500 to-amber-400 mx-auto mb-6 rounded-full"></div>
+            <p className="text-lg text-slate-600 max-w-2xl mx-auto leading-relaxed">
+              No categories found. Please check back later.
+            </p>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <>
@@ -336,10 +393,10 @@ export default function ShopByCategory({ limit }: { limit?: number }) {
                       priority={index < 4}
                       loading={index < 4 ? undefined : 'lazy'}
                       onError={(e) => {
-                        // fallback for next/image: use placeholder if error
-                        if (e.currentTarget instanceof HTMLImageElement) {
-                          e.currentTarget.src = '/images/placeholder.jpg';
-                        }
+                        // Fallback to default image on error
+                        const target = e.target as HTMLImageElement;
+                        target.src = '/images/products/default-category.jpg';
+                        target.onerror = null; // Prevent infinite loop
                       }}
                     />
                     

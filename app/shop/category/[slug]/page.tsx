@@ -85,260 +85,61 @@ interface Filters {
 type FilterCategory = string;
 type DropdownType = FilterCategory | null;
 
-// Category configurations
-const categoryConfigs: Record<string, CategoryConfig> = {
-  bracelets: {
-    title: "Spiritual Bracelets",
-    description: "Sacred energy wrapped around your wrist for daily protection and healing",
-    bannerImage: "/images/products/bracelets-banner.jpg",
-    tags: ["Healing Energy", "Protection", "Spiritual Growth"],
-    gradientFrom: "purple-50",
-    gradientTo: "rose-50"
-  },
-  "gemstones-crystals": {
-    title: "Gemstones & Crystals",
-    description: "The whispers of the universe curated into a collection of powerful healing stones",
-    bannerImage: "/images/products/gemstones-banner.jpg",
-    tags: ["Natural Energy", "Spiritual Healing", "Cosmic Wisdom"],
-    gradientFrom: "blue-50",
-    gradientTo: "amber-50"
-  },
-  rings: {
-    title: "Sacred Rings",
-    description: "Powerful spiritual rings designed to channel divine energy and protection",
-    bannerImage: "/images/products/rings-banner.jpg",
-    tags: ["Divine Energy", "Sacred Protection", "Spiritual Power"],
-    gradientFrom: "emerald-50",
-    gradientTo: "yellow-50"
-  },
-  pendants: {
-    title: "Mystical Pendants",
-    description: "Sacred pendants that connect you to higher realms and spiritual wisdom",
-    bannerImage: "/images/products/pendants-banner.jpg",
-    tags: ["Mystical Power", "Divine Connection", "Sacred Wisdom"],
-    gradientFrom: "indigo-50",
-    gradientTo: "purple-50"
-  },
-  malas: {
-    title: "Prayer Malas",
-    description: "Traditional prayer beads for meditation, chanting, and spiritual practice",
-    bannerImage: "/images/products/malas-banner.jpg",
-    tags: ["Meditation", "Prayer", "Spiritual Practice"],
-    gradientFrom: "orange-50",
-    gradientTo: "red-50"
-  }
+// Default category gradients
+const defaultGradients: Record<string, { from: string, to: string }> = {
+  bracelets: { from: "purple-50", to: "rose-50" },
+  "gemstones-crystals": { from: "blue-50", to: "amber-50" },
+  rings: { from: "emerald-50", to: "yellow-50" },
+  pendants: { from: "indigo-50", to: "purple-50" },
+  malas: { from: "orange-50", to: "red-50" },
+  default: { from: "gray-50", to: "gray-100" }
 };
 
-// Mock product data
-const allProducts: Product[] = [
-  // Bracelets
-  {
-    id: 1,
-    name: "Rudraksha Bracelet",
-    material: "Rudraksha",
-    purpose: ["Protection", "Spiritual Growth"],
-    style: "Adjustable Thread",
-    gender: "Unisex",
-    price: "₹1,299",
-    oldPrice: "₹2,999",
-    image: "/images/products/rudraksha-bracelet.jpg",
-    description: "Sacred Rudraksha beads for spiritual protection and growth",
-    path: "/shop/rudraksha-bracelet",
-    category: "bracelets"
-  },
-  {
-    id: 2,
-    name: "Rose Quartz Bracelet",
-    material: "Rose Quartz",
-    purpose: ["Love & Relationship", "Emotional Healing"],
-    style: "Elastic Beaded",
-    gender: "Women's",
-    price: "₹1,199",
-    oldPrice: "₹2,499",
-    image: "/images/products/rose-quartz-bracelet.jpg",
-    description: "Rose quartz for love, compassion and emotional healing",
-    path: "/shop/rose-quartz-bracelet",
-    category: "bracelets"
-  },
-  {
-    id: 3,
-    name: "Tiger Eye Bracelet",
-    material: "Tiger Eye",
-    purpose: ["Wealth & Abundance", "Protection"],
-    style: "Elastic Beaded",
-    gender: "Unisex",
-    price: "₹1,399",
-    oldPrice: "₹2,799",
-    image: "/images/products/tiger-eye-bracelet.jpg",
-    description: "Tiger eye stones for wealth attraction and protection",
-    path: "/shop/tiger-eye-bracelet",
-    category: "bracelets"
-  },
-  // Gemstones & Crystals
-  {
-    id: 4,
-    name: "Amethyst Crystal",
-    type: "Amethyst",
-    color: "Purple",
-    purpose: ["Healing Crystals", "Meditation & Focus"],
-    zodiac: ["Pisces", "Aquarius"],
-    chakra: ["Third Eye", "Crown"],
-    planet: "Jupiter",
-    price: "₹1,200",
-    oldPrice: "₹2,000",
-    image: "/images/products/amethyst.jpg",
-    description: "Enhances spiritual awareness and promotes calm",
-    path: "/shop/amethyst-crystal",
-    category: "gemstones-crystals"
-  },
-  {
-    id: 5,
-    name: "Citrine Crystal",
-    type: "Citrine",
-    color: "Yellow",
-    purpose: ["Abundance / Wealth", "Chakra Balancing"],
-    zodiac: ["Leo", "Sagittarius"],
-    chakra: ["Solar Plexus"],
-    planet: "Sun",
-    price: "₹1,500",
-    oldPrice: "₹2,500",
-    image: "/images/products/citrine.jpg",
-    description: "Manifests abundance and personal power",
-    path: "/shop/citrine-crystal",
-    category: "gemstones-crystals"
-  },
-  // Rings
-  {
-    id: 6,
-    name: "Om Sacred Ring",
-    material: "Silver",
-    purpose: ["Spiritual Growth", "Protection"],
-    style: "Adjustable",
-    gender: "Unisex",
-    price: "₹2,499",
-    oldPrice: "₹4,999",
-    image: "/images/products/om-ring.jpg",
-    description: "Sacred Om symbol ring for spiritual connection",
-    path: "/shop/om-ring",
-    category: "rings"
-  },
-  {
-    id: 7,
-    name: "Ganesha Protection Ring",
-    material: "Brass",
-    purpose: ["Protection", "Success"],
-    style: "Fixed Size",
-    gender: "Unisex",
-    price: "₹1,899",
-    oldPrice: "₹3,799",
-    image: "/images/products/ganesha-ring.jpg",
-    description: "Lord Ganesha ring for removing obstacles",
-    path: "/shop/ganesha-ring",
-    category: "rings"
-  },
-  // Pendants
-  {
-    id: 8,
-    name: "Trishul Pendant",
-    material: "Silver",
-    purpose: ["Protection", "Spiritual Power"],
-    style: "Chain Included",
-    gender: "Unisex",
-    price: "₹3,299",
-    oldPrice: "₹6,599",
-    image: "/images/products/trishul-pendant.jpg",
-    description: "Sacred Trishul pendant for divine protection",
-    path: "/shop/trishul-pendant",
-    category: "pendants"
-  },
-  {
-    id: 9,
-    name: "Lotus Pendant",
-    material: "Gold Plated",
-    purpose: ["Spiritual Growth", "Love & Relationship"],
-    style: "Chain Included",
-    gender: "Women's",
-    price: "₹2,799",
-    oldPrice: "₹5,599",
-    image: "/images/products/lotus-pendant.jpg",
-    description: "Sacred lotus for purity and enlightenment",
-    path: "/shop/lotus-pendant",
-    category: "pendants"
-  },
-  // Malas
-  {
-    id: 10,
-    name: "Rudraksha Mala 108 Beads",
-    material: "Rudraksha",
-    purpose: ["Meditation", "Spiritual Growth"],
-    style: "Traditional",
-    gender: "Unisex",
-    price: "₹4,999",
-    oldPrice: "₹9,999",
-    image: "/images/products/rudraksha-mala.jpg",
-    description: "Traditional 108 bead Rudraksha mala for meditation",
-    path: "/shop/rudraksha-mala",
-    category: "malas"
-  },
-  {
-    id: 11,
-    name: "Crystal Quartz Mala",
-    material: "Crystal Quartz",
-    purpose: ["Chakra Balancing", "Meditation"],
-    style: "Traditional",
-    gender: "Unisex",
-    price: "₹3,499",
-    oldPrice: "₹6,999",
-    image: "/images/products/crystal-mala.jpg",
-    description: "Clear quartz mala for energy amplification",
-    path: "/shop/crystal-mala",
-    category: "malas"
-  }
-];
-
-// Dynamic filter options based on category
-const getFilterOptions = (category: string, products: Product[]): Record<string, string[]> => {
-  const categoryProducts = products.filter(p => p.category === category);
+// Dynamic filter options based on product attributes
+const getFilterOptions = (products: Product[]): Record<string, string[]> => {
+  // Extract all available attributes from products
+  const attributeValues: Record<string, Set<string>> = {};
   
-  const baseFilters = {
-    purpose: [...new Set(categoryProducts.flatMap(p => p.purpose))].sort()
-  };
-
-  // Add category-specific filters
-  switch (category) {
-    case "bracelets":
-      return {
-        ...baseFilters,
-        material: [...new Set(categoryProducts.map(p => p.material).filter((m): m is string => Boolean(m)))].sort(),
-        style: [...new Set(categoryProducts.map(p => p.style).filter((s): s is string => Boolean(s)))].sort(),
-        gender: [...new Set(categoryProducts.map(p => p.gender).filter((g): g is string => Boolean(g)))].sort()
-      };
-    case "gemstones-crystals":
-      return {
-        ...baseFilters,
-        type: [...new Set(categoryProducts.map(p => p.type).filter((t): t is string => Boolean(t)))].sort(),
-        color: [...new Set(categoryProducts.map(p => p.color).filter((c): c is string => Boolean(c)))].sort(),
-        zodiac: [...new Set(categoryProducts.flatMap(p => p.zodiac || []))].sort(),
-        chakra: [...new Set(categoryProducts.flatMap(p => p.chakra || []))].sort(),
-        planet: [...new Set(categoryProducts.map(p => p.planet).filter((p): p is string => Boolean(p)))].sort()
-      };
-    case "rings":
-    case "pendants":
-      return {
-        ...baseFilters,
-        material: [...new Set(categoryProducts.map(p => p.material).filter((m): m is string => Boolean(m)))].sort(),
-        style: [...new Set(categoryProducts.map(p => p.style).filter((s): s is string => Boolean(s)))].sort(),
-        gender: [...new Set(categoryProducts.map(p => p.gender).filter((g): g is string => Boolean(g)))].sort()
-      };
-    case "malas":
-      return {
-        ...baseFilters,
-        material: [...new Set(categoryProducts.map(p => p.material).filter((m): m is string => Boolean(m)))].sort(),
-        style: [...new Set(categoryProducts.map(p => p.style).filter((s): s is string => Boolean(s)))].sort()
-      };
-    default:
-      return baseFilters;
-  }
+  // Process each product
+  products.forEach(product => {
+    // Extract all product attributes
+    Object.entries(product).forEach(([key, value]) => {
+      // Skip certain keys that aren't filterable attributes
+      if (['id', 'name', 'description', 'price', 'oldPrice', 'image', 'path', 'category'].includes(key)) {
+        return;
+      }
+      
+      // Handle array values (like purpose, zodiac, chakra)
+      if (Array.isArray(value)) {
+        if (!attributeValues[key]) {
+          attributeValues[key] = new Set();
+        }
+        
+        value.forEach(val => {
+          if (typeof val === 'string' && val.trim()) {
+            attributeValues[key].add(val);
+          }
+        });
+      } 
+      // Handle string values
+      else if (typeof value === 'string' && value.trim()) {
+        if (!attributeValues[key]) {
+          attributeValues[key] = new Set();
+        }
+        attributeValues[key].add(value);
+      }
+    });
+  });
+  
+  // Convert Sets to sorted arrays
+  const result: Record<string, string[]> = {};
+  Object.entries(attributeValues).forEach(([key, valueSet]) => {
+    if (valueSet.size > 0) {
+      result[key] = Array.from(valueSet).sort();
+    }
+  });
+  
+  return result;
 };
 
 // Product Banner Component
@@ -355,6 +156,12 @@ const ProductBanner: React.FC<{ config: CategoryConfig }> = ({ config }) => (
             fill
             className="object-cover rounded-2xl shadow-2xl"
             sizes="(max-width: 768px) 100vw, 50vw"
+            onError={(e) => {
+              // Fallback to default image on error
+              const target = e.target as HTMLImageElement;
+              target.src = "/images/products/default-banner.jpg";
+              target.onerror = null; // Prevent infinite loop
+            }}
           />
           {/* Overlay for better text readability */}
           <div className="absolute inset-0 bg-gradient-to-t from-black/10 via-transparent to-transparent rounded-2xl"></div>
@@ -441,25 +248,50 @@ export default function CategoryPage() {
         const apiProducts = Array.isArray(data.products) ? data.products : [];
 
         // Map API products to local Product shape used by this page
-        const mapped: Product[] = apiProducts.map((p: ApiProduct) => ({
-          id: p.id,
-          name: p.name,
-          material: p.material || undefined,
-          type: p.product_type || undefined,
-          color: p.color || undefined,
-          purpose: [],
-          style: undefined,
-          gender: undefined,
-          zodiac: [],
-          chakra: [],
-          planet: undefined,
-          price: `₹${p.price}`,
-          oldPrice: p.original_price ? `₹${p.original_price}` : `₹${(Number(p.price) * 1.2).toFixed(2)}`,
-          image: (p.product_media && p.product_media[0]?.media_url) || p.image || '/images/products/default.jpg',
-          description: p.description || '',
-          path: `/shop/${p.id}`,
-          category: slug
-        }));
+        const mapped: Product[] = apiProducts.map((p: ApiProduct) => {
+          // Extract image URL from product media
+          let imageUrl = '/images/products/default.jpg';
+          
+          if (p.product_media && p.product_media.length > 0) {
+            // Try to get the first media URL
+            const firstMedia = p.product_media[0];
+            if (firstMedia.media_url) {
+              imageUrl = firstMedia.media_url;
+            } else if (firstMedia.url) {
+              imageUrl = firstMedia.url;
+            }
+          } else if (p.image) {
+            // Fallback to legacy image field
+            imageUrl = p.image;
+          }
+          
+          // Extract product attributes for filtering
+          // These would typically come from product_attributes table
+          // For now, we'll use empty arrays as placeholders
+          const purpose: string[] = [];
+          const zodiac: string[] = [];
+          const chakra: string[] = [];
+          
+          return {
+            id: p.id,
+            name: p.name,
+            material: p.material || undefined,
+            type: p.product_type || undefined,
+            color: p.color || undefined,
+            purpose,
+            style: undefined,
+            gender: undefined,
+            zodiac,
+            chakra,
+            planet: undefined,
+            price: `₹${p.price}`,
+            oldPrice: p.original_price ? `₹${p.original_price}` : `₹${(Number(p.price) * 1.2).toFixed(2)}`,
+            image: imageUrl,
+            description: p.description || '',
+            path: `/shop/${p.id}`,
+            category: slug
+          };
+        });
 
         setCategoryProducts(mapped);
       } catch (err) {
@@ -476,31 +308,67 @@ export default function CategoryPage() {
   // Get category configuration based on API data or fallback
   const categoryConfig = useMemo(() => {
     if (categoryData) {
+      // Extract tags from category attributes if available
+      let tags: string[] = ["Spiritual", "Sacred", "Divine"];
+      
+      if (categoryData.tags) {
+        try {
+          // If tags is a string (JSON), parse it
+          if (typeof categoryData.tags === 'string') {
+            const parsedTags = JSON.parse(categoryData.tags);
+            if (Array.isArray(parsedTags)) {
+              tags = parsedTags;
+            }
+          } 
+          // If tags is already an array, use it directly
+          else if (Array.isArray(categoryData.tags)) {
+            tags = categoryData.tags;
+          }
+        } catch (e) {
+          console.error('Error parsing category tags:', e);
+          // Keep default tags if parsing fails
+        }
+      }
+      
+      // Get gradient colors from defaults or use standard fallbacks
+      const gradientColors = defaultGradients[slug] || defaultGradients.default;
+      
+      // Get banner image from category data
+      let bannerImage = "/images/products/default-banner.jpg";
+      
+      // Try to use banner_url first, then fall back to image_url
+      if (categoryData.banner_url) {
+        bannerImage = categoryData.banner_url;
+      } else if (categoryData.image_url) {
+        bannerImage = categoryData.image_url;
+      }
+      
       return {
         title: categoryData.name,
         description: categoryData.description || "Discover our collection of spiritual products",
-        bannerImage: categoryData.banner_url || categoryData.image_url || "/images/products/default-banner.jpg",
-        tags: categoryData.tags || ["Spiritual", "Sacred", "Divine"],
-        gradientFrom: categoryData.gradient_from || "gray-50",
-        gradientTo: categoryData.gradient_to || "gray-100"
+        bannerImage,
+        tags,
+        gradientFrom: categoryData.gradient_from || gradientColors.from,
+        gradientTo: categoryData.gradient_to || gradientColors.to
       };
     }
     
-    // Fallback configuration
-    return categoryConfigs[slug] || {
-      title: "Products",
+    // Fallback configuration if no category data
+    const gradientColors = defaultGradients[slug] || defaultGradients.default;
+    return {
+      title: slug.replace(/-/g, ' ').replace(/\b\w/g, l => l.toUpperCase()),
       description: "Discover our collection of spiritual products",
       bannerImage: "/images/products/default-banner.jpg",
       tags: ["Spiritual", "Sacred", "Divine"],
-      gradientFrom: "gray-50",
-      gradientTo: "gray-100"
+      gradientFrom: gradientColors.from,
+      gradientTo: gradientColors.to
     };
   }, [categoryData, slug]);
 
-  // Get filter options for current category
+  // Get filter options from products
   const filterOptions = useMemo(() => {
-    return getFilterOptions(slug, categoryProducts);
-  }, [slug, categoryProducts]);
+    return getFilterOptions(categoryProducts);
+  }, [categoryProducts]);
 
   // Initialize filters when category changes
   useEffect(() => {
@@ -515,30 +383,23 @@ export default function CategoryPage() {
   const filteredProducts = useMemo(() => {
     return categoryProducts.filter(product => {
       return Object.entries(filters).every(([filterKey, filterValues]) => {
+        // If no values selected for this filter, return true (don't filter)
         if (filterValues.length === 0) return true;
         
-        switch (filterKey) {
-          case 'purpose':
-            return product.purpose.some(p => filterValues.includes(p));
-          case 'zodiac':
-            return product.zodiac?.some(z => filterValues.includes(z)) || false;
-          case 'chakra':
-            return product.chakra?.some(c => filterValues.includes(c)) || false;
-          case 'material':
-            return filterValues.includes(product.material || '');
-          case 'type':
-            return filterValues.includes(product.type || '');
-          case 'color':
-            return filterValues.includes(product.color || '');
-          case 'style':
-            return filterValues.includes(product.style || '');
-          case 'gender':
-            return filterValues.includes(product.gender || '');
-          case 'planet':
-            return filterValues.includes(product.planet || '');
-          default:
-            return true;
+        const productValue = product[filterKey as keyof Product];
+        
+        // Handle array values (like purpose, zodiac, chakra)
+        if (Array.isArray(productValue)) {
+          return productValue.some(val => filterValues.includes(val));
         }
+        
+        // Handle string values
+        if (typeof productValue === 'string') {
+          return filterValues.includes(productValue);
+        }
+        
+        // If the product doesn't have this attribute, exclude it
+        return false;
       });
     });
   }, [categoryProducts, filters]);
@@ -689,16 +550,20 @@ export default function CategoryPage() {
                   className="group"
                 >
                   <div className="bg-white border border-gray-200 rounded-xl p-4 hover:shadow-md transition-shadow text-center">
-                    {subcategory.image_url && (
-                      <div className="relative h-20 mb-3">
-                        <Image
-                          src={subcategory.image_url}
-                          alt={subcategory.name}
-                          fill
-                          className="object-cover rounded-lg"
-                        />
-                      </div>
-                    )}
+                    <div className="relative h-20 mb-3">
+                      <Image
+                        src={subcategory.image_url || '/images/products/default-category.jpg'}
+                        alt={subcategory.name}
+                        fill
+                        className="object-cover rounded-lg"
+                        onError={(e) => {
+                          // Fallback to default image on error
+                          const target = e.target as HTMLImageElement;
+                          target.src = "/images/products/default-category.jpg";
+                          target.onerror = null; // Prevent infinite loop
+                        }}
+                      />
+                    </div>
                     <h3 
                       className="font-medium text-gray-900 group-hover:text-purple-600 transition-colors overflow-hidden text-ellipsis line-clamp-2 min-h-[2.5rem]"
                       title={subcategory.name}
@@ -738,6 +603,12 @@ export default function CategoryPage() {
                        alt={product.name}
                        fill
                        className="object-cover group-hover:scale-105 transition-transform duration-300"
+                       onError={(e) => {
+                         // Fallback to default image on error
+                         const target = e.target as HTMLImageElement;
+                         target.src = "/images/products/default.jpg";
+                         target.onerror = null; // Prevent infinite loop
+                       }}
                      />
                      
                      {/* Edit Button Overlay */}

@@ -44,8 +44,27 @@ export function UniversalCartButton({
   const handleClick = async () => {
     setIsLoading(true);
     try {
+      // If it's a service and no image is provided, try to fetch the service image
+      let finalImage = image;
+      if (isService && !image && productId) {
+        try {
+          // Try to fetch service details to get the image
+          const serviceRes = await fetch(`/api/services/${productId}`);
+          if (serviceRes.ok) {
+            const serviceData = await serviceRes.json();
+            if (serviceData.service_media && serviceData.service_media.length > 0) {
+              // Use the first service media image
+              finalImage = serviceData.service_media[0].media_url;
+            }
+          }
+        } catch (err) {
+          console.error('Error fetching service image:', err);
+          // Continue with null image if fetch fails
+        }
+      }
+
       // Add to frontend cart state first
-      addItem({ id: productId, name: productName, price, image }, quantity);
+      addItem({ id: productId, name: productName, price, image: finalImage }, quantity);
 
       // Optionally, sync with backend
       const itemType = isStone ? 'stone' : (isService ? 'service' : 'product');

@@ -239,6 +239,7 @@ export const ReusableServiceCard = ({
                 productId={service.id}
                 productName={service.title}
                 price={service.price}
+                image={mainImage}
                 isService={true}
                 className="bg-green-800 text-white px-4 py-2 rounded-lg font-medium hover:bg-green-900 transition-colors"
               >
@@ -374,6 +375,7 @@ export const ReusableServiceCard = ({
           productId={service.id}
           productName={service.title}
           price={service.price}
+          image={mainImage}
           isService={true}
           className="w-full bg-green-800 text-white py-2 px-4 rounded-lg font-medium hover:bg-green-900 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
           disabled={service.availability === 'offline'}

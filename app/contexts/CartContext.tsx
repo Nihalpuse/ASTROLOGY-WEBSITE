@@ -7,6 +7,7 @@ interface CartItem {
   name: string;
   price: number;
   image?: string;
+  image_url?: string; // Added for backend response
   quantity: number;
 }
 
