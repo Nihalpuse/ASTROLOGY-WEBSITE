@@ -107,6 +107,7 @@ export default function ProductDetailPage({ params }: { params: { id: string } }
       try {
         setLoading(true);
         setError(null);
+        // Using ID as the parameter (could be numeric ID or slug)
         const res = await fetch(`/api/products/${params.id}`);
         if (res.status === 404) {
           setLoading(false);

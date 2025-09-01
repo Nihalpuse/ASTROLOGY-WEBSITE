@@ -8,10 +8,10 @@ import { motion } from 'framer-motion';
 import { useLanguage } from '../contexts/useLanguage';
 import { useEffect, useRef, useState } from 'react';
 import { ReusableProductCard } from './ReusableProductCard';
-import { products } from '../../data/products.js';
-
+import { useProducts, type Product } from '../../hooks/useProducts';
 
 export function BestProducts() {
+  const { products, loading, error } = useProducts(8);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [responsiveCardsPerView, setResponsiveCardsPerView] = useState(5);
   const desktopContainerRef = useRef<HTMLDivElement | null>(null);
@@ -43,10 +43,39 @@ export function BestProducts() {
     return () => window.removeEventListener('resize', updateCardsPerView);
   }, []);
 
-  // Use first 8 products for display
-  const displayProducts = products.slice(0, 8);
+  // Transform API product data to match ReusableProductCard interface
+  const transformProductData = (product: Product) => {
+    // Handle both URL formats (url and media_url)
+    const mainImage = product.product_media.length > 0 
+      ? (product.product_media[0].media_url || product.product_media[0].url || '/images/placeholder.jpg')
+      : '/images/placeholder.jpg';
+    
+    const currentStock = product.product_stock.length > 0 
+      ? product.product_stock[0].quantity 
+      : 0;
+    
+    return {
+      id: product.id,
+      title: product.name,
+      description: product.description,
+      price: `₹${product.price}`,
+      originalPrice: product.original_price ? `₹${product.original_price}` : undefined,
+      slug: product.slug,
+      image: mainImage,
+      category: product.category?.name,
+      rating: 4.5, // Default rating since API doesn't provide this yet
+      reviewCount: 50, // Default review count
+      inStock: currentStock > 0,
+      isNew: true, // Mark as new for display
+      isFeatured: true // Mark as featured for display
+    };
+  };
+
+  // Use transformed products data
+  const displayProducts = products.map(transformProductData);
   const totalCards = displayProducts.length;
   const maxIndex = Math.max(0, totalCards - responsiveCardsPerView);
+  
   // Desktop scroll logic
   const canScrollLeftDesktop = currentIndex > 0;
   const canScrollRightDesktop = currentIndex < maxIndex;
@@ -89,7 +118,7 @@ export function BestProducts() {
 
   useEffect(() => {
     checkScrollButtonsMobile();
-  }, []);
+  }, [products]);
 
   const handleScroll = (direction: 'left' | 'right') => {
     if (direction === 'left' && canScrollLeftDesktop) {
@@ -98,6 +127,50 @@ export function BestProducts() {
       setCurrentIndex(Math.min(maxIndex, currentIndex + scrollStep));
     }
   };
+
+  // Loading state
+  if (loading) {
+    return (
+      <section className="min-h-0 pt-16 pb-0 bg-white font-sans overflow-hidden">
+        <div className="w-full max-w-7xl mx-auto px-4 pb-0">
+          <div className="h-32 bg-gray-200 animate-pulse rounded-3xl mb-12"></div>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-6">
+            {[...Array(8)].map((_, i) => (
+              <div key={i} className="h-80 bg-gray-200 animate-pulse rounded-xl"></div>
+            ))}
+          </div>
+        </div>
+      </section>
+    );
+  }
+
+  // Error state
+  if (error) {
+    return (
+      <section className="min-h-0 pt-16 pb-0 bg-white font-sans overflow-hidden">
+        <div className="w-full max-w-7xl mx-auto px-4 pb-0">
+          <div className="text-center py-16">
+            <h3 className="text-lg font-semibold text-gray-900 mb-2">Unable to load products</h3>
+            <p className="text-gray-600">{error}</p>
+          </div>
+        </div>
+      </section>
+    );
+  }
+
+  // Empty state
+  if (displayProducts.length === 0) {
+    return (
+      <section className="min-h-0 pt-16 pb-0 bg-white font-sans overflow-hidden">
+        <div className="w-full max-w-7xl mx-auto px-4 pb-0">
+          <div className="text-center py-16">
+            <h3 className="text-lg font-semibold text-gray-900 mb-2">No products available</h3>
+            <p className="text-gray-600">Please check back later for our latest products.</p>
+          </div>
+        </div>
+      </section>
+    );
+  }
 
   return (
     <section className="min-h-0 pt-16 pb-0 bg-white font-sans overflow-hidden">
