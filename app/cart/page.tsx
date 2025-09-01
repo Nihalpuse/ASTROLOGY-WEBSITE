@@ -122,8 +122,8 @@ export default function CartPage() {
                     <span>₹{(total * 1.08).toLocaleString('en-IN', { minimumFractionDigits: 2 })}</span>
                   </div>
                 </div>
-                <Button className="w-full bg-black text-white hover:bg-gray-800 text-base font-semibold py-3 rounded-lg mt-2">
-                  Proceed to Checkout
+                <Button asChild className="w-full bg-black text-white hover:bg-gray-800 text-base font-semibold py-3 rounded-lg mt-2">
+                  <Link href="/checkout">Proceed to Checkout</Link>
                 </Button>
                 <Button asChild variant="outline" className="w-full bg-white border border-gray-300 text-base font-semibold py-3 rounded-lg">
                   <Link href="/">Continue Shopping</Link>
