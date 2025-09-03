@@ -176,7 +176,7 @@ export default function ZodiacCategories() {
            />
          </motion.div>
 
-        {/* MAIN ZODIAC SIGNS - First Row */}
+                {/* MAIN ZODIAC SIGNS - First Row */}
         <div ref={ref}>
           {loading ? (
             <div className="flex items-center justify-center py-12">
@@ -192,93 +192,186 @@ export default function ZodiacCategories() {
               </div>
             </div>
           ) : (
-                         <motion.div
-               variants={containerVariants}
-               initial="hidden"
-               animate="visible"
-               className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-6 md:gap-8 lg:gap-10 mb-8 px-4 py-6 max-w-none"
-             >
-            {mainZodiacSigns.map((sign, index) => {
-              const zodiacData = getZodiacData(sign);
-              return (
-                <motion.div
-                  key={sign.slug}
-                  variants={heroicSlideVariants}
-                  className="flex flex-col items-center p-2"
-                >
-                  <Link href={`/shop/zodiac/${sign.slug}`}>
-                    <motion.div
-                      variants={iconHoverVariants}
-                      initial="rest"
-                      whileHover="hover"
-                      className="relative cursor-pointer"
-                    >
-                      {/* CIRCULAR ZODIAC CARD */}
+            <>
+              {/* Mobile Horizontal Scroll */}
+              <motion.div
+                variants={containerVariants}
+                initial="hidden"
+                animate="visible"
+                className="md:hidden overflow-x-auto scrollbar-hide scroll-smooth mb-8"
+              >
+                <div className="flex gap-4 px-4 py-6 min-w-max">
+                  {mainZodiacSigns.map((sign, index) => {
+                    const zodiacData = getZodiacData(sign);
+                    return (
                       <motion.div
-                        className={`relative w-28 h-28 md:w-32 md:h-32 lg:w-36 lg:h-36 xl:w-40 xl:h-40 rounded-full bg-gradient-to-br ${zodiacData.color} shadow-lg ${zodiacData.shadowColor} border-3 border-white/40 overflow-hidden`}
-                        whileHover={{
-                          scale: 1.15,
-                          boxShadow: '0 25px 50px rgba(251, 146, 60, 0.4)',
-                          transition: { duration: 0.3, ease: [0.25, 0.46, 0.45, 0.94] }
+                        key={sign.slug}
+                        variants={heroicSlideVariants}
+                        className="flex flex-col items-center p-2 flex-shrink-0"
+                      >
+                        <Link href={`/shop/zodiac/${sign.slug}`}>
+                          <motion.div
+                            variants={iconHoverVariants}
+                            initial="rest"
+                            whileHover="hover"
+                            className="relative cursor-pointer"
+                          >
+                            {/* CIRCULAR ZODIAC CARD - Mobile optimized */}
+                            <motion.div
+                              className={`relative w-24 h-24 rounded-full bg-gradient-to-br ${zodiacData.color} shadow-lg ${zodiacData.shadowColor} border-3 border-white/40 overflow-hidden`}
+                              whileHover={{
+                                scale: 1.1,
+                                boxShadow: '0 20px 40px rgba(251, 146, 60, 0.3)',
+                                transition: { duration: 0.3, ease: [0.25, 0.46, 0.45, 0.94] }
+                              }}
+                            >
+                              {/* ZODIAC IMAGE */}
+                              <div className="absolute inset-0 rounded-full overflow-hidden">
+                                <Image
+                                  src={zodiacData.image}
+                                  alt={sign.name}
+                                  fill
+                                  className="object-cover object-center"
+                                  sizes="96px"
+                                />
+                              </div>
+                              
+                              {/* SUBTLE COLOR OVERLAY */}
+                              <div className={`absolute inset-0 rounded-full bg-gradient-to-br ${zodiacData.color} opacity-30 mix-blend-soft-light`} />
+                              
+                              {/* ZODIAC SYMBOL */}
+                              <div className="absolute inset-0 flex items-center justify-center">
+                                <span className="text-3xl text-white font-bold drop-shadow-lg">
+                                  {zodiacData.symbol}
+                                </span>
+                              </div>
+                              
+                              {/* INNER GLOW */}
+                              <div className="absolute inset-2 rounded-full bg-gradient-to-br from-white/10 to-transparent" />
+                            </motion.div>
+                          </motion.div>
+                        </Link>
+
+                        {/* ZODIAC NAME - Mobile optimized */}
+                        <motion.h3
+                          className="mt-2 text-center text-sm font-semibold text-slate-700 whitespace-nowrap"
+                          style={{ fontFamily: 'Playfair Display, serif' }}
+                          initial={{ opacity: 0, y: 10 }}
+                          animate={{
+                            opacity: 1, 
+                            y: 0,
+                            transition: { delay: index * 0.1 + 0.8, duration: 0.4 }
+                          }}
+                        >
+                          {sign.name}
+                        </motion.h3>
+                        
+                        {/* DATES - Mobile optimized */}
+                        <motion.p
+                          className="text-xs text-slate-500 mt-1 text-center whitespace-nowrap"
+                          initial={{ opacity: 0 }}
+                          animate={{
+                            opacity: 1,
+                            transition: { delay: index * 0.1 + 1, duration: 0.4 }
+                          }}
+                        >
+                          {zodiacData.dates}
+                        </motion.p>
+                      </motion.div>
+                    );
+                  })}
+                </div>
+              </motion.div>
+
+              {/* Desktop Grid Layout */}
+              <motion.div
+                variants={containerVariants}
+                initial="hidden"
+                animate="visible"
+                className="hidden md:grid grid-cols-3 lg:grid-cols-6 gap-6 md:gap-8 lg:gap-10 mb-8 px-4 py-6 max-w-none"
+              >
+                {mainZodiacSigns.map((sign, index) => {
+                  const zodiacData = getZodiacData(sign);
+                  return (
+                    <motion.div
+                      key={sign.slug}
+                      variants={heroicSlideVariants}
+                      className="flex flex-col items-center p-2"
+                    >
+                      <Link href={`/shop/zodiac/${sign.slug}`}>
+                        <motion.div
+                          variants={iconHoverVariants}
+                          initial="rest"
+                          whileHover="hover"
+                          className="relative cursor-pointer"
+                        >
+                          {/* CIRCULAR ZODIAC CARD */}
+                          <motion.div
+                            className={`relative w-32 h-32 lg:w-36 lg:h-36 xl:w-40 xl:h-40 rounded-full bg-gradient-to-br ${zodiacData.color} shadow-lg ${zodiacData.shadowColor} border-3 border-white/40 overflow-hidden`}
+                            whileHover={{
+                              scale: 1.15,
+                              boxShadow: '0 25px 50px rgba(251, 146, 60, 0.4)',
+                              transition: { duration: 0.3, ease: [0.25, 0.46, 0.45, 0.94] }
+                            }}
+                          >
+                            {/* ZODIAC IMAGE */}
+                            <div className="absolute inset-0 rounded-full overflow-hidden">
+                              <Image
+                                src={zodiacData.image}
+                                alt={sign.name}
+                                fill
+                                className="object-cover object-center"
+                                sizes="(max-width: 1024px) 128px, (max-width: 1280px) 144px, 160px"
+                              />
+                            </div>
+                            
+                            {/* SUBTLE COLOR OVERLAY */}
+                            <div className={`absolute inset-0 rounded-full bg-gradient-to-br ${zodiacData.color} opacity-30 mix-blend-soft-light`} />
+                            
+                            {/* ZODIAC SYMBOL */}
+                            <div className="absolute inset-0 flex items-center justify-center">
+                              <span className="text-5xl lg:text-6xl xl:text-7xl text-white font-bold drop-shadow-lg">
+                                {zodiacData.symbol}
+                              </span>
+                            </div>
+                            
+                            {/* INNER GLOW */}
+                            <div className="absolute inset-2 rounded-full bg-gradient-to-br from-white/10 to-transparent" />
+                          </motion.div>
+                        </motion.div>
+                      </Link>
+
+                      {/* ZODIAC NAME */}
+                      <motion.h3
+                        className="mt-3 text-center text-base font-semibold text-slate-700"
+                        style={{ fontFamily: 'Playfair Display, serif' }}
+                        initial={{ opacity: 0, y: 10 }}
+                        animate={{
+                          opacity: 1, 
+                          y: 0,
+                          transition: { delay: index * 0.1 + 0.8, duration: 0.4 }
                         }}
                       >
-                        {/* ZODIAC IMAGE */}
-                        <div className="absolute inset-0 rounded-full overflow-hidden">
-                          <Image
-                            src={zodiacData.image}
-                            alt={sign.name}
-                            fill
-                            className="object-cover object-center"
-                            sizes="(max-width: 768px) 112px, (max-width: 1024px) 128px, (max-width: 1280px) 144px, 160px"
-                          />
-                        </div>
-                        
-                        {/* SUBTLE COLOR OVERLAY */}
-                        <div className={`absolute inset-0 rounded-full bg-gradient-to-br ${zodiacData.color} opacity-30 mix-blend-soft-light`} />
-                        
-                        {/* ZODIAC SYMBOL */}
-                        <div className="absolute inset-0 flex items-center justify-center">
-                          <span className="text-4xl md:text-5xl lg:text-6xl xl:text-7xl text-white font-bold drop-shadow-lg">
-                            {zodiacData.symbol}
-                          </span>
-                        </div>
-                        
-                        {/* INNER GLOW */}
-                        <div className="absolute inset-2 rounded-full bg-gradient-to-br from-white/10 to-transparent" />
-                      </motion.div>
+                        {sign.name}
+                      </motion.h3>
+                      
+                      {/* DATES */}
+                      <motion.p
+                        className="text-xs text-slate-500 mt-1 text-center"
+                        initial={{ opacity: 0 }}
+                        animate={{
+                          opacity: 1,
+                          transition: { delay: index * 0.1 + 1, duration: 0.4 }
+                        }}
+                      >
+                        {zodiacData.dates}
+                      </motion.p>
                     </motion.div>
-                  </Link>
-
-                                     {/* ZODIAC NAME */}
-                   <motion.h3
-                     className="mt-3 text-center text-sm md:text-base font-semibold text-slate-700"
-                     style={{ fontFamily: 'Playfair Display, serif' }}
-                     initial={{ opacity: 0, y: 10 }}
-                     animate={{
-                       opacity: 1, 
-                       y: 0,
-                       transition: { delay: index * 0.1 + 0.8, duration: 0.4 }
-                     }}
-                   >
-                     {sign.name}
-                   </motion.h3>
-                   
-                   {/* DATES */}
-                   <motion.p
-                     className="text-xs text-slate-500 mt-1 text-center"
-                     initial={{ opacity: 0 }}
-                     animate={{
-                       opacity: 1,
-                       transition: { delay: index * 0.1 + 1, duration: 0.4 }
-                     }}
-                   >
-                     {zodiacData.dates}
-                   </motion.p>
-                </motion.div>
-              );
-            })}
-          </motion.div>
-        )}
+                  );
+                })}
+              </motion.div>
+            </>
+          )}
         </div>
 
         {/* EXPANDABLE SECTION */}
@@ -291,11 +384,87 @@ export default function ZodiacCategories() {
               transition={{ duration: 0.5, ease: [0.25, 0.46, 0.45, 0.94] }}
               className="overflow-visible"
             >
+              {/* Mobile Horizontal Scroll for Additional Signs */}
               <motion.div
                 variants={containerVariants}
                 initial="hidden"
                 animate="visible"
-                className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-6 md:gap-8 lg:gap-10 mb-8 px-4 py-6 max-w-none"
+                className="md:hidden overflow-x-auto scrollbar-hide scroll-smooth mb-8"
+              >
+                <div className="flex gap-4 px-4 py-6 min-w-max">
+                  {additionalZodiacSigns.map((sign, index) => {
+                    const zodiacData = getZodiacData(sign);
+                    return (
+                      <motion.div
+                        key={sign.slug}
+                        variants={heroicSlideVariants}
+                        className="flex flex-col items-center p-2 flex-shrink-0"
+                      >
+                        <Link href={`/shop/zodiac/${sign.slug}`}>
+                          <motion.div
+                            variants={iconHoverVariants}
+                            initial="rest"
+                            whileHover="hover"
+                            className="relative cursor-pointer"
+                          >
+                            {/* CIRCULAR ZODIAC CARD - Mobile optimized */}
+                            <motion.div
+                              className={`relative w-24 h-24 rounded-full bg-gradient-to-br ${zodiacData.color} shadow-lg ${zodiacData.shadowColor} border-3 border-white/40 overflow-hidden`}
+                              whileHover={{
+                                scale: 1.1,
+                                boxShadow: '0 20px 40px rgba(251, 146, 60, 0.3)',
+                                transition: { duration: 0.3, ease: [0.25, 0.46, 0.45, 0.94] }
+                              }}
+                            >
+                              {/* ZODIAC IMAGE */}
+                              <div className="absolute inset-0 rounded-full overflow-hidden">
+                                <Image
+                                  src={zodiacData.image}
+                                  alt={sign.name}
+                                  fill
+                                  className="object-cover object-center"
+                                  sizes="96px"
+                                />
+                              </div>
+                              
+                              {/* COLOR OVERLAY */}
+                              <div className={`absolute inset-0 rounded-full bg-gradient-to-br ${zodiacData.color} opacity-30 mix-blend-soft-light`} />
+                              
+                              {/* ZODIAC SYMBOL */}
+                              <div className="absolute inset-0 flex items-center justify-center">
+                                <span className="text-3xl text-white font-bold drop-shadow-lg">
+                                  {zodiacData.symbol}
+                                </span>
+                              </div>
+                              
+                              {/* INNER GLOW */}
+                              <div className="absolute inset-2 rounded-full bg-gradient-to-br from-white/10 to-transparent" />
+                            </motion.div>
+                          </motion.div>
+                        </Link>
+
+                        {/* ZODIAC NAME - Mobile optimized */}
+                        <h3 className="mt-2 text-center text-sm font-semibold text-slate-700 whitespace-nowrap"
+                            style={{ fontFamily: 'Playfair Display, serif' }}>
+                          {sign.name}
+                        </h3>
+                        
+                        {/* DATES - Mobile optimized */}
+                        <p className="text-xs text-slate-500 mt-1 text-center whitespace-nowrap">
+                          {zodiacData.dates}
+                        </p>
+                      </motion.div>
+                    );
+                  })}
+                </div>
+              </motion.div>
+
+              {/* Desktop Grid Layout for Additional Signs */}
+              <motion.div
+                variants={containerVariants}
+                initial="hidden"
+                animate="visible"
+                className="hidden md:grid grid-cols-3 lg:grid-cols-6 gap-6 md:gap-8 lg:gap-10 mb-8 px-4 py-6 max-w-none"
               >
                 {additionalZodiacSigns.map((sign, index) => {
                   const zodiacData = getZodiacData(sign);
@@ -314,7 +483,7 @@ export default function ZodiacCategories() {
                         >
                           {/* CIRCULAR ZODIAC CARD */}
                           <motion.div
-                            className={`relative w-28 h-28 md:w-32 md:h-32 lg:w-36 lg:h-36 xl:w-40 xl:h-40 rounded-full bg-gradient-to-br ${zodiacData.color} shadow-lg ${zodiacData.shadowColor} border-3 border-white/40 overflow-hidden`}
+                            className={`relative w-32 h-32 lg:w-36 lg:h-36 xl:w-40 xl:h-40 rounded-full bg-gradient-to-br ${zodiacData.color} shadow-lg ${zodiacData.shadowColor} border-3 border-white/40 overflow-hidden`}
                             whileHover={{
                               scale: 1.15,
                               boxShadow: '0 25px 50px rgba(251, 146, 60, 0.4)',
@@ -328,7 +497,7 @@ export default function ZodiacCategories() {
                                 alt={sign.name}
                                 fill
                                 className="object-cover object-center"
-                                sizes="(max-width: 768px) 112px, (max-width: 1024px) 128px, (max-width: 1280px) 144px, 160px"
+                                sizes="(max-width: 1024px) 128px, (max-width: 1280px) 144px, 160px"
                               />
                             </div>
                             
@@ -337,7 +506,7 @@ export default function ZodiacCategories() {
                             
                             {/* ZODIAC SYMBOL */}
                             <div className="absolute inset-0 flex items-center justify-center">
-                              <span className="text-4xl md:text-5xl lg:text-6xl xl:text-7xl text-white font-bold drop-shadow-lg">
+                              <span className="text-5xl lg:text-6xl xl:text-7xl text-white font-bold drop-shadow-lg">
                                 {zodiacData.symbol}
                               </span>
                             </div>
@@ -349,7 +518,7 @@ export default function ZodiacCategories() {
                       </Link>
 
                       {/* ZODIAC NAME */}
-                      <h3 className="mt-3 text-center text-sm md:text-base font-semibold text-slate-700"
+                      <h3 className="mt-3 text-center text-base font-semibold text-slate-700"
                           style={{ fontFamily: 'Playfair Display, serif' }}>
                         {sign.name}
                       </h3>
