@@ -8,7 +8,6 @@ import { Star, ShoppingCart } from 'lucide-react';
 import { UniversalCartButton } from '@/app/components/UniversalCartButton';
 import { Card, CardContent, CardFooter } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 
 export interface Product {

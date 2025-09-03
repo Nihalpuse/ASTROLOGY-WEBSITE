@@ -1,370 +1,552 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getServerSession } from 'next-auth/next';
-import { authOptions } from '@/lib/auth';
-import pool from '@/lib/db';
+import { PrismaClient } from '@prisma/client';
 
-// Type definitions
-interface User {
-  id: number;
-  google_id: string;
-}
+const prisma = new PrismaClient();
 
+// Type definitions for cart items
 interface CartItem {
   id: number;
-  user_id: number;
-  product_id: number;
   quantity: number;
-  is_stone: number;
-  is_service: number;
-  carats: number | null;
-  product_name: string;
-  unit_price: number;
+  price: number;
+  products?: {
+    id: number;
+    name: string;
+    price: number;
+    image_url?: string;
+    slug: string;
+    product_media?: Array<{
+      id: number;
+      media_url: string;
+      alt_text?: string;
+      is_primary: boolean;
+    }>;
+  } | null;
+  services?: {
+    id: number;
+    title: string;
+    price: number;
+    duration?: string;
+    delivery_type?: string;
+    service_media?: Array<{
+      id: number;
+      media_url: string;
+      alt_text?: string;
+      is_primary: boolean;
+    }>;
+  } | null;
 }
 
-interface Service {
-  id: number;
-  slug: string;
-}
-
-interface DatabaseResult {
-  affectedRows: number;
-}
-
-// GET handler to fetch cart items
-export async function GET(req: NextRequest) {
+// GET - Retrieve user's cart
+export async function GET(request: NextRequest) {
   try {
-    // Check if user is authenticated
-    const session = await getServerSession(authOptions);
-    
-    if (!session || !session.user) {
-      return NextResponse.json({ 
-        authenticated: false,
-        redirectUrl: '/signin?redirect=cart'
-      }, { status: 401 });
-    }
-    
-    const userGoogleId = session.user.id;
-    const connection = await pool.getConnection();
-    
-    try {
-      // First get the internal user ID by Google ID
-      const [userResult] = await connection.query(
-        'SELECT id FROM users WHERE google_id = ?',
-        [userGoogleId]
+    const { searchParams } = new URL(request.url);
+    const userId = searchParams.get('userId');
+
+    if (!userId) {
+      return NextResponse.json(
+        { error: 'User ID is required' },
+        { status: 400 }
       );
-      
-      if ((userResult as User[]).length === 0) {
-        return NextResponse.json({ error: 'User not found' }, { status: 404 });
+    }
+
+    // Get user's active cart
+    const cart = await (prisma as any).cart.findFirst({
+      where: {
+        user_id: parseInt(userId),
+        status: 'active'
+      },
+      include: {
+        cart_items: {
+          include: {
+            products: {
+              select: {
+                id: true,
+                name: true,
+                price: true,
+                image_url: true,
+                slug: true,
+                product_media: {
+                  select: {
+                    id: true,
+                    media_url: true,
+                    alt_text: true,
+                    is_primary: true
+                  },
+                  where: {
+                    is_active: true
+                  },
+                  orderBy: [
+                    { is_primary: 'desc' },
+                    { sort_order: 'asc' }
+                  ]
+                }
+              }
+            },
+            services: {
+              select: {
+                id: true,
+                title: true,
+                price: true,
+                duration: true,
+                delivery_type: true,
+                service_media: {
+                  select: {
+                    id: true,
+                    media_url: true,
+                    alt_text: true,
+                    is_primary: true
+                  },
+                  where: {
+                    is_active: true
+                  },
+                  orderBy: [
+                    { is_primary: 'desc' },
+                    { sort_order: 'asc' }
+                  ]
+                }
+              }
+            }
+          }
+        }
       }
-      
-      const userId = (userResult as User[])[0].id;
-      
-      // Get cart items for the user with product details
-      const [rows] = await connection.query(
-        `SELECT c.*, 
-          CASE 
-            WHEN c.is_stone = 1 THEN s.name
-            WHEN c.is_service = 1 THEN srv.title_en
-            ELSE p.name
-          END as product_name,
-          CASE 
-            WHEN c.is_stone = 1 THEN s.price_per_carat
-            WHEN c.is_service = 1 THEN srv.price
-            ELSE p.price
-          END as unit_price,
-          CASE 
-            WHEN c.is_stone = 1 THEN NULL
-            WHEN c.is_service = 1 THEN (
-              SELECT sm.media_url FROM service_media sm 
-              WHERE sm.service_id = c.product_id AND sm.is_active = 1 
-              ORDER BY sm.is_primary DESC, sm.sort_order ASC LIMIT 1
-            )
-            ELSE (
-              SELECT pm.url FROM product_media pm 
-              WHERE pm.product_id = c.product_id 
-              ORDER BY pm.sort_order ASC LIMIT 1
-            )
-          END as image_url
-        FROM cart c
-        LEFT JOIN products p ON c.product_id = p.id AND c.is_stone = 0 AND c.is_service = 0
-        LEFT JOIN stones s ON c.product_id = s.id AND c.is_stone = 1 AND c.is_service = 0
-        LEFT JOIN services srv ON c.product_id = srv.id AND c.is_service = 1
-        WHERE c.user_id = ?`,
-        [userId]
-      );
-      
-      return NextResponse.json({ cartItems: rows });
-    } finally {
-      connection.release();
+    });
+
+    if (!cart) {
+      // Create a new cart if none exists
+      const newCart = await (prisma as any).cart.create({
+        data: {
+          user_id: parseInt(userId),
+          status: 'active'
+        },
+        include: {
+          cart_items: {
+            include: {
+              products: {
+                select: {
+                  id: true,
+                  name: true,
+                  price: true,
+                  image_url: true,
+                  slug: true,
+                  product_media: {
+                    select: {
+                      id: true,
+                      media_url: true,
+                      alt_text: true,
+                      is_primary: true
+                    },
+                    where: {
+                      is_active: true
+                    },
+                    orderBy: [
+                      { is_primary: 'desc' },
+                      { sort_order: 'asc' }
+                    ]
+                  }
+                }
+              },
+              services: {
+                select: {
+                  id: true,
+                  title: true,
+                  price: true,
+                  duration: true,
+                  delivery_type: true,
+                  service_media: {
+                    select: {
+                      id: true,
+                      media_url: true,
+                      alt_text: true,
+                      is_primary: true
+                    },
+                    where: {
+                      is_active: true
+                    },
+                    orderBy: [
+                      { is_primary: 'desc' },
+                      { sort_order: 'asc' }
+                    ]
+                  }
+                }
+              }
+            }
+          }
+        }
+      });
+
+      return NextResponse.json({
+        cart: newCart,
+        totalItems: 0,
+        totalPrice: 0
+      });
     }
+
+    // Calculate totals
+    const totalItems = cart.cart_items.reduce((sum: number, item: CartItem) => sum + item.quantity, 0);
+    const totalPrice = cart.cart_items.reduce((sum: number, item: CartItem) => sum + (Number(item.price) * item.quantity), 0);
+
+    return NextResponse.json({
+      cart,
+      totalItems,
+      totalPrice: Number(totalPrice.toFixed(2))
+    });
+
   } catch (error) {
-    console.error('Error fetching cart:', error);
-    return NextResponse.json({ error: 'Failed to fetch cart items' }, { status: 500 });
+    console.error('Error retrieving cart:', error);
+    return NextResponse.json(
+      { error: 'Failed to retrieve cart' },
+      { status: 500 }
+    );
   }
 }
 
-// POST handler to add item to cart
-export async function POST(req: NextRequest) {
+// POST - Add item to cart
+export async function POST(request: NextRequest) {
   try {
-    // Check if user is authenticated
-    const session = await getServerSession(authOptions);
-    
-    if (!session || !session.user) {
-      return NextResponse.json({ 
-        authenticated: false,
-        redirectUrl: '/signin?redirect=cart'
-      }, { status: 401 });
-    }
-    
-    const userGoogleId = session.user.id;
-    const body = await req.json();
-    const { productId, quantity = 1, isStone = false, isService = false, carats, itemType } = body;
-    
-    // Validate required fields
-    if (!productId) {
-      return NextResponse.json({ error: 'Product ID is required' }, { status: 400 });
-    }
-    
-    const connection = await pool.getConnection();
-    
-    try {
-      // Get the internal user ID by Google ID
-      const [userResult] = await connection.query(
-        'SELECT id FROM users WHERE google_id = ?',
-        [userGoogleId]
+    const body = await request.json();
+    const { userId, itemType, productId, serviceId, quantity = 1 } = body;
+
+    if (!userId || !itemType) {
+      return NextResponse.json(
+        { error: 'User ID and item type are required' },
+        { status: 400 }
       );
-      
-      if ((userResult as User[]).length === 0) {
-        return NextResponse.json({ error: 'User not found' }, { status: 404 });
+    }
+
+    if (itemType === 'product' && !productId) {
+      return NextResponse.json(
+        { error: 'Product ID is required for product items' },
+        { status: 400 }
+      );
+    }
+
+    if (itemType === 'service' && !serviceId) {
+      return NextResponse.json(
+        { error: 'Service ID is required for service items' },
+        { status: 400 }
+      );
+    }
+
+    // Get or create user's active cart
+    let cart = await (prisma as any).cart.findFirst({
+      where: {
+        user_id: parseInt(userId),
+        status: 'active'
       }
-      
-      const userId = (userResult as User[])[0].id;
-      
-      // Determine the type of item and get the actual numeric ID
-      let actualProductId: number;
-      let resolvedIsService = isService;
-      let resolvedIsStone = isStone;
-      
-      // If itemType is specified explicitly, use it to determine the type
-      if (itemType) {
-        resolvedIsService = itemType === 'service';
-        resolvedIsStone = itemType === 'stone';
+    });
+
+    if (!cart) {
+      cart = await (prisma as any).cart.create({
+        data: {
+          user_id: parseInt(userId),
+          status: 'active'
+        }
+      });
+    }
+
+    // Get item price
+    let price = 0;
+    if (itemType === 'product' && productId) {
+      const product = await prisma.products.findUnique({
+        where: { id: productId }
+      });
+      if (!product) {
+        return NextResponse.json(
+          { error: 'Product not found' },
+          { status: 404 }
+        );
       }
-      
-      // Handle string IDs (slugs) for services
-      if (resolvedIsService && typeof productId === 'string') {
-        // Check if it's already a numeric ID
-        if (/^\d+$/.test(productId)) {
-          actualProductId = parseInt(productId, 10);
-        } else {
-          // It's a slug, look up the actual ID
-          const [serviceResult] = await connection.query(
-            'SELECT id FROM services WHERE slug = ?',
-            [productId]
-          );
-          
-          if ((serviceResult as Service[]).length === 0) {
-            return NextResponse.json({ error: `Service not found with slug: ${productId}` }, { status: 404 });
+      price = Number(product.price);
+    } else if (itemType === 'service' && serviceId) {
+      const service = await prisma.services.findUnique({
+        where: { id: serviceId }
+      });
+      if (!service) {
+        return NextResponse.json(
+          { error: 'Service not found' },
+          { status: 404 }
+        );
+      }
+      price = Number(service.price);
+    }
+
+    // Check if item already exists in cart
+    const existingItem = await (prisma as any).cart_items.findFirst({
+      where: {
+        cart_id: cart.id,
+        item_type: itemType,
+        product_id: productId || null,
+        service_id: serviceId || null
+      }
+    });
+
+    if (existingItem) {
+      // Update quantity of existing item
+      const updatedItem = await (prisma as any).cart_items.update({
+        where: { id: existingItem.id },
+        data: {
+          quantity: existingItem.quantity + quantity,
+          updated_at: new Date()
+        },
+        include: {
+          products: {
+            select: {
+              id: true,
+              name: true,
+              price: true,
+              image_url: true,
+              slug: true,
+              product_media: {
+                select: {
+                  id: true,
+                  media_url: true,
+                  alt_text: true,
+                  is_primary: true
+                },
+                where: {
+                  is_active: true
+                },
+                orderBy: [
+                  { is_primary: 'desc' },
+                  { sort_order: 'asc' }
+                ]
+              }
+            }
+          },
+          services: {
+            select: {
+              id: true,
+              title: true,
+              price: true,
+              duration: true,
+              delivery_type: true,
+              service_media: {
+                select: {
+                  id: true,
+                  media_url: true,
+                  alt_text: true,
+                  is_primary: true
+                },
+                where: {
+                  is_active: true
+                },
+                orderBy: [
+                  { is_primary: 'desc' },
+                  { sort_order: 'asc' }
+                ]
+              }
+            }
           }
-          
-          actualProductId = (serviceResult as Service[])[0].id;
         }
-      } 
-      // Handle numeric IDs for regular products and stones
-      else {
-        // If productId is a string but looks like a number, convert it
-        if (typeof productId === 'string' && /^\d+$/.test(productId)) {
-          actualProductId = parseInt(productId, 10);
-        } 
-        // If it's already a number, use it directly
-        else if (typeof productId === 'number') {
-          actualProductId = productId;
-        }
-        // Otherwise, it's an invalid ID format
-        else {
-          return NextResponse.json({ 
-            error: `Invalid product ID format: ${productId}. Must be numeric for products and stones.` 
-          }, { status: 400 });
-        }
-      }
-      
-      // Debug logging
-      console.log(`Adding item: ID=${actualProductId}, isService=${resolvedIsService}, isStone=${resolvedIsStone}`);
-      
-      // Check if the item already exists in the cart
-      const [existingItems] = await connection.query(
-        'SELECT * FROM cart WHERE user_id = ? AND product_id = ? AND is_stone = ? AND is_service = ?',
-        [userId, actualProductId, resolvedIsStone ? 1 : 0, resolvedIsService ? 1 : 0]
-      );
-      
-      if ((existingItems as CartItem[]).length > 0) {
-        // Update quantity/carats if item already exists
-        const existingItem = (existingItems as CartItem[])[0];
-        const newQuantity = resolvedIsStone 
-          ? (existingItem.carats || 0) + (carats || 1)
-          : existingItem.quantity + quantity;
-          
-        await connection.query(
-          'UPDATE cart SET quantity = ?, carats = ? WHERE id = ?',
-          [resolvedIsStone ? 1 : newQuantity, resolvedIsStone ? newQuantity : null, existingItem.id]
-        );
-      } else {
-        // Insert new cart item
-        await connection.query(
-          'INSERT INTO cart (user_id, product_id, quantity, is_stone, is_service, carats) VALUES (?, ?, ?, ?, ?, ?)',
-          [
-            userId, 
-            actualProductId, 
-            resolvedIsStone ? 1 : quantity, 
-            resolvedIsStone ? 1 : 0, 
-            resolvedIsService ? 1 : 0,
-            resolvedIsStone ? carats : null
-          ]
-        );
-      }
-      
-      return NextResponse.json({ message: 'Item added to cart successfully' });
-    } finally {
-      connection.release();
+      });
+
+      return NextResponse.json({
+        message: 'Item quantity updated in cart',
+        item: updatedItem
+      });
     }
+
+    // Add new item to cart
+    const newItem = await (prisma as any).cart_items.create({
+      data: {
+        cart_id: cart.id,
+        item_type: itemType,
+        product_id: productId || null,
+        service_id: serviceId || null,
+        quantity,
+        price,
+        created_at: new Date(),
+        updated_at: new Date()
+      },
+      include: {
+        products: {
+          select: {
+            id: true,
+            name: true,
+            price: true,
+            image_url: true,
+            slug: true,
+            product_media: {
+              select: {
+                id: true,
+                media_url: true,
+                alt_text: true,
+                is_primary: true
+              },
+              where: {
+                is_active: true
+              },
+              orderBy: [
+                { is_primary: 'desc' },
+                { sort_order: 'asc' }
+              ]
+            }
+          }
+        },
+        services: {
+          select: {
+            id: true,
+            title: true,
+            price: true,
+            duration: true,
+            delivery_type: true,
+            service_media: {
+              select: {
+                id: true,
+                media_url: true,
+                alt_text: true,
+                is_primary: true
+              },
+              where: {
+                is_active: true
+              },
+              orderBy: [
+                { is_primary: 'desc' },
+                { sort_order: 'asc' }
+              ]
+            }
+          }
+        }
+      }
+    });
+
+    return NextResponse.json({
+      message: 'Item added to cart successfully',
+      item: newItem
+    }, { status: 201 });
+
   } catch (error) {
     console.error('Error adding item to cart:', error);
-    return NextResponse.json({ 
-      error: 'Failed to add item to cart', 
-      details: error instanceof Error ? error.message : String(error)
-    }, { status: 500 });
+    return NextResponse.json(
+      { error: 'Failed to add item to cart' },
+      { status: 500 }
+    );
   }
 }
 
-// DELETE handler to remove item from cart
-export async function DELETE(req: NextRequest) {
+// PUT - Update item quantity
+export async function PUT(request: NextRequest) {
   try {
-    // Check if user is authenticated
-    const session = await getServerSession(authOptions);
-    
-    if (!session || !session.user) {
-      return NextResponse.json({ 
-        authenticated: false,
-        redirectUrl: '/signin?redirect=cart'
-      }, { status: 401 });
-    }
-    
-    const userGoogleId = session.user.id;
-    
-    // Get cart item ID from query params
-    const url = new URL(req.url);
-    const cartItemId = url.searchParams.get('id');
-    
-    if (!cartItemId) {
-      return NextResponse.json({ error: 'Cart item ID is required' }, { status: 400 });
-    }
-    
-    const connection = await pool.getConnection();
-    
-    try {
-      // First get the internal user ID by Google ID
-      const [userResult] = await connection.query(
-        'SELECT id FROM users WHERE google_id = ?',
-        [userGoogleId]
-      );
-      
-      if ((userResult as User[]).length === 0) {
-        return NextResponse.json({ error: 'User not found' }, { status: 404 });
-      }
-      
-      const userId = (userResult as User[])[0].id;
-      
-      // Delete the cart item (ensuring it belongs to the correct user)
-      const [result] = await connection.query(
-        'DELETE FROM cart WHERE id = ? AND user_id = ?',
-        [cartItemId, userId]
-      );
-      
-      if ((result as DatabaseResult).affectedRows === 0) {
-        return NextResponse.json({ error: 'Item not found in cart' }, { status: 404 });
-      }
-      
-      return NextResponse.json({ message: 'Item removed from cart successfully' });
-    } finally {
-      connection.release();
-    }
-  } catch (error) {
-    console.error('Error removing item from cart:', error);
-    return NextResponse.json({ error: 'Failed to remove item from cart' }, { status: 500 });
-  }
-}
+    const body = await request.json();
+    const { cartItemId, quantity } = body;
 
-// PUT handler to update cart item quantity/carats
-export async function PUT(req: NextRequest) {
-  try {
-    // Check if user is authenticated
-    const session = await getServerSession(authOptions);
-    
-    if (!session || !session.user) {
-      return NextResponse.json({ 
-        authenticated: false,
-        redirectUrl: '/signin?redirect=cart'
-      }, { status: 401 });
-    }
-    
-    const userGoogleId = session.user.id;
-    const body = await req.json();
-    const { cartItemId, quantity, carats } = body;
-    
-    // Validate required fields
-    if (!cartItemId) {
-      return NextResponse.json({ error: 'Cart item ID is required' }, { status: 400 });
-    }
-    
-    if (quantity === undefined && carats === undefined) {
-      return NextResponse.json({ error: 'Quantity or carats must be provided' }, { status: 400 });
-    }
-    
-    const connection = await pool.getConnection();
-    
-    try {
-      // First get the internal user ID by Google ID
-      const [userResult] = await connection.query(
-        'SELECT id FROM users WHERE google_id = ?',
-        [userGoogleId]
+    if (!cartItemId || quantity === undefined) {
+      return NextResponse.json(
+        { error: 'Cart item ID and quantity are required' },
+        { status: 400 }
       );
-      
-      if ((userResult as User[]).length === 0) {
-        return NextResponse.json({ error: 'User not found' }, { status: 404 });
+    }
+
+    if (quantity <= 0) {
+      // Remove item if quantity is 0 or negative
+      await (prisma as any).cart_items.delete({
+        where: { id: cartItemId }
+      });
+
+      return NextResponse.json({
+        message: 'Item removed from cart'
+      });
+    }
+
+    // Update quantity
+    const updatedItem = await (prisma as any).cart_items.update({
+      where: { id: cartItemId },
+      data: {
+        quantity,
+        updated_at: new Date()
+      },
+      include: {
+        products: {
+          select: {
+            id: true,
+            name: true,
+            price: true,
+            image_url: true,
+            slug: true,
+            product_media: {
+              select: {
+                id: true,
+                media_url: true,
+                alt_text: true,
+                is_primary: true
+              },
+              where: {
+                is_active: true
+              },
+              orderBy: [
+                { is_primary: 'desc' },
+                { sort_order: 'asc' }
+              ]
+            }
+          }
+        },
+        services: {
+          select: {
+            id: true,
+            title: true,
+            price: true,
+            duration: true,
+            delivery_type: true,
+            service_media: {
+              select: {
+                id: true,
+                media_url: true,
+                alt_text: true,
+                is_primary: true
+              },
+              where: {
+                is_active: true
+              },
+              orderBy: [
+                { is_primary: 'desc' },
+                { sort_order: 'asc' }
+              ]
+            }
+          }
+        }
       }
-      
-      const userId = (userResult as User[])[0].id;
-      
-      // Get the cart item to check if it's a stone, service, or regular product
-      const [cartItems] = await connection.query(
-        'SELECT * FROM cart WHERE id = ? AND user_id = ?',
-        [cartItemId, userId]
-      );
-      
-      if ((cartItems as CartItem[]).length === 0) {
-        return NextResponse.json({ error: 'Item not found in cart' }, { status: 404 });
-      }
-      
-      const cartItem = (cartItems as CartItem[])[0];
-      const isStone = cartItem.is_stone === 1;
-      
-      // Update the cart item
-      await connection.query(
-        'UPDATE cart SET quantity = ?, carats = ? WHERE id = ? AND user_id = ?',
-        [
-          isStone ? 1 : (quantity || cartItem.quantity), 
-          isStone ? (carats || cartItem.carats) : null, 
-          cartItemId, 
-          userId
-        ]
-      );
-      
-      return NextResponse.json({ message: 'Cart item updated successfully' });
-    } finally {
-      connection.release();
-    }
+    });
+
+    return NextResponse.json({
+      message: 'Item quantity updated successfully',
+      item: updatedItem
+    });
+
   } catch (error) {
     console.error('Error updating cart item:', error);
-    return NextResponse.json({ error: 'Failed to update cart item' }, { status: 500 });
+    return NextResponse.json(
+      { error: 'Failed to update cart item' },
+      { status: 500 }
+    );
+  }
+}
+
+// DELETE - Remove item from cart
+export async function DELETE(request: NextRequest) {
+  try {
+    const { searchParams } = new URL(request.url);
+    const cartItemId = searchParams.get('cartItemId');
+
+    if (!cartItemId) {
+      return NextResponse.json(
+        { error: 'Cart item ID is required' },
+        { status: 400 }
+      );
+    }
+
+    await (prisma as any).cart_items.delete({
+      where: { id: parseInt(cartItemId) }
+    });
+
+    return NextResponse.json({
+      message: 'Item removed from cart successfully'
+    });
+
+  } catch (error) {
+    console.error('Error removing item from cart:', error);
+    return NextResponse.json(
+      { error: 'Failed to remove item from cart' },
+      { status: 500 }
+    );
   }
 }

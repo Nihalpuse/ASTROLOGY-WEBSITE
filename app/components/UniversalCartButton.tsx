@@ -6,6 +6,7 @@ import { useToast } from '@/hooks/use-toast';
 import { useRouter } from 'next/navigation';
 import { Loader2 } from 'lucide-react';
 import { useCart } from '../contexts/CartContext';
+import { useCurrentUser } from '@/hooks/useCurrentUser';
 
 interface UniversalCartButtonProps {
   productId: string;
@@ -22,6 +23,40 @@ interface UniversalCartButtonProps {
   [key: string]: string | number | boolean | null | undefined | React.ReactNode;
 }
 
+/**
+ * UniversalCartButton - A versatile button component for adding products/services to cart
+ * 
+ * Features:
+ * - Automatically detects user authentication
+ * - Supports both products and services
+ * - Integrates with the new cart API
+ * - Handles image fetching for services
+ * - Supports "Add to Cart" and "Buy Now" variants
+ * - Automatic error handling and user feedback
+ * 
+ * @example
+ * // Basic product button
+ * <UniversalCartButton
+ *   productId="123"
+ *   productName="Gemstone Bracelet"
+ *   price={99.99}
+ *   image="/images/bracelet.jpg"
+ * >
+ *   Add to Cart
+ * </UniversalCartButton>
+ * 
+ * @example
+ * // Service button with Buy Now variant
+ * <UniversalCartButton
+ *   productId="456"
+ *   productName="Astrology Consultation"
+ *   price={150.00}
+ *   isService={true}
+ *   variant="buyNow"
+ * >
+ *   Book Now
+ * </UniversalCartButton>
+ */
 export function UniversalCartButton({
   productId,
   productName,
@@ -40,10 +75,21 @@ export function UniversalCartButton({
   const { toast } = useToast();
   const router = useRouter();
   const { addItem, items } = useCart();
+  const { userId, isAuthenticated, isLoading: authLoading } = useCurrentUser();
 
   const handleClick = async () => {
     setIsLoading(true);
     try {
+      // Check if user is authenticated
+      if (!isAuthenticated || !userId) {
+        toast({
+          title: 'Authentication Required',
+          description: 'Please log in to add items to your cart.',
+          variant: 'destructive',
+        });
+        return;
+      }
+
       // If it's a service and no image is provided, try to fetch the service image
       let finalImage = image;
       if (isService && !image && productId) {
@@ -63,25 +109,46 @@ export function UniversalCartButton({
         }
       }
 
-      // Add to frontend cart state first
-      addItem({ id: productId, name: productName, price, image: finalImage }, quantity);
+      // Determine item type for the API
+      const itemType = isService ? 'service' : 'product';
+      
+      // Prepare API request body
+      const requestBody: any = {
+        userId,
+        itemType,
+        quantity
+      };
 
-      // Optionally, sync with backend
-      const itemType = isStone ? 'stone' : (isService ? 'service' : 'product');
-      await fetch('/api/cart', {
+      // Add appropriate ID based on item type
+      if (isService) {
+        requestBody.serviceId = parseInt(productId);
+      } else {
+        requestBody.productId = parseInt(productId);
+      }
+
+      // Add to backend cart first
+      const cartResponse = await fetch('/api/cart', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({
-          productId,
-          quantity,
-          isStone,
-          isService,
-          carats,
-          itemType,
-        }),
+        body: JSON.stringify(requestBody),
       });
+
+      if (!cartResponse.ok) {
+        const errorData = await cartResponse.json();
+        throw new Error(errorData.error || 'Failed to add item to cart');
+      }
+
+      const cartData = await cartResponse.json();
+
+      // Add to frontend cart state
+      addItem({ 
+        id: productId, 
+        name: productName, 
+        price, 
+        image: finalImage 
+      }, quantity);
 
       toast({
         title: 'Item added to cart',
@@ -104,10 +171,13 @@ export function UniversalCartButton({
     }
   };
 
+  // Disable button if auth is still loading or user is not authenticated
+  const isDisabled = isLoading || authLoading || !isAuthenticated;
+
   return (
     <Button
       onClick={handleClick}
-      disabled={isLoading}
+      disabled={isDisabled}
       className={className}
       {...props}
     >
