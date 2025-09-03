@@ -27,51 +27,49 @@ model page_visits {
 }
 
 model services {
-  id             Int       @id @default(autoincrement())
-  title          String    @db.VarChar(255)
-  slug           String    @unique(map: "slug") @db.VarChar(255)
-  description    String    @db.Text
-  price          Decimal   @db.Decimal(10, 2)
-  duration       String?   @db.VarChar(100) // e.g., "30 minutes", "1 hour", "2 hours"
-  delivery_type  String?   @db.VarChar(50) // e.g., "online", "offline", "hybrid", "chat", "video", "audio"
-  is_active      Boolean   @default(true)
-  created_at     DateTime? @default(now()) @db.Timestamp(0)
-  updated_at     DateTime? @default(now()) @db.Timestamp(0)
-  
-  // Relations
-  service_media  service_media[]
+  id            Int             @id @default(autoincrement())
+  slug          String          @unique(map: "slug") @db.VarChar(255)
+  price         Decimal         @db.Decimal(10, 2)
+  created_at    DateTime?       @default(now()) @db.Timestamp(0)
+  updated_at    DateTime?       @default(now()) @db.Timestamp(0)
+  delivery_type String?         @db.VarChar(50)
+  description   String          @db.Text
+  duration      String?         @db.VarChar(100)
+  is_active     Boolean         @default(true)
+  title         String          @db.VarChar(255)
+  cart_items    cart_items[]
+  service_media service_media[]
 }
 
 model service_media {
-  id          Int       @id @default(autoincrement())
-  service_id  Int
-  media_type  String    @db.VarChar(50) // 'image', 'video', 'document'
-  media_url   String    @db.VarChar(500)
-  alt_text    String?   @db.VarChar(255)
-  title       String?   @db.VarChar(255)
-  sort_order  Int       @default(0)
-  is_primary  Boolean   @default(false)
-  is_active   Boolean   @default(true)
-  created_at  DateTime? @default(now()) @db.Timestamp(0)
-  updated_at  DateTime? @default(now()) @db.Timestamp(0)
-  
-  // Relations
-  services    services   @relation(fields: [service_id], references: [id], onDelete: Cascade)
-  
+  id         Int       @id @default(autoincrement())
+  service_id Int
+  media_type String    @db.VarChar(50)
+  media_url  String    @db.VarChar(500)
+  alt_text   String?   @db.VarChar(255)
+  title      String?   @db.VarChar(255)
+  sort_order Int       @default(0)
+  is_primary Boolean   @default(false)
+  is_active  Boolean   @default(true)
+  created_at DateTime? @default(now()) @db.Timestamp(0)
+  updated_at DateTime? @default(now()) @db.Timestamp(0)
+  services   services  @relation(fields: [service_id], references: [id], onDelete: Cascade)
+
   @@index([service_id])
 }
 
 model users {
-  id               Int              @id @default(autoincrement())
-  name             String           @db.VarChar(255)
-  email            String           @unique(map: "email") @db.VarChar(255)
-  password         String           @db.VarChar(255)
-  created_at       DateTime?        @default(now()) @db.Timestamp(0)
-  updated_at       DateTime?        @default(now()) @db.Timestamp(0)
-  google_id        String?          @db.VarChar(255)
-  resetToken       String?          @db.VarChar(255) // For password reset
-  resetTokenExpiry DateTime?        // For password reset expiry
+  id               Int       @id @default(autoincrement())
+  name             String    @db.VarChar(255)
+  email            String    @unique(map: "email") @db.VarChar(255)
+  password         String    @db.VarChar(255)
+  created_at       DateTime? @default(now()) @db.Timestamp(0)
+  updated_at       DateTime? @default(now()) @db.Timestamp(0)
+  google_id        String?   @db.VarChar(255)
+  resetToken       String?   @db.VarChar(255)
+  resetTokenExpiry DateTime?
   booking          booking[]
+  cart             cart[]
 }
 
 model visitors {
@@ -251,298 +249,304 @@ model session {
 }
 
 model zodiac_signs {
-  id        Int      @id @default(autoincrement())
-  name      String   @db.VarChar(100)
-  slug      String   @unique @db.VarChar(100)
-  image_url String?  @db.VarChar(500)
-  created_at DateTime? @default(now()) @db.Timestamp(0)
-  updated_at DateTime? @default(now()) @db.Timestamp(0)
+  id                Int                 @id @default(autoincrement())
+  name              String              @db.VarChar(100)
+  slug              String              @unique @db.VarChar(100)
+  image_url         String?             @db.VarChar(500)
+  created_at        DateTime?           @default(now()) @db.Timestamp(0)
+  updated_at        DateTime?           @default(now()) @db.Timestamp(0)
+  products          products[]
   zodiac_attributes zodiac_attributes[]
-  products products[]
 }
 
 model categories {
-  id          Int           @id @default(autoincrement())
-  name        String        @db.VarChar(100)
-  slug        String        @unique @db.VarChar(100)
-  description String?       @db.Text
-  image_url   String?       @db.VarChar(500)
-  banner_url  String?       @db.VarChar(500)
-  created_at  DateTime?     @default(now()) @db.Timestamp(0)
-  updated_at  DateTime?     @default(now()) @db.Timestamp(0)
-  subcategories subcategories[]
+  id                  Int                   @id @default(autoincrement())
+  name                String                @db.VarChar(100)
+  slug                String                @unique @db.VarChar(100)
+  image_url           String?               @db.VarChar(500)
+  created_at          DateTime?             @default(now()) @db.Timestamp(0)
+  updated_at          DateTime?             @default(now()) @db.Timestamp(0)
+  banner_url          String?               @db.VarChar(500)
+  description         String?               @db.Text
   category_attributes category_attributes[]
-  products products[]
+  products            products[]
+  subcategories       subcategories[]
 }
 
 model subcategories {
-  id           Int       @id @default(autoincrement())
-  name         String    @db.VarChar(100)
-  slug         String    @db.VarChar(100)
-  image_url    String?   @db.VarChar(500)
-  category_id  Int
-  created_at   DateTime? @default(now()) @db.Timestamp(0)
-  updated_at   DateTime? @default(now()) @db.Timestamp(0)
-  categories   categories @relation(fields: [category_id], references: [id], onDelete: Cascade)
-  
+  id          Int        @id @default(autoincrement())
+  name        String     @db.VarChar(100)
+  slug        String     @db.VarChar(100)
+  image_url   String?    @db.VarChar(500)
+  category_id Int
+  created_at  DateTime?  @default(now()) @db.Timestamp(0)
+  updated_at  DateTime?  @default(now()) @db.Timestamp(0)
+  categories  categories @relation(fields: [category_id], references: [id], onDelete: Cascade)
+
   @@index([category_id])
 }
 
 model attributes {
-  id          Int       @id @default(autoincrement())
-  name        String    @db.VarChar(100)
-  slug        String    @unique @db.VarChar(100)
-  type        String    @db.VarChar(50) // 'text', 'select', 'multiselect', 'number', 'boolean', 'date'
-  description String?   @db.Text
-  is_required Boolean   @default(false)
-  is_filterable Boolean @default(false)
-  is_searchable Boolean @default(false)
-  sort_order  Int       @default(0)
-  created_at  DateTime? @default(now()) @db.Timestamp(0)
-  updated_at  DateTime? @default(now()) @db.Timestamp(0)
-  
-  // Relations
-  attribute_values attribute_values[]
-  product_attributes product_attributes[]
+  id                  Int                   @id @default(autoincrement())
+  name                String                @db.VarChar(100)
+  slug                String                @unique @db.VarChar(100)
+  type                String                @db.VarChar(50)
+  description         String?               @db.Text
+  is_required         Boolean               @default(false)
+  is_filterable       Boolean               @default(false)
+  is_searchable       Boolean               @default(false)
+  sort_order          Int                   @default(0)
+  created_at          DateTime?             @default(now()) @db.Timestamp(0)
+  updated_at          DateTime?             @default(now()) @db.Timestamp(0)
+  attribute_values    attribute_values[]
   category_attributes category_attributes[]
-  zodiac_attributes zodiac_attributes[]
+  product_attributes  product_attributes[]
+  zodiac_attributes   zodiac_attributes[]
 }
 
 model attribute_values {
-  id           Int       @id @default(autoincrement())
-  attribute_id Int
-  value        String    @db.VarChar(255)
-  slug         String    @db.VarChar(255)
-  sort_order   Int       @default(0)
-  is_active    Boolean   @default(true)
-  created_at   DateTime? @default(now()) @db.Timestamp(0)
-  updated_at   DateTime? @default(now()) @db.Timestamp(0)
-  
-  // Relations
-  attributes   attributes @relation(fields: [attribute_id], references: [id], onDelete: Cascade)
+  id                       Int                        @id @default(autoincrement())
+  attribute_id             Int
+  value                    String                     @db.VarChar(255)
+  slug                     String                     @db.VarChar(255)
+  sort_order               Int                        @default(0)
+  is_active                Boolean                    @default(true)
+  created_at               DateTime?                  @default(now()) @db.Timestamp(0)
+  updated_at               DateTime?                  @default(now()) @db.Timestamp(0)
+  attributes               attributes                 @relation(fields: [attribute_id], references: [id], onDelete: Cascade)
   product_attribute_values product_attribute_values[]
-  
-  @@index([attribute_id])
+
   @@unique([attribute_id, slug])
+  @@index([attribute_id])
 }
 
 model products {
-  id          Int       @id @default(autoincrement())
-  name        String    @db.VarChar(255)
-  description String    @db.Text
-  price       Decimal   @db.Decimal(10, 2)
-  original_price Decimal? @db.Decimal(10, 2)
-  discount_price Decimal? @db.Decimal(10, 2)
-  sku         String?   @unique @db.VarChar(100)
-  slug        String    @unique(map: "slug") @db.VarChar(255)
-  available   Int?      @default(0)
-  category_id Int?
-  zodiac_id   Int?
-  image_url   String?   @db.VarChar(500)
-  banner_url  String?   @db.VarChar(500)
-  is_active   Boolean   @default(true)
-  
-  // Auto-pricing fields
-  product_type String?   @db.VarChar(50) // 'gemstone', 'rudraksh', 'crystal', 'yantra', 'bracelet', 'custom'
-  weight       Decimal?  @db.Decimal(10, 3) // For crystals (grams)
-  carats       Decimal?  @db.Decimal(10, 2) // For gemstones
-  quantity     Int?      // For rudraksh, yantra, bracelet
-  quality      String?   @db.VarChar(50) // Quality grade
-  clarity      String?   @db.VarChar(50) // Clarity grade for gemstones
-  color        String?   @db.VarChar(50) // Color grade for gemstones
-  mukhi        String?   @db.VarChar(50) // Mukhi count for rudraksh
-  material     String?   @db.VarChar(50) // Material for yantra/bracelet
-  per_carat_price Decimal? @db.Decimal(10, 2) // Custom per-carat price
-  per_gram_price Decimal? @db.Decimal(10, 2) // Custom per-gram price
-  per_piece_price Decimal? @db.Decimal(10, 2) // Custom per-piece price
-  
-  created_at  DateTime? @default(now()) @db.Timestamp(0)
-  updated_at  DateTime? @default(now()) @db.Timestamp(0)
-  
-  // Relations
-  category    categories? @relation(fields: [category_id], references: [id], onDelete: SetNull)
-  zodiac      zodiac_signs? @relation(fields: [zodiac_id], references: [id], onDelete: SetNull)
+  id                 Int                  @id @default(autoincrement())
+  name               String               @db.VarChar(255)
+  description        String               @db.Text
+  price              Decimal              @db.Decimal(10, 2)
+  slug               String               @unique(map: "slug") @db.VarChar(255)
+  available          Int?                 @default(0)
+  created_at         DateTime?            @default(now()) @db.Timestamp(0)
+  updated_at         DateTime?            @default(now()) @db.Timestamp(0)
+  banner_url         String?              @db.VarChar(500)
+  category_id        Int?
+  image_url          String?              @db.VarChar(500)
+  is_active          Boolean              @default(true)
+  zodiac_id          Int?
+  carats             Decimal?             @db.Decimal(10, 2)
+  clarity            String?              @db.VarChar(50)
+  color              String?              @db.VarChar(50)
+  discount_price     Decimal?             @db.Decimal(10, 2)
+  material           String?              @db.VarChar(50)
+  mukhi              String?              @db.VarChar(50)
+  original_price     Decimal?             @db.Decimal(10, 2)
+  per_carat_price    Decimal?             @db.Decimal(10, 2)
+  per_gram_price     Decimal?             @db.Decimal(10, 2)
+  per_piece_price    Decimal?             @db.Decimal(10, 2)
+  product_type       String?              @db.VarChar(50)
+  quality            String?              @db.VarChar(50)
+  quantity           Int?
+  sku                String?              @unique @db.VarChar(100)
+  weight             Decimal?             @db.Decimal(10, 3)
+  cart_items         cart_items[]
   product_attributes product_attributes[]
-  product_media product_media[]
-  product_stock product_stock[]
-  product_meta product_meta?
-  product_pricing product_pricing[]
-  product_shipping product_shipping?
-  
+  product_media      product_media[]
+  product_meta       product_meta?
+  product_pricing    product_pricing[]
+  product_shipping   product_shipping?
+  product_stock      product_stock[]
+  category           categories?          @relation(fields: [category_id], references: [id])
+  zodiac             zodiac_signs?        @relation(fields: [zodiac_id], references: [id])
+
   @@index([category_id])
   @@index([zodiac_id])
 }
 
 model product_media {
-  id          Int       @id @default(autoincrement())
-  product_id  Int
-  media_type  String    @db.VarChar(50) // 'image', 'video', 'document'
-  media_url   String    @db.VarChar(500)
-  alt_text    String?   @db.VarChar(255)
-  title       String?   @db.VarChar(255)
-  sort_order  Int       @default(0)
-  is_primary  Boolean   @default(false)
-  is_active   Boolean   @default(true)
-  created_at  DateTime? @default(now()) @db.Timestamp(0)
-  updated_at  DateTime? @default(now()) @db.Timestamp(0)
-  
-  // Relations
-  products    products   @relation(fields: [product_id], references: [id], onDelete: Cascade)
-  
+  id         Int       @id @default(autoincrement())
+  product_id Int
+  media_type String    @db.VarChar(50)
+  media_url  String    @db.VarChar(500)
+  alt_text   String?   @db.VarChar(255)
+  title      String?   @db.VarChar(255)
+  sort_order Int       @default(0)
+  is_primary Boolean   @default(false)
+  is_active  Boolean   @default(true)
+  created_at DateTime? @default(now()) @db.Timestamp(0)
+  updated_at DateTime? @default(now()) @db.Timestamp(0)
+  products   products  @relation(fields: [product_id], references: [id], onDelete: Cascade)
+
   @@index([product_id])
 }
 
 model product_stock {
-  id          Int       @id @default(autoincrement())
-  product_id  Int
-  sku         String?   @unique @db.VarChar(100)
-  quantity    Int       @default(0)
-  reserved    Int       @default(0)
-  min_stock   Int       @default(0)
-  max_stock   Int?
-  location    String?   @db.VarChar(100)
-  batch_number String?  @db.VarChar(100)
-  expiry_date DateTime?
-  cost_price  Decimal?  @db.Decimal(10, 2)
-  created_at  DateTime? @default(now()) @db.Timestamp(0)
-  updated_at  DateTime? @default(now()) @db.Timestamp(0)
-  
-  // Relations
-  products    products   @relation(fields: [product_id], references: [id], onDelete: Cascade)
-  
+  id           Int       @id @default(autoincrement())
+  product_id   Int
+  sku          String?   @unique @db.VarChar(100)
+  quantity     Int       @default(0)
+  reserved     Int       @default(0)
+  min_stock    Int       @default(0)
+  max_stock    Int?
+  location     String?   @db.VarChar(100)
+  batch_number String?   @db.VarChar(100)
+  expiry_date  DateTime?
+  cost_price   Decimal?  @db.Decimal(10, 2)
+  created_at   DateTime? @default(now()) @db.Timestamp(0)
+  updated_at   DateTime? @default(now()) @db.Timestamp(0)
+  products     products  @relation(fields: [product_id], references: [id], onDelete: Cascade)
+
   @@unique([product_id, sku])
   @@index([product_id])
 }
 
 model product_meta {
-  id              Int       @id @default(autoincrement())
-  product_id      Int       @unique
-  meta_title      String?   @db.VarChar(255)
-  meta_description String?  @db.Text
-  meta_keywords   String?   @db.Text
-  og_title        String?   @db.VarChar(255)
-  og_description  String?   @db.Text
-  og_image        String?   @db.VarChar(500)
-  twitter_title   String?   @db.VarChar(255)
-  twitter_description String? @db.Text
-  twitter_image   String?   @db.VarChar(500)
-  canonical_url   String?   @db.VarChar(500)
-  structured_data Json?
-  created_at      DateTime? @default(now()) @db.Timestamp(0)
-  updated_at      DateTime? @default(now()) @db.Timestamp(0)
-  
-  // Relations
-  products        products   @relation(fields: [product_id], references: [id], onDelete: Cascade)
+  id                  Int       @id @default(autoincrement())
+  product_id          Int       @unique
+  meta_title          String?   @db.VarChar(255)
+  meta_description    String?   @db.Text
+  meta_keywords       String?   @db.Text
+  og_title            String?   @db.VarChar(255)
+  og_description      String?   @db.Text
+  og_image            String?   @db.VarChar(500)
+  twitter_title       String?   @db.VarChar(255)
+  twitter_description String?   @db.Text
+  twitter_image       String?   @db.VarChar(500)
+  canonical_url       String?   @db.VarChar(500)
+  structured_data     Json?
+  created_at          DateTime? @default(now()) @db.Timestamp(0)
+  updated_at          DateTime? @default(now()) @db.Timestamp(0)
+  products            products  @relation(fields: [product_id], references: [id], onDelete: Cascade)
 }
 
 model product_pricing {
-  id              Int       @id @default(autoincrement())
-  product_id      Int
-  base_price      Decimal   @db.Decimal(10, 2)
-  sale_price      Decimal?  @db.Decimal(10, 2)
-  discount_type   String?   @db.VarChar(20) // 'percentage', 'fixed'
-  discount_value  Decimal?  @db.Decimal(10, 2)
-  discount_start  DateTime?
-  discount_end    DateTime?
-  is_active       Boolean   @default(true)
-  created_at      DateTime? @default(now()) @db.Timestamp(0)
-  updated_at      DateTime? @default(now()) @db.Timestamp(0)
-  
-  // Relations
-  products        products   @relation(fields: [product_id], references: [id], onDelete: Cascade)
-  
+  id             Int       @id @default(autoincrement())
+  product_id     Int
+  base_price     Decimal   @db.Decimal(10, 2)
+  sale_price     Decimal?  @db.Decimal(10, 2)
+  discount_type  String?   @db.VarChar(20)
+  discount_value Decimal?  @db.Decimal(10, 2)
+  discount_start DateTime?
+  discount_end   DateTime?
+  is_active      Boolean   @default(true)
+  created_at     DateTime? @default(now()) @db.Timestamp(0)
+  updated_at     DateTime? @default(now()) @db.Timestamp(0)
+  products       products  @relation(fields: [product_id], references: [id], onDelete: Cascade)
+
   @@index([product_id])
 }
 
 model product_shipping {
-  id              Int       @id @default(autoincrement())
-  product_id      Int       @unique
-  weight          Decimal?  @db.Decimal(10, 3) // Weight in kg
-  weight_unit     String    @default("kg") @db.VarChar(10) // kg, g, lb
-  length          Decimal?  @db.Decimal(10, 2) // Length in cm
-  width           Decimal?  @db.Decimal(10, 2) // Width in cm
-  height          Decimal?  @db.Decimal(10, 2) // Height in cm
-  dimension_unit  String    @default("cm") @db.VarChar(10) // cm, in
-  shipping_class  String?   @db.VarChar(50) // Standard, Express, Free, Heavy
-  is_free_shipping Boolean  @default(false)
-  shipping_cost   Decimal?  @db.Decimal(10, 2) // Fixed shipping cost
-  max_shipping_cost Decimal? @db.Decimal(10, 2) // Maximum shipping cost for variable rates
-  shipping_zones  Json?     // JSON array of shipping zone IDs
-  created_at      DateTime? @default(now()) @db.Timestamp(0)
-  updated_at      DateTime? @default(now()) @db.Timestamp(0)
-  
-  // Relations
-  products        products   @relation(fields: [product_id], references: [id], onDelete: Cascade)
+  id                Int       @id @default(autoincrement())
+  product_id        Int       @unique
+  weight            Decimal?  @db.Decimal(10, 3)
+  weight_unit       String    @default("kg") @db.VarChar(10)
+  length            Decimal?  @db.Decimal(10, 2)
+  width             Decimal?  @db.Decimal(10, 2)
+  height            Decimal?  @db.Decimal(10, 2)
+  dimension_unit    String    @default("cm") @db.VarChar(10)
+  shipping_class    String?   @db.VarChar(50)
+  is_free_shipping  Boolean   @default(false)
+  shipping_cost     Decimal?  @db.Decimal(10, 2)
+  max_shipping_cost Decimal?  @db.Decimal(10, 2)
+  shipping_zones    Json?
+  created_at        DateTime? @default(now()) @db.Timestamp(0)
+  updated_at        DateTime? @default(now()) @db.Timestamp(0)
+  products          products  @relation(fields: [product_id], references: [id], onDelete: Cascade)
 }
 
 model product_attributes {
-  id         Int       @id @default(autoincrement())
-  product_id Int
-  attribute_id Int
-  created_at DateTime? @default(now()) @db.Timestamp(0)
-  updated_at DateTime? @default(now()) @db.Timestamp(0)
-  
-  // Relations
-  products   products   @relation(fields: [product_id], references: [id], onDelete: Cascade)
-  attributes attributes @relation(fields: [attribute_id], references: [id], onDelete: Cascade)
+  id                       Int                        @id @default(autoincrement())
+  product_id               Int
+  attribute_id             Int
+  created_at               DateTime?                  @default(now()) @db.Timestamp(0)
+  updated_at               DateTime?                  @default(now()) @db.Timestamp(0)
   product_attribute_values product_attribute_values[]
-  
+  attributes               attributes                 @relation(fields: [attribute_id], references: [id], onDelete: Cascade)
+  products                 products                   @relation(fields: [product_id], references: [id], onDelete: Cascade)
+
   @@unique([product_id, attribute_id])
   @@index([product_id])
   @@index([attribute_id])
 }
 
 model product_attribute_values {
-  id                    Int       @id @default(autoincrement())
-  product_attribute_id  Int
-  attribute_value_id    Int?
-  text_value            String?   @db.Text
-  number_value          Decimal?  @db.Decimal(10, 2)
-  boolean_value         Boolean?
-  date_value            DateTime?
-  created_at            DateTime? @default(now()) @db.Timestamp(0)
-  updated_at            DateTime? @default(now()) @db.Timestamp(0)
-  
-  // Relations
-  product_attributes    product_attributes @relation(fields: [product_attribute_id], references: [id], onDelete: Cascade)
-  attribute_values      attribute_values? @relation(fields: [attribute_value_id], references: [id], onDelete: SetNull)
-  
+  id                   Int                @id @default(autoincrement())
+  product_attribute_id Int
+  attribute_value_id   Int?
+  text_value           String?            @db.Text
+  number_value         Decimal?           @db.Decimal(10, 2)
+  boolean_value        Boolean?
+  date_value           DateTime?
+  created_at           DateTime?          @default(now()) @db.Timestamp(0)
+  updated_at           DateTime?          @default(now()) @db.Timestamp(0)
+  attribute_values     attribute_values?  @relation(fields: [attribute_value_id], references: [id])
+  product_attributes   product_attributes @relation(fields: [product_attribute_id], references: [id], onDelete: Cascade)
+
   @@index([product_attribute_id])
   @@index([attribute_value_id])
 }
 
 model category_attributes {
-  id           Int       @id @default(autoincrement())
+  id           Int        @id @default(autoincrement())
   category_id  Int
   attribute_id Int
-  is_required  Boolean   @default(false)
-  sort_order   Int       @default(0)
-  created_at   DateTime? @default(now()) @db.Timestamp(0)
-  updated_at   DateTime? @default(now()) @db.Timestamp(0)
-  
-  // Relations
-  categories   categories @relation(fields: [category_id], references: [id], onDelete: Cascade)
+  is_required  Boolean    @default(false)
+  sort_order   Int        @default(0)
+  created_at   DateTime?  @default(now()) @db.Timestamp(0)
+  updated_at   DateTime?  @default(now()) @db.Timestamp(0)
   attributes   attributes @relation(fields: [attribute_id], references: [id], onDelete: Cascade)
-  
+  categories   categories @relation(fields: [category_id], references: [id], onDelete: Cascade)
+
   @@unique([category_id, attribute_id])
   @@index([category_id])
   @@index([attribute_id])
 }
 
 model zodiac_attributes {
-  id           Int       @id @default(autoincrement())
+  id           Int          @id @default(autoincrement())
   zodiac_id    Int
   attribute_id Int
-  is_required  Boolean   @default(false)
-  sort_order   Int       @default(0)
-  created_at   DateTime? @default(now()) @db.Timestamp(0)
-  updated_at   DateTime? @default(now()) @db.Timestamp(0)
-  
-  // Relations
-  zodiac_signs zodiac_signs @relation(fields: [zodiac_id], references: [id], onDelete: Cascade)
+  is_required  Boolean      @default(false)
+  sort_order   Int          @default(0)
+  created_at   DateTime?    @default(now()) @db.Timestamp(0)
+  updated_at   DateTime?    @default(now()) @db.Timestamp(0)
   attributes   attributes   @relation(fields: [attribute_id], references: [id], onDelete: Cascade)
-  
+  zodiac_signs zodiac_signs @relation(fields: [zodiac_id], references: [id], onDelete: Cascade)
+
   @@unique([zodiac_id, attribute_id])
   @@index([zodiac_id])
   @@index([attribute_id])
+}
+
+model cart {
+  id         Int          @id @default(autoincrement())
+  user_id    Int
+  created_at DateTime?    @default(now()) @db.Timestamp(0)
+  updated_at DateTime?    @default(now()) @db.Timestamp(0)
+  status     String       @default("active") @db.VarChar(50)
+  users      users        @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  cart_items cart_items[]
+
+  @@index([user_id], map: "cart_user_id_fkey")
+}
+
+model cart_items {
+  id         Int       @id @default(autoincrement())
+  cart_id    Int
+  item_type  String    @db.VarChar(20)
+  product_id Int?
+  service_id Int?
+  quantity   Int       @default(1)
+  price      Decimal   @db.Decimal(10, 2)
+  created_at DateTime? @default(now()) @db.Timestamp(0)
+  updated_at DateTime? @default(now()) @db.Timestamp(0)
+  cart       cart      @relation(fields: [cart_id], references: [id], onDelete: Cascade)
+  products   products? @relation(fields: [product_id], references: [id])
+  services   services? @relation(fields: [service_id], references: [id])
+
+  @@unique([cart_id, item_type, product_id, service_id])
+  @@index([cart_id])
+  @@index([product_id])
+  @@index([service_id])
 }
