@@ -8,7 +8,7 @@ import NakshatraTicker from '../components/NakshatraTicker'
 import { ServicesSearch } from '../components/ServicesSearch'
 import { UniversalServiceCardGrid } from '../components/UniversalServiceCardGrid'
 import ServiceShowcase from '../components/ServiceShowcase'
-import ServiceCarousels from '../components/ServiceCarousels'
+//import ServiceCarousels from '../components/ServiceCarousels'
 import NakshatraGyaanBanner from '../components/NakshatraGyaanBanner'
 import ProductAssuranceBar from '../components/ProductAssuranceBar'
 
@@ -183,11 +183,11 @@ export default function ServicesPage() {
                scrollStep={1}
              />
 
-             {/* Service Carousels (Top-Selling Section) */}
+             {/* Service Carousels (Top-Selling Section) 
              <div className="mt-16 mb-32">
                <ServiceCarousels />
              </div>
-
+*/}
              {/* Nakshatra Gyaan Banner */}
              <div className="mt-16 mb-32">
                <NakshatraGyaanBanner />
