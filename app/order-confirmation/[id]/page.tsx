@@ -5,49 +5,49 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { useRouter } from 'next/navigation'
 import { useSession } from 'next-auth/react'
+import { useCurrentUser } from '@/hooks/useCurrentUser'
 import { AnimatedStars } from '@/app/components/AnimatedStars'
 import { MysticBackground } from '@/app/components/MysticBackground'
 import { toast } from 'sonner'
 import { CheckCircle, Copy, Calendar, MapPin, CreditCard, Clock, Sparkles } from 'lucide-react'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 
-interface OrderItem {
+interface ConfirmItem {
   id: number;
-  product_name: string;
+  name: string;
   unit_price: number;
   quantity: number;
-  is_stone: boolean;
-  carats?: number;
   total_price: number;
 }
 
-interface Order {
+interface ConfirmOrder {
   id: number;
   order_number: string;
   order_date: string;
   order_status: string;
-  payment_method: string;
+  payment_method: string | null;
   payment_status: string;
   estimated_delivery: string;
-  items: OrderItem[];
+  items: ConfirmItem[];
   subtotal: number;
   total: number;
-  shipping_address: {
-    fullName: string;
-    addressLine1: string;
-    addressLine2: string;
-    city: string;
-    state: string;
-    pincode: string;
-    phone: string;
+  shipping_address?: {
+    fullName?: string;
+    addressLine1?: string;
+    addressLine2?: string;
+    city?: string;
+    state?: string;
+    pincode?: string;
+    phone?: string;
   };
 }
 
 export default function OrderConfirmationPage({ params }: { params: { id: string } }) {
   const router = useRouter();
   const { data: session, status } = useSession();
+  const { userId, isAuthenticated } = useCurrentUser();
   const [loading, setLoading] = useState(true);
-  const [order, setOrder] = useState<Order | null>(null);
+  const [order, setOrder] = useState<ConfirmOrder | null>(null);
   const [copied, setCopied] = useState(false);
 
   useEffect(() => {
@@ -59,16 +59,44 @@ export default function OrderConfirmationPage({ params }: { params: { id: string
 
     const fetchOrderData = async () => {
       try {
-        // Fetch from the API endpoint
-        const res = await fetch(`/api/orders/${params.id}`);
-        
-        if (!res.ok) {
-          const errorData = await res.json();
-          throw new Error(errorData.error || 'Failed to fetch order');
+        if (!isAuthenticated || !userId) {
+          throw new Error('User not authenticated');
         }
-        
+
+        // Fetch user's orders and pick this one by id
+        const res = await fetch(`/api/orders?userId=${userId}`);
+        if (!res.ok) {
+          const errorData = await res.json().catch(() => ({}));
+          throw new Error(errorData.error || 'Failed to fetch orders');
+        }
         const data = await res.json();
-        setOrder(data.order);
+        const orders = (data.orders || []) as Array<any>;
+        const raw = orders.find((o: any) => String(o.id) === String(params.id));
+        if (!raw) {
+          throw new Error('Order not found');
+        }
+
+        const mapped: ConfirmOrder = {
+          id: raw.id,
+          order_number: raw.order_number,
+          order_date: raw.created_at,
+          order_status: raw.status,
+          payment_method: raw.payment_method ?? null,
+          payment_status: raw.payment_status,
+          estimated_delivery: '',
+          items: (raw.order_items || []).map((it: any) => ({
+            id: it.id,
+            name: it.name || it.products?.name || it.services?.title || 'Item',
+            unit_price: Number(it.unit_price ?? 0),
+            quantity: it.quantity ?? 1,
+            total_price: Number(it.total_price ?? (Number(it.unit_price ?? 0) * (it.quantity ?? 1))),
+          })),
+          subtotal: Number(raw.subtotal ?? 0),
+          total: Number(raw.total_amount ?? raw.subtotal ?? 0),
+          shipping_address: raw.shipping_address ?? undefined,
+        };
+
+        setOrder(mapped);
       } catch (err) {
         console.error('Error fetching order:', err);
         toast.error(err instanceof Error ? err.message : "Failed to load order information");
@@ -80,7 +108,7 @@ export default function OrderConfirmationPage({ params }: { params: { id: string
     if (status === 'authenticated') {
       fetchOrderData();
     }
-  }, [status, router, params.id]);
+  }, [status, router, params.id, isAuthenticated, userId]);
 
   const copyOrderNumber = () => {
     if (order?.order_number) {
@@ -171,7 +199,7 @@ export default function OrderConfirmationPage({ params }: { params: { id: string
                       <CreditCard className="h-5 w-5 text-celestial-blue mr-3 mt-0.5" />
                       <div>
                         <p className="text-black font-medium">Payment Method</p>
-                        <p className="text-black">{order.payment_method}</p>
+                        <p className="text-black">{order.payment_method ?? 'N/A'}</p>
                         <p className="text-sm text-black/70">Status: {order.payment_status}</p>
                       </div>
                     </div>
@@ -180,15 +208,29 @@ export default function OrderConfirmationPage({ params }: { params: { id: string
                       <MapPin className="h-5 w-5 text-celestial-blue mr-3 mt-0.5" />
                       <div>
                         <p className="text-black font-medium">Shipping Address</p>
-                        <p className="text-black">{order.shipping_address.fullName}</p>
-                        <p className="text-black/70">{order.shipping_address.addressLine1}</p>
-                        {order.shipping_address.addressLine2 && (
-                          <p className="text-black/70">{order.shipping_address.addressLine2}</p>
+                        {order.shipping_address ? (
+                          <>
+                            {order.shipping_address.fullName && (
+                              <p className="text-black">{order.shipping_address.fullName}</p>
+                            )}
+                            {order.shipping_address.addressLine1 && (
+                              <p className="text-black/70">{order.shipping_address.addressLine1}</p>
+                            )}
+                            {order.shipping_address.addressLine2 && (
+                              <p className="text-black/70">{order.shipping_address.addressLine2}</p>
+                            )}
+                            {(order.shipping_address.city || order.shipping_address.state || order.shipping_address.pincode) && (
+                              <p className="text-black/70">
+                                {[order.shipping_address.city, order.shipping_address.state, order.shipping_address.pincode].filter(Boolean).join(', ')}
+                              </p>
+                            )}
+                            {order.shipping_address.phone && (
+                              <p className="text-black/70">Phone: {order.shipping_address.phone}</p>
+                            )}
+                          </>
+                        ) : (
+                          <p className="text-black/70">No shipping address available</p>
                         )}
-                        <p className="text-black/70">
-                          {order.shipping_address.city}, {order.shipping_address.state}, {order.shipping_address.pincode}
-                        </p>
-                        <p className="text-black/70">Phone: {order.shipping_address.phone}</p>
                       </div>
                     </div>
                   </div>
@@ -200,7 +242,7 @@ export default function OrderConfirmationPage({ params }: { params: { id: string
                         <TableRow>
                           <TableHead className="text-black">Product</TableHead>
                           <TableHead className="text-black text-right">Price</TableHead>
-                          <TableHead className="text-black text-center">Quantity/Carats</TableHead>
+                          <TableHead className="text-black text-center">Quantity</TableHead>
                           <TableHead className="text-black text-right">Total</TableHead>
                         </TableRow>
                       </TableHeader>
@@ -208,18 +250,13 @@ export default function OrderConfirmationPage({ params }: { params: { id: string
                         {order.items.map((item) => (
                           <TableRow key={item.id}>
                             <TableCell className="text-black font-medium">
-                              {item.product_name}
+                              {item.name}
                             </TableCell>
                             <TableCell className="text-black text-right">
                               ₹{item.unit_price.toLocaleString('en-IN')}
-                              {item.is_stone && <span className="text-sm">/carat</span>}
                             </TableCell>
                             <TableCell className="text-center text-black">
-                              {item.is_stone ? (
-                                <span>{item.carats} carats</span>
-                              ) : (
-                                <span>{item.quantity}</span>
-                              )}
+                              <span>{item.quantity}</span>
                             </TableCell>
                             <TableCell className="text-black text-right">
                               ₹{item.total_price.toLocaleString('en-IN')}

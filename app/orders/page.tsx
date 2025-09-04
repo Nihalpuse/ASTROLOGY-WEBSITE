@@ -11,12 +11,9 @@ import { MysticBackground } from '@/app/components/MysticBackground'
 import { toast } from 'sonner'
 
 interface OrderItem {
-  product_name: string;
+  name: string;
   quantity: number;
-  carats?: number;
   price: number;
-  is_stone: boolean;
-  is_service: boolean;
 }
 
 interface Order {
@@ -27,9 +24,12 @@ interface Order {
   items: OrderItem[];
 }
 
+import { useCurrentUser } from '@/hooks/useCurrentUser'
+
 export default function OrdersPage() {
   const { data: session, status } = useSession()
   const router = useRouter()
+  const { userId, isAuthenticated } = useCurrentUser()
   const [loading, setLoading] = useState(true)
   const [orders, setOrders] = useState<Order[]>([])
   const [activeOrderId, setActiveOrderId] = useState<number | null>(null)
@@ -45,14 +45,32 @@ export default function OrdersPage() {
       try {
         setLoading(true);
         
-        // Fetch order history
-        const ordersRes = await fetch('/api/user/orders');
-        if (ordersRes.ok) {
-          const ordersData = await ordersRes.json();
-          setOrders(ordersData.orders || []);
-        } else {
-          throw new Error('Failed to fetch orders');
+        if (!isAuthenticated || !userId) {
+          throw new Error('User not authenticated');
         }
+
+        // Fetch order history from existing route
+        const ordersRes = await fetch(`/api/orders?userId=${userId}`);
+        if (!ordersRes.ok) {
+          const errData = await ordersRes.json().catch(() => ({}));
+          throw new Error(errData.error || 'Failed to fetch orders');
+        }
+
+        const data = await ordersRes.json();
+        const apiOrders = (data.orders || []) as Array<any>;
+        const mapped: Order[] = apiOrders.map((o: any) => ({
+          id: o.id,
+          total_amount: Number(o.total_amount ?? o.subtotal ?? 0),
+          status: o.status,
+          created_at: o.created_at,
+          items: (o.order_items || []).map((it: any) => ({
+            name: it.name || it.products?.name || it.services?.title || 'Item',
+            quantity: it.quantity ?? 1,
+            price: Number(it.total_price ?? (Number(it.unit_price ?? 0) * (it.quantity ?? 1)))
+          }))
+        }));
+
+        setOrders(mapped);
       } catch (err) {
         console.error("Failed to fetch orders:", err);
         toast.error("Failed to load order history");
@@ -64,7 +82,7 @@ export default function OrdersPage() {
     if (status === 'authenticated') {
       fetchOrders();
     }
-  }, [status, router]);
+  }, [status, router, isAuthenticated, userId]);
   
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
@@ -196,7 +214,7 @@ export default function OrdersPage() {
                               <TableHeader>
                                 <TableRow>
                                   <TableHead className="text-neutral-900">Item</TableHead>
-                                  <TableHead className="text-neutral-900 text-right">Quantity/Carats</TableHead>
+                                  <TableHead className="text-neutral-900 text-right">Quantity</TableHead>
                                   <TableHead className="text-neutral-900 text-right">Price</TableHead>
                                 </TableRow>
                               </TableHeader>
@@ -204,10 +222,10 @@ export default function OrdersPage() {
                                 {order.items.map((item, idx) => (
                                   <TableRow key={idx}>
                                     <TableCell className="text-neutral-900 font-medium">
-                                      {item.product_name}
+                                      {item.name}
                                     </TableCell>
                                     <TableCell className="text-neutral-700 text-right">
-                                      {item.is_stone ? `${item.carats} carats` : item.quantity}
+                                      {item.quantity}
                                     </TableCell>
                                     <TableCell className="text-neutral-900 text-right">
                                       ₹{item.price.toLocaleString('en-IN')}
@@ -220,7 +238,7 @@ export default function OrdersPage() {
                               <Button 
                                 variant="outline" 
                                 className="border-neutral-400 text-neutral-900 hover:bg-neutral-100"
-                                onClick={() => router.push(`/orders/${order.id}`)}
+                                onClick={() => router.push(`/order-confirmation/${order.id}`)}
                               >
                                 View Full Details
                               </Button>
@@ -228,6 +246,22 @@ export default function OrdersPage() {
                                 <Button 
                                   variant="outline" 
                                   className="border-red-500/30 text-red-500 hover:bg-red-500/10"
+                                  onClick={async (e) => {
+                                    e.stopPropagation();
+                                    try {
+                                      const res = await fetch('/api/orders', {
+                                        method: 'PATCH',
+                                        headers: { 'Content-Type': 'application/json' },
+                                        body: JSON.stringify({ orderId: order.id, userId, action: 'cancel' })
+                                      })
+                                      const data = await res.json()
+                                      if (!res.ok || !data.success) throw new Error(data.error || 'Failed to cancel order')
+                                      setOrders((prev) => prev.map((o) => o.id === order.id ? { ...o, status: 'cancelled' } : o))
+                                      toast.success('Order cancelled')
+                                    } catch (err) {
+                                      toast.error(err instanceof Error ? err.message : 'Failed to cancel order')
+                                    }
+                                  }}
                                 >
                                   Cancel Order
                                 </Button>

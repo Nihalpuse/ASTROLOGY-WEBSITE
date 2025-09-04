@@ -90,22 +90,34 @@ export function UniversalCartButton({
         return;
       }
 
-      // If it's a service and no image is provided, try to fetch the service image
+      // If it's a service and no image is provided, try to fetch the service image (and resolve slug to id if needed)
       let finalImage = image;
-      if (isService && !image && productId) {
+      let resolvedServiceId: number | null = null;
+      if (isService && productId) {
+        const numericId = Number(productId);
+        if (!Number.isNaN(numericId)) {
+          resolvedServiceId = numericId;
+        }
         try {
-          // Try to fetch service details to get the image
-          const serviceRes = await fetch(`/api/services/${productId}`);
+          // Try to fetch service details by id or slug to get image and ensure we have an id
+          let serviceRes = await fetch(`/api/services/${productId}`);
+          if (!serviceRes.ok) {
+            // Fallback to query by slug if a dedicated slug route exists server-side
+            serviceRes = await fetch(`/api/services?slug=${encodeURIComponent(productId)}`);
+          }
           if (serviceRes.ok) {
             const serviceData = await serviceRes.json();
-            if (serviceData.service_media && serviceData.service_media.length > 0) {
-              // Use the first service media image
-              finalImage = serviceData.service_media[0].media_url;
+            const svc = Array.isArray(serviceData.services) ? serviceData.services[0] : serviceData;
+            if (svc?.id && (resolvedServiceId === null || Number.isNaN(resolvedServiceId))) {
+              const maybeId = Number(svc.id);
+              if (!Number.isNaN(maybeId)) resolvedServiceId = maybeId;
+            }
+            if (svc?.service_media && svc.service_media.length > 0 && !finalImage) {
+              finalImage = svc.service_media[0].media_url;
             }
           }
         } catch (err) {
-          console.error('Error fetching service image:', err);
-          // Continue with null image if fetch fails
+          console.error('Error resolving service details:', err);
         }
       }
 
@@ -128,7 +140,11 @@ export function UniversalCartButton({
 
       // Add appropriate ID based on item type
       if (isService) {
-        requestBody.serviceId = parseInt(productId);
+        const idToUse = resolvedServiceId ?? Number(productId);
+        if (Number.isNaN(idToUse)) {
+          throw new Error('Service ID is required for service items');
+        }
+        requestBody.serviceId = idToUse;
       } else {
         requestBody.productId = parseInt(productId);
       }

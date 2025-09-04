@@ -13,14 +13,60 @@ import { MysticBackground } from '@/app/components/MysticBackground'
 import { toast } from 'sonner'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { Trash2, Plus, Minus } from 'lucide-react'
+import { useCurrentUser } from '@/hooks/useCurrentUser'
+import { useCart } from '../contexts/CartContext'
 
-interface CheckoutItem {
+// Database cart item structure (matching cart page)
+interface DatabaseCartItem {
   id: number;
-  product_name: string;
-  unit_price: number;
   quantity: number;
-  is_stone: boolean;
-  carats?: number;
+  price: number;
+  products?: {
+    id: number;
+    name: string;
+    price: number;
+    image_url?: string;
+    slug: string;
+    product_media?: {
+      id: number;
+      media_url: string;
+      is_primary: boolean;
+    }[];
+  } | null;
+  services?: {
+    id: number;
+    title: string;
+    price: number;
+    duration?: string;
+    delivery_type?: string;
+    service_media?: {
+      id: number;
+      media_url: string;
+      is_primary: boolean;
+    }[];
+  } | null;
+}
+
+// Local cart item structure (from CartContext)
+interface LocalCartItem {
+  id: string;
+  name: string;
+  price: number;
+  image?: string;
+  image_url?: string;
+  quantity: number;
+}
+
+// Union type for all possible cart items
+type CheckoutItem = DatabaseCartItem | LocalCartItem;
+
+interface CartData {
+  cart: {
+    id: number;
+    cart_items: DatabaseCartItem[];
+  };
+  totalItems: number;
+  totalPrice: number;
 }
 
 interface AddressInfo {
@@ -36,8 +82,11 @@ interface AddressInfo {
 export default function CheckoutPage() {
   const router = useRouter()
   const { data: session, status } = useSession()
+  const { userId, isAuthenticated } = useCurrentUser()
+  const { items: localItems, removeItem: removeLocalItem, updateQuantity: updateLocalQuantity, total: localTotal } = useCart()
+  
   const [loading, setLoading] = useState(true)
-  const [items, setItems] = useState<CheckoutItem[]>([])
+  const [cartData, setCartData] = useState<CartData | null>(null)
   const [address, setAddress] = useState<AddressInfo>({
     fullName: '',
     addressLine1: '',
@@ -50,32 +99,30 @@ export default function CheckoutPage() {
   const [savedAddresses, setSavedAddresses] = useState<AddressInfo[]>([])
   const [paymentMethod, setPaymentMethod] = useState('online')
   const [isUpdatingCart, setIsUpdatingCart] = useState(false)
+  const [isSubmitting, setIsSubmitting] = useState(false)
   
   useEffect(() => {
-    // Redirect if not authenticated
-    // if (status === 'unauthenticated') {
-    //   router.push('/signin?redirect=checkout');
-    //   return;
-    // }
-    
     const fetchCheckoutData = async () => {
+      if (!isAuthenticated || !userId) {
+        setLoading(false);
+        return;
+      }
+
       try {
-        // Fetch cart items
-        const cartRes = await fetch("/api/cart");
-        if (!cartRes.ok) throw new Error('Failed to fetch cart');
-        const cartData = await cartRes.json();
+        setLoading(true);
         
-        // Convert is_stone from number to boolean to match our interface
-        const formattedItems = cartData.cartItems?.map((item: { id: number; product_name: string; unit_price: number; quantity: number; is_stone: number; carats?: number }) => ({
-          ...item,
-          is_stone: item.is_stone === 1
-        })) || [];
-        
-        setItems(formattedItems);
+        // Fetch cart data from database (same as cart page)
+        const cartRes = await fetch(`/api/cart?userId=${userId}`);
+        if (cartRes.ok) {
+          const data = await cartRes.json();
+          setCartData(data);
+        } else {
+          console.error('Failed to fetch cart');
+        }
         
         // Fetch saved addresses if available
         try {
-          const addressRes = await fetch("/api/user/addresses");
+          const addressRes = await fetch(`/api/user/addresses?userId=${userId}`);
           if (addressRes.ok) {
             const addressData = await addressRes.json();
             setSavedAddresses(addressData.addresses || []);
@@ -97,10 +144,8 @@ export default function CheckoutPage() {
       }
     };
     
-    if (status === 'authenticated') {
-      fetchCheckoutData();
-    }
-  }, [status, router]);
+    fetchCheckoutData();
+  }, [userId, isAuthenticated]);
   
   const handleAddressChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -114,64 +159,88 @@ export default function CheckoutPage() {
     }
   };
 
-  const handleRemoveItem = async (itemId: number) => {
+  const handleRemoveItem = async (cartItemId: number | string) => {
     setIsUpdatingCart(true);
     try {
-      const res = await fetch(`/api/cart?id=${itemId}`, {
-        method: 'DELETE'
-      });
-      
-      if (!res.ok) throw new Error('Failed to remove item');
-      
-      // Update local state
-      setItems(items.filter(item => item.id !== itemId));
-      toast.success("Item removed from cart");
+      // If it's a database cart item, remove from database
+      if (typeof cartItemId === 'number') {
+        const response = await fetch(`/api/cart?cartItemId=${cartItemId}`, {
+          method: 'DELETE',
+        });
+
+        if (response.ok) {
+          // Refresh cart data
+          if (userId) {
+            const cartResponse = await fetch(`/api/cart?userId=${userId}`);
+            if (cartResponse.ok) {
+              const data = await cartResponse.json();
+              setCartData(data);
+            }
+          }
+          toast.success("Item removed from cart");
+        }
+      } else {
+        // If it's a local item, remove from local state
+        removeLocalItem(cartItemId);
+        toast.success("Item removed from cart");
+      }
     } catch (err) {
-      console.error(err);
+      console.error('Error removing item:', err);
       toast.error("Failed to remove item from cart");
     } finally {
       setIsUpdatingCart(false);
     }
   };
 
-  const handleUpdateQuantity = async (itemId: number, newQuantity: number, isStone: boolean) => {
-    if (newQuantity < 1) return;
-    
+  const handleUpdateQuantity = async (cartItemId: number | string, newQuantity: number) => {
+    if (newQuantity <= 0) {
+      handleRemoveItem(cartItemId);
+      return;
+    }
+
     setIsUpdatingCart(true);
     try {
-      const payload = isStone 
-        ? { cartItemId: itemId, carats: newQuantity }
-        : { cartItemId: itemId, quantity: newQuantity };
-        
-      const res = await fetch('/api/cart', {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload)
-      });
-      
-      if (!res.ok) throw new Error('Failed to update quantity');
-      
-      // Update local state
-      setItems(items.map(item => {
-        if (item.id === itemId) {
-          if (isStone) {
-            return { ...item, carats: newQuantity };
-          } else {
-            return { ...item, quantity: newQuantity };
+      // If it's a database cart item, update in database
+      if (typeof cartItemId === 'number') {
+        const response = await fetch('/api/cart', {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            cartItemId,
+            quantity: newQuantity,
+          }),
+        });
+
+        if (response.ok) {
+          // Refresh cart data
+          if (userId) {
+            const cartResponse = await fetch(`/api/cart?userId=${userId}`);
+            if (cartResponse.ok) {
+              const data = await cartResponse.json();
+              setCartData(data);
+            }
           }
+          toast.success("Cart updated");
         }
-        return item;
-      }));
-      
-      toast.success("Cart updated");
+      } else {
+        // If it's a local item, update local state
+        updateLocalQuantity(cartItemId, newQuantity);
+        toast.success("Cart updated");
+      }
     } catch (err) {
-      console.error(err);
+      console.error('Error updating quantity:', err);
       toast.error("Failed to update cart");
     } finally {
       setIsUpdatingCart(false);
     }
   };
   
+  // Use database cart data if available, fallback to local items
+  const items = cartData?.cart?.cart_items || localItems;
+  const total = cartData?.totalPrice || localTotal;
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
@@ -196,45 +265,99 @@ export default function CheckoutPage() {
     }
     
     try {
+      setIsSubmitting(true);
       // Save the address first if API endpoint exists
-      await fetch("/api/user/addresses", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ address }),
-      });
+      try {
+        await fetch("/api/user/addresses", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            userId: userId,
+            address: {
+              fullName: address.fullName,
+              phone: address.phone,
+              addressLine1: address.addressLine1,
+              addressLine2: address.addressLine2,
+              city: address.city,
+              state: address.state,
+              pincode: address.pincode,
+              country: 'India',
+              addressType: 'home'
+            },
+            setDefault: true
+          }),
+        });
+      } catch (err) {
+        console.warn("Could not save address:", err);
+        // Continue with order creation even if address saving fails
+      }
+      
+      // Check if user is authenticated and has userId
+      if (!isAuthenticated || !userId) {
+        toast.error("Please log in to place an order");
+        router.push('/signin?redirect=checkout');
+        return;
+      }
       
       // Process payment based on method
       if (paymentMethod === 'online') {
-        const res = await fetch("/api/checkout/finalize", {
+        // For online payments, we still need to create the order first
+        // Then redirect to payment gateway
+        const orderRes = await fetch("/api/orders", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ 
-            shippingAddress: address
+          body: JSON.stringify({
+            userId: userId,
+            shippingAddress: address,
+            billingAddress: address, // Using same address for billing
+            paymentMethod: 'online',
+            notes: `Payment method: Online payment`
           }),
         });
         
-        const data = await res.json();
+        const orderData = await orderRes.json();
         
-        if (data.url) {
-          window.location.href = data.url; // Redirect to payment gateway
-        } else if (data.redirectUrl) {
-          router.push(data.redirectUrl); // Handle dummy checkout redirect
+        if (orderData.success) {
+          // Now redirect to payment gateway with order info
+          const paymentRes = await fetch("/api/checkout/finalize", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ 
+              orderId: orderData.orderId,
+              orderNumber: orderData.orderNumber,
+              shippingAddress: address,
+              billingAddress: address
+            }),
+          });
+          
+          const paymentData = await paymentRes.json();
+          
+          if (paymentData.redirectUrl) {
+            router.push(paymentData.redirectUrl); // Handle dummy checkout redirect
+          } else {
+            throw new Error("Payment initialization failed");
+          }
         } else {
-          throw new Error("Payment initialization failed");
+          throw new Error("Order creation failed");
         }
       } else {
-        // COD processing
-        const res = await fetch("/api/orders/cod", {
+        // COD processing using new orders API
+        const res = await fetch("/api/orders", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ 
-            shippingAddress: address
+          body: JSON.stringify({
+            userId: userId,
+            shippingAddress: address,
+            billingAddress: address, // Using same address for billing
+            paymentMethod: 'cod',
+            notes: `Payment method: Cash on Delivery`
           }),
         });
         
         const data = await res.json();
         
         if (data.success) {
+          toast.success("Order placed successfully!");
           router.push(`/order-confirmation/${data.orderId}`);
         } else {
           throw new Error("Order placement failed");
@@ -243,14 +366,22 @@ export default function CheckoutPage() {
     } catch (error) {
       console.error("Checkout error:", error);
       toast.error("Failed to complete checkout. Please try again.");
+    } finally {
+      setIsSubmitting(false);
     }
   };
   
   const calculateTotalPrice = (item: CheckoutItem) => {
-    if (item.is_stone && item.carats) {
-      return item.unit_price * item.carats;
+    // Type guard to check if item is a database cart item
+    const isDatabaseItem = 'products' in item || 'services' in item;
+    
+    if (isDatabaseItem) {
+      const dbItem = item as DatabaseCartItem;
+      return Number(dbItem.price) * dbItem.quantity;
+    } else {
+      const localItem = item as LocalCartItem;
+      return Number(localItem.price) * localItem.quantity;
     }
-    return item.unit_price * item.quantity;
   };
   
   const subtotal = items.reduce((sum, item) => sum + calculateTotalPrice(item), 0);
@@ -295,79 +426,80 @@ export default function CheckoutPage() {
                           <TableRow>
                             <TableHead className="text-lavender">Product</TableHead>
                             <TableHead className="text-lavender text-right">Price</TableHead>
-                            <TableHead className="text-lavender text-center">Quantity/Carats</TableHead>
+                            <TableHead className="text-lavender text-center">Quantity</TableHead>
                             <TableHead className="text-lavender text-right">Total</TableHead>
                             <TableHead className="text-lavender text-center">Actions</TableHead>
                           </TableRow>
                         </TableHeader>
                         <TableBody>
-                          {items.map((item) => (
-                            <TableRow key={item.id}>
-                              <TableCell className="text-lavender font-medium">
-                                {item.product_name}
-                              </TableCell>
-                              <TableCell className="text-lavender text-right">
-                                ₹{item.unit_price.toLocaleString('en-IN')}
-                                {item.is_stone && <span className="text-sm">/carat</span>}
-                              </TableCell>
-                              <TableCell className="text-center">
-                                <div className="flex items-center justify-center space-x-2">
+                          {items.map((item) => {
+                            // Type guard to check if item is a database cart item
+                            const isDatabaseItem = 'products' in item || 'services' in item;
+                            
+                            // Handle both database cart items and local items
+                            const itemName = isDatabaseItem 
+                              ? (item as DatabaseCartItem).products?.name || (item as DatabaseCartItem).services?.title
+                              : (item as LocalCartItem).name;
+                            
+                            const itemPrice = isDatabaseItem
+                              ? (item as DatabaseCartItem).products?.price || (item as DatabaseCartItem).services?.price
+                              : (item as LocalCartItem).price;
+                            
+                            const itemId = item.id;
+                            const itemQuantity = item.quantity;
+
+                            return (
+                              <TableRow key={itemId}>
+                                <TableCell className="text-lavender font-medium">
+                                  {itemName || 'Unnamed Item'}
+                                </TableCell>
+                                <TableCell className="text-lavender text-right">
+                                  ₹{Number(itemPrice).toLocaleString('en-IN')}
+                                </TableCell>
+                                <TableCell className="text-center">
+                                  <div className="flex items-center justify-center space-x-2">
+                                    <Button 
+                                      variant="outline" 
+                                      size="icon" 
+                                      className="h-8 w-8 rounded-full bg-midnight-blue border-gold/30 text-lavender"
+                                      onClick={() => handleUpdateQuantity(itemId, itemQuantity - 1)}
+                                      disabled={isUpdatingCart || itemQuantity <= 1}
+                                    >
+                                      <Minus className="h-4 w-4" />
+                                    </Button>
+                                    
+                                    <span className="text-lavender min-w-16 text-center">
+                                      {itemQuantity}
+                                    </span>
+                                    
+                                    <Button 
+                                      variant="outline" 
+                                      size="icon" 
+                                      className="h-8 w-8 rounded-full bg-midnight-blue border-gold/30 text-lavender"
+                                      onClick={() => handleUpdateQuantity(itemId, itemQuantity + 1)}
+                                      disabled={isUpdatingCart}
+                                    >
+                                      <Plus className="h-4 w-4" />
+                                    </Button>
+                                  </div>
+                                </TableCell>
+                                <TableCell className="text-gold text-right">
+                                  ₹{calculateTotalPrice(item).toLocaleString('en-IN')}
+                                </TableCell>
+                                <TableCell className="text-center">
                                   <Button 
-                                    variant="outline" 
+                                    variant="ghost" 
                                     size="icon" 
-                                    className="h-8 w-8 rounded-full bg-midnight-blue border-gold/30 text-lavender"
-                                    onClick={() => handleUpdateQuantity(
-                                      item.id, 
-                                      item.is_stone ? (item.carats || 0) - 0.5 : item.quantity - 1, 
-                                      item.is_stone
-                                    )}
-                                    disabled={
-                                      isUpdatingCart || 
-                                      (item.is_stone ? (item.carats || 0) <= 0.5 : item.quantity <= 1)
-                                    }
-                                  >
-                                    <Minus className="h-4 w-4" />
-                                  </Button>
-                                  
-                                  <span className="text-lavender min-w-16 text-center">
-                                    {item.is_stone ? (
-                                      <span>{item.carats} carats</span>
-                                    ) : (
-                                      <span>{item.quantity}</span>
-                                    )}
-                                  </span>
-                                  
-                                  <Button 
-                                    variant="outline" 
-                                    size="icon" 
-                                    className="h-8 w-8 rounded-full bg-midnight-blue border-gold/30 text-lavender"
-                                    onClick={() => handleUpdateQuantity(
-                                      item.id, 
-                                      item.is_stone ? (item.carats || 0) + 0.5 : item.quantity + 1, 
-                                      item.is_stone
-                                    )}
+                                    className="text-lavender hover:text-red-400 hover:bg-red-400/10"
+                                    onClick={() => handleRemoveItem(itemId)}
                                     disabled={isUpdatingCart}
                                   >
-                                    <Plus className="h-4 w-4" />
+                                    <Trash2 className="h-5 w-5" />
                                   </Button>
-                                </div>
-                              </TableCell>
-                              <TableCell className="text-gold text-right">
-                                ₹{calculateTotalPrice(item).toLocaleString('en-IN')}
-                              </TableCell>
-                              <TableCell className="text-center">
-                                <Button 
-                                  variant="ghost" 
-                                  size="icon" 
-                                  className="text-lavender hover:text-red-400 hover:bg-red-400/10"
-                                  onClick={() => handleRemoveItem(item.id)}
-                                  disabled={isUpdatingCart}
-                                >
-                                  <Trash2 className="h-5 w-5" />
-                                </Button>
-                              </TableCell>
-                            </TableRow>
-                          ))}
+                                </TableCell>
+                              </TableRow>
+                            );
+                          })}
                         </TableBody>
                       </Table>
                     </div>
@@ -556,9 +688,11 @@ export default function CheckoutPage() {
                     <Button 
                       onClick={handleSubmit}
                       className="w-full bg-black text-white hover:bg-gray-800 py-6"
-                      disabled={items.length === 0 || isUpdatingCart}
+                      disabled={items.length === 0 || isUpdatingCart || isSubmitting}
                     >
-                      {paymentMethod === 'online' ? 'Proceed to Payment' : 'Place Order'}
+                      {isSubmitting
+                        ? (paymentMethod === 'online' ? 'Processing…' : 'Placing…')
+                        : (paymentMethod === 'online' ? 'Proceed to Payment' : 'Place Order')}
                     </Button>
                   </CardContent>
                 </Card>
