@@ -142,7 +142,7 @@ export function Testimonials() {
         </motion.div>
         <div className="relative w-full flex items-center justify-center">
           {/* Left Arrow for all views, styled for mobile/tablet/desktop */}
-          <div className="absolute -left-12 md:-left-8 lg:-left-20 z-10 flex items-center h-full">
+          <div className="absolute left-2 md:-left-8 lg:-left-20 z-10 flex items-center h-full">
             <button
               aria-label="Previous testimonial"
               onClick={() => paginate(-1)}
@@ -224,7 +224,7 @@ export function Testimonials() {
             </AnimatePresence>
           </div>
           {/* Right Arrow for all views, styled for mobile/tablet/desktop */}
-          <div className="absolute -right-12 md:-right-8 lg:-right-20 z-10 flex items-center h-full">
+          <div className="absolute right-2 md:-right-8 lg:-right-20 z-10 flex items-center h-full">
             <button
               aria-label="Next testimonial"
               onClick={() => paginate(1)}

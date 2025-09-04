@@ -240,8 +240,8 @@ export function Header() {
         className="fixed top-[56px] left-0 right-0 z-50 lg:hidden w-full flex justify-center items-center gap-2 px-2 py-2"
         style={{ background: '#FEFBF2', boxShadow: '0 2px 8px 0 rgba(36,34,68,0.04)' }}
       >
-        {/* Consultations dropdown trigger */}
-        <button
+        {/* Consultations dropdown trigger - COMMENTED OUT */}
+        {/* <button
           type="button"
           className="flex-1 text-sm font-bold text-black px-2 py-1 rounded transition-colors flex items-center gap-1 justify-center"
           style={{ fontFamily: 'Playfair Display, serif', color: '#000', fontWeight: 700 }}
@@ -251,7 +251,7 @@ export function Header() {
         >
           {t("header.nav.consultations")}
           <ChevronDown className={`ml-1 w-4 h-4 transition-transform ${isConsultationBarOpen ? 'rotate-180' : ''}`} style={{ color: '#77A656' }} />
-        </button>
+        </button> */}
         <Link
           href="/chat-with-astrologer"
           className="flex-1 text-sm font-bold text-black px-2 py-1 rounded transition-colors flex items-center justify-center"
@@ -273,14 +273,14 @@ export function Header() {
         >
           {t("header.nav.services_mobile")}
         </Link>
-        {/* Consultations Dropdown below nav bar */}
+        {/* Consultations Dropdown below nav bar - COMMENTED OUT */}
 
-        <div className={`absolute left-0 top-full w-full z-40 transition-all duration-300 ${isConsultationBarOpen ? 'max-h-[800px] opacity-100' : 'max-h-0 opacity-0 pointer-events-none'}`} style={{ background: '#FDF9EF', borderRadius: '0 0 1rem 1rem', boxShadow: isConsultationBarOpen ? '0 4px 24px 0 rgba(36,34,68,0.08)' : 'none', overflow: 'hidden' }}>
+        {/* <div className={`absolute left-0 top-full w-full z-40 transition-all duration-300 ${isConsultationBarOpen ? 'max-h-[800px] opacity-100' : 'max-h-0 opacity-0 pointer-events-none'}`} style={{ background: '#FDF9EF', borderRadius: '0 0 1rem 1rem', boxShadow: isConsultationBarOpen ? '0 4px 24px 0 rgba(36,34,68,0.08)' : 'none', overflow: 'hidden' }}>
           <div className="py-2 px-2 flex flex-col gap-2">
             {/* First row: Consultations and Horoscopes */}
-            <div className="flex flex-row gap-2 justify-center">
+            {/* <div className="flex flex-row gap-2 justify-center">
               {/* Consultations group */}
-              <div className="flex-1 max-w-[260px]" style={{ flex: '0 1 260px' }}>
+              {/* <div className="flex-1 max-w-[260px]" style={{ flex: '0 1 260px' }}>
                 <div className="text-base font-bold mb-1 text-center" style={{ color: '#77A656', fontFamily: 'Playfair Display, serif' }}>{t('header.mega_menu.consultations.title')}</div>
                 <ul className="flex flex-col gap-1">
                   {servicesMegaMenu.consultations.items.map((item) => (
@@ -296,9 +296,9 @@ export function Header() {
                     </li>
                   ))}
                 </ul>
-              </div>
+              </div> */}
               {/* Horoscopes group */}
-              <div className="flex-1 max-w-[260px]" style={{ flex: '0 1 260px' }}>
+              {/* <div className="flex-1 max-w-[260px]" style={{ flex: '0 1 260px' }}>
                 <div className="text-base font-bold mb-1 text-center" style={{ color: '#77A656', fontFamily: 'Playfair Display, serif' }}>{t('header.mega_menu.horoscopes.title')}</div>
                 <ul className="flex flex-col gap-1">
                   {servicesMegaMenu.horoscopes.items.map((item) => (
@@ -314,10 +314,10 @@ export function Header() {
                     </li>
                   ))}
                 </ul>
-              </div>
-            </div>
+              </div> */}
+            {/* </div> */}
             {/* Second row: Puja & Rituals group centered */}
-            <div className="flex flex-row gap-2 mt-2 justify-center">
+            {/* <div className="flex flex-row gap-2 mt-2 justify-center">
               <div className="flex-1 max-w-[260px]" style={{ flex: '0 1 260px' }}>
                 <div className="text-base font-bold mb-1 text-center" style={{ color: '#77A656', fontFamily: 'Playfair Display, serif' }}>{t('header.mega_menu.puja_rituals.title')}</div>
                 <ul className="flex flex-col gap-1">
@@ -334,10 +334,10 @@ export function Header() {
                     </li>
                   ))}
                 </ul>
-              </div>
-            </div>
-          </div>
-        </div>
+              </div> */}
+            {/* </div> */}
+          {/* </div> */}
+        {/* </div> */}
 
 
       </div>
@@ -486,15 +486,15 @@ export function Header() {
             <span className="relative z-10">{t("header.nav.about")}</span>
             <span className="absolute left-0 -bottom-1 w-full h-0.5 bg-gradient-to-r from-green-800 to-green-800 scale-x-0 group-hover:scale-x-100 transition-transform origin-left duration-200 z-0" />
           </Link>
-          {/* Consultation Dropdown (keep yellow) */}
-          <div
+          {/* Consultation Dropdown (keep yellow) - COMMENTED OUT */}
+          {/* <div
             className="relative"
             ref={servicesMenuRef}
             onMouseEnter={() => setIsServicesOpen(true)}
             onMouseLeave={() => setTimeout(() => setIsServicesOpen(false), 120)}
           >
             {/* Consultations Button: Yellow */}
-            <button
+            {/* <button
               onClick={() => setIsServicesOpen((prev) => !prev)}
               className="flex items-center text-base font-bold px-2 py-1 relative group transition-colors focus:outline-none hover:translate-x-1"
               style={{ fontFamily: 'Playfair Display, serif', color: 'rgb(22 101 52)', background: 'transparent', fontWeight: 700 }}
@@ -548,7 +548,7 @@ export function Header() {
                 </motion.div>
               )}
             </AnimatePresence>
-          </div>
+          </div> */}
           {/* Study Dropdown (Desktop) */}
           <div
             className="relative"
@@ -855,7 +855,7 @@ export function Header() {
               </div>
               <Link href="/contact" onClick={() => setIsMobileMenuOpen(false)} className="font-semibold text-lg text-black" style={{ fontFamily: 'Playfair Display, serif' }}>{t('header.nav.contact')}</Link>
               <Link href="/orders" onClick={() => setIsMobileMenuOpen(false)} className="font-semibold text-lg text-black" style={{ fontFamily: 'Playfair Display, serif' }}>{t('header.nav.orders') || 'Orders'}</Link>
-              {/* Consultations Dropdown REMOVED FROM HAMBURGER MENU */}
+              {/* Consultations Dropdown REMOVED FROM HAMBURGER MENU - COMMENTED OUT */}
               {/* Language Selector in Drawer */}
               <div className="mt-4 w-full">
                 <button
