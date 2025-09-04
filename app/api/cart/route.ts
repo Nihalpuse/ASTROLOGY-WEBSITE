@@ -50,7 +50,7 @@ export async function GET(request: NextRequest) {
     }
 
     // Get user's active cart
-    const cart = await (prisma as any).cart.findFirst({
+    const cart = await prisma.cart.findFirst({
       where: {
         user_id: parseInt(userId),
         status: 'active'
@@ -113,7 +113,7 @@ export async function GET(request: NextRequest) {
 
     if (!cart) {
       // Create a new cart if none exists
-      const newCart = await (prisma as any).cart.create({
+      const newCart = await prisma.cart.create({
         data: {
           user_id: parseInt(userId),
           status: 'active'
@@ -228,7 +228,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Get or create user's active cart
-    let cart = await (prisma as any).cart.findFirst({
+    let cart = await prisma.cart.findFirst({
       where: {
         user_id: parseInt(userId),
         status: 'active'
@@ -236,7 +236,7 @@ export async function POST(request: NextRequest) {
     });
 
     if (!cart) {
-      cart = await (prisma as any).cart.create({
+      cart = await prisma.cart.create({
         data: {
           user_id: parseInt(userId),
           status: 'active'
@@ -271,7 +271,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Check if item already exists in cart
-    const existingItem = await (prisma as any).cart_items.findFirst({
+    const existingItem = await prisma.cart_items.findFirst({
       where: {
         cart_id: cart.id,
         item_type: itemType,
@@ -282,7 +282,7 @@ export async function POST(request: NextRequest) {
 
     if (existingItem) {
       // Update quantity of existing item
-      const updatedItem = await (prisma as any).cart_items.update({
+      const updatedItem = await prisma.cart_items.update({
         where: { id: existingItem.id },
         data: {
           quantity: existingItem.quantity + quantity,
@@ -347,7 +347,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Add new item to cart
-    const newItem = await (prisma as any).cart_items.create({
+    const newItem = await prisma.cart_items.create({
       data: {
         cart_id: cart.id,
         item_type: itemType,
@@ -439,7 +439,7 @@ export async function PUT(request: NextRequest) {
 
     if (quantity <= 0) {
       // Remove item if quantity is 0 or negative
-      await (prisma as any).cart_items.delete({
+      await prisma.cart_items.delete({
         where: { id: cartItemId }
       });
 
@@ -449,7 +449,7 @@ export async function PUT(request: NextRequest) {
     }
 
     // Update quantity
-    const updatedItem = await (prisma as any).cart_items.update({
+    const updatedItem = await prisma.cart_items.update({
       where: { id: cartItemId },
       data: {
         quantity,
@@ -534,7 +534,7 @@ export async function DELETE(request: NextRequest) {
       );
     }
 
-    await (prisma as any).cart_items.delete({
+    await prisma.cart_items.delete({
       where: { id: parseInt(cartItemId) }
     });
 

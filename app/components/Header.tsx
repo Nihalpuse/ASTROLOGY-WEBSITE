@@ -1,6 +1,6 @@
 "use client";
 
-import { ShoppingCart, Package, Globe2 } from "lucide-react";
+import { ShoppingCart, Package } from "lucide-react";
 import { useState, useEffect, useRef, FormEvent } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
@@ -13,11 +13,7 @@ import {
   Search,
   Menu,
   X,
-  User,
-  LogIn,
-  LogOut,
 } from "lucide-react";
-import CartIcon from "./CartIcon";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -29,61 +25,21 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 
-const servicesMegaMenu = {
-  consultations: {
-    href: "/services/astrology",
-    items: [
-      { href: "/services/astrology", key: "astrology" },
-      { href: "/kundali-matching", key: "kundali_matching" },
-      { href: "/panchang", key: "panchang" },
-      { href: "/services/love-relationship", key: "love_relationship" },
-      { href: "/services/career-guidance", key: "career_guidance" },
-      { href: "/services/numerology", key: "numerology" },
-    ],
-  },
-  puja_rituals: {
-    href: "/online-puja",
-    items: [
-      { href: "/online-puja", key: "online_puja" },
-      { href: "/services/grah-shanti", key: "grah_shanti" },
-      { href: "/services/manokamna-pooja", key: "manokamna_pooja" },
-    ],
-  },
-  horoscopes: {
-    href: "/daily-horoscope",
-    items: [
-      { href: "/services/daily-horoscope", key: "daily_horoscope" },
-      { href: "/daily-horoscope", key: "free_daily_horoscope" },
-      { href: "/services/monthly-horoscope", key: "monthly_horoscope" },
-      { href: "/services/yearly-horoscope", key: "yearly_horoscope" },
-    ],
-  },
-};
 
 export function Header() {
   const { lang, setLang, t } = useLanguage();
   const { data: session } = useSession();
-  const pathname = usePathname();
   const router = useRouter();
 
-  const [isServicesOpen, setIsServicesOpen] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
   const [isLangDropdownOpen, setIsLangDropdownOpen] = useState(false);
-  const [isMobileStudyDropdownOpen, setIsMobileStudyDropdownOpen] = useState(false);
-  const [isMobileConsultationsDropdownOpen, setIsMobileConsultationsDropdownOpen] = useState(false);
   const [isMobileLangMenuOpen, setIsMobileLangMenuOpen] = useState(false);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [isStudyDropdownOpen, setIsStudyDropdownOpen] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
-  const [isConsultationOpen, setIsConsultationOpen] = useState(false);
-  // Add state for mobile nav bar consultations dropdown
-  const [isConsultationBarOpen, setIsConsultationBarOpen] = useState(false);
   // Add state for mobile menu Study dropdown
   const [isStudyOpen, setIsStudyOpen] = useState(false);
-  // Add state for mobile menu Shop dropdown
-  const [isShopOpen, setIsShopOpen] = useState(false);
 
   const servicesMenuRef = useRef<HTMLDivElement>(null);
   const mobileMenuRef = useRef<HTMLDivElement>(null);
