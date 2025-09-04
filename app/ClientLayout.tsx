@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation";
 import { Header } from "./components/Header";
 import { PageTransition } from "./components/PageTransition";
 import { AuthProvider } from "./contexts/AuthContext";
+import { AstrologyPreloader } from "./components/AstrologyPreloader";
 import { v4 as uuidv4 } from "uuid";
 import { Toaster } from "@/components/ui/sonner";
 
@@ -74,7 +75,6 @@ export default function ClientLayout({
   const [isClient, setIsClient] = useState(false);
 
   // Memoize route checks
-  const isAdminRoute = useMemo(() => pathname?.startsWith("/admin"), [pathname]);
   const isSignInRoute = useMemo(() => pathname === "/signin", [pathname]);
 
   // Memoize shouldHideLayout calculation
@@ -149,7 +149,14 @@ export default function ClientLayout({
   }, [isSignInRoute]);
 
   if (!isClient) {
-    return null;
+    return (
+      <div className="min-h-screen">
+        <AstrologyPreloader 
+          size="lg" 
+          message="Initializing your spiritual journey..." 
+        />
+      </div>
+    );
   }
 
   if (shouldHideLayout) {

@@ -113,7 +113,14 @@ export function UniversalCartButton({
       const itemType = isService ? 'service' : 'product';
       
       // Prepare API request body
-      const requestBody: any = {
+      const requestBody: {
+        userId: string;
+        itemType: string;
+        quantity: number;
+        productId?: number;
+        serviceId?: number;
+        price?: number;
+      } = {
         userId,
         itemType,
         quantity

@@ -34,7 +34,7 @@ export const metadata = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en" className={`${cormorantGaramond.variable} ${notoSans.variable} ${notoSansSC.variable}`}>
-      <body>
+      <body className="bg-white">
         <CartProvider>
           <LanguageProvider>
             <Providers>

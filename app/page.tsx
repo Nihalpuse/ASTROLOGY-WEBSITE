@@ -3,6 +3,7 @@ import NewHeroSection from "./components/NewHeroSection";
 import dynamic from "next/dynamic";
 import { ScrollAnimation } from "./components/ScrollAnimation";
 import { ExploreMoreInsights } from './components/ExploreMoreInsights';
+import { AstrologyPreloader } from './components/AstrologyPreloader';
 
 
 const AstrologerProfile = dynamic(
@@ -10,60 +11,47 @@ const AstrologerProfile = dynamic(
     import("./components/AstrologerProfile").then(
       (mod) => mod.AstrologerProfile
     ),
-  { loading: () => <div>Loading...</div>, ssr: false }
+  { loading: () => <AstrologyPreloader size="sm" message="Loading cosmic wisdom..." />, ssr: false }
 );
 const BestServices = dynamic(
   () => import("./components/BestServices").then((mod) => mod.BestServices),
-  { loading: () => <div>Loading...</div>, ssr: false }
+  { loading: () => <AstrologyPreloader size="sm" message="Loading cosmic wisdom..." />, ssr: false }
 );
 const Testimonials = dynamic(
   () => import("./components/Testimonials").then((mod) => mod.Testimonials),
-  { loading: () => <div>Loading...</div>, ssr: false }
+  { loading: () => <AstrologyPreloader size="sm" message="Loading cosmic wisdom..." />, ssr: false }
 );
 const BestProducts = dynamic(
   () => import("./components/BestProducts").then((mod) => mod.BestProducts),
-  { loading: () => <div>Loading...</div>, ssr: false }
-);
-const FeaturedProducts = dynamic(
-  () =>
-    import("./components/FeaturedProducts").then((mod) => mod.FeaturedProducts),
-  { loading: () => <div>Loading...</div>, ssr: false }
-);
-const BlogPreview = dynamic(
-  () => import("./components/BlogPreview").then((mod) => mod.BlogPreview),
-  { loading: () => <div>Loading...</div>, ssr: false }
+  { loading: () => <AstrologyPreloader size="sm" message="Loading cosmic wisdom..." />, ssr: false }
 );
 const ContactForm = dynamic(
   () => import("./components/ContactForm").then((mod) => mod.ContactForm),
-  { loading: () => <div>Loading...</div>, ssr: false }
+  { loading: () => <AstrologyPreloader size="sm" message="Loading cosmic wisdom..." />, ssr: false }
 );
 const DailyHoroscope = dynamic(
   () => import("./components/DailyHoroscope").then((mod) => mod.DailyHoroscope),
-  { loading: () => <div>Loading...</div>, ssr: false }
+  { loading: () => <AstrologyPreloader size="sm" message="Loading cosmic wisdom..." />, ssr: false }
 );
 const AstrologyQuiz = dynamic(
   () => import("./components/AstrologyQuiz").then((mod) => mod.AstrologyQuiz),
-  { loading: () => <div>Loading...</div>, ssr: false }
+  { loading: () => <AstrologyPreloader size="sm" message="Loading cosmic wisdom..." />, ssr: false }
 );
 const RecentPosts = dynamic(() => import("./components/RecentPosts"), {
   loading: () => <div>Loading...</div>,
   ssr: false,
 });
-const FeaturedBlogs = dynamic(() => import("./components/FeaturedBlogs"), {
-  loading: () => <div>Loading...</div>,
-  ssr: false,
-});
 const ShopCategoriesMinimal = dynamic(
   () => import("./components/ShopCategoriesMinimal"),
-  { loading: () => <div>Loading...</div>, ssr: false }
+  { loading: () => <AstrologyPreloader size="sm" message="Loading cosmic wisdom..." />, ssr: false }
 );
 const NakshatraGyaanBanner = dynamic(
   () => import("./components/NakshatraGyaanBanner"),
-  { loading: () => <div>Loading...</div>, ssr: false }
+  { loading: () => <AstrologyPreloader size="sm" message="Loading cosmic wisdom..." />, ssr: false }
 );
 const SpiritualJourneyBanner = dynamic(
   () => import("./components/SpiritualJourneyBanner"),
-  { loading: () => <div>Loading...</div>, ssr: false }
+  { loading: () => <AstrologyPreloader size="sm" message="Loading cosmic wisdom..." />, ssr: false }
 );
 
 export default function HomePage() {

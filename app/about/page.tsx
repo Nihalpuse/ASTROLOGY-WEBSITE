@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { User, Calendar, Star, HelpCircle, Users, Target, Quote, Award, Globe, Heart, Shield, BookOpen, Sparkles, Zap, Compass, Gem, Activity, TrendingUp, Clock, Gift, Lock, ArrowUpRight, Brain, Eye, Crown, Infinity } from 'lucide-react';
+import { HelpCircle, Users, Target, Award, Globe, Heart, Shield, BookOpen, Sparkles, Zap, Compass, Gem, Activity, TrendingUp, ArrowUpRight } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { useRouter } from 'next/navigation';
 import { CTASection } from '../components/CTASection';
