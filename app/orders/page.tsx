@@ -22,6 +22,28 @@ interface Order {
   items: OrderItem[];
 }
 
+interface ApiOrderItem {
+  name?: string;
+  quantity?: number;
+  total_price?: number;
+  unit_price?: number;
+  products?: {
+    name?: string;
+  };
+  services?: {
+    title?: string;
+  };
+}
+
+interface ApiOrder {
+  id: number;
+  total_amount?: number;
+  subtotal?: number;
+  status: string;
+  created_at: string;
+  order_items?: ApiOrderItem[];
+}
+
 import { useCurrentUser } from '@/hooks/useCurrentUser'
 
 export default function OrdersPage() {
@@ -55,13 +77,13 @@ export default function OrdersPage() {
         }
 
         const data = await ordersRes.json();
-        const apiOrders = (data.orders || []) as Array<any>;
-        const mapped: Order[] = apiOrders.map((o: any) => ({
+        const apiOrders = (data.orders || []) as ApiOrder[];
+        const mapped: Order[] = apiOrders.map((o: ApiOrder) => ({
           id: o.id,
           total_amount: Number(o.total_amount ?? o.subtotal ?? 0),
           status: o.status,
           created_at: o.created_at,
-          items: (o.order_items || []).map((it: any) => ({
+          items: (o.order_items || []).map((it: ApiOrderItem) => ({
             name: it.name || it.products?.name || it.services?.title || 'Item',
             quantity: it.quantity ?? 1,
             price: Number(it.total_price ?? (Number(it.unit_price ?? 0) * (it.quantity ?? 1)))
@@ -183,7 +205,7 @@ export default function OrdersPage() {
                   </svg>
                 </div>
                 <h3 className="text-xl font-semibold text-neutral-900 mb-2">No orders yet</h3>
-                <p className="text-neutral-600 mb-6">You haven't placed any orders yet. Start exploring our products!</p>
+                <p className="text-neutral-600 mb-6">You haven&apos;t placed any orders yet. Start exploring our products!</p>
                 <Button 
                   onClick={() => router.push('/shop')}
                   className="bg-green-800 hover:bg-green-900 text-white px-8 py-3 rounded-xl shadow-lg"

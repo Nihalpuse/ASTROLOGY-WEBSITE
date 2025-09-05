@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
+import Image from 'next/image';
 import {
   BarChart, Bar, LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid,
   PieChart, Pie, Cell, AreaChart, Area, ComposedChart
@@ -463,7 +464,7 @@ export default function AdminDashboard() {
                     <CartesianGrid stroke="#f1f5f9" />
                     <XAxis dataKey={timeRange === 'monthly' ? 'month' : 'week'} stroke="#6b7280" />
                     <YAxis stroke="#6b7280" />
-                    <Tooltip formatter={(value: any) => [`₹${value.toLocaleString()}`, 'Revenue']} />
+                    <Tooltip formatter={(value: number) => [`₹${value.toLocaleString()}`, 'Revenue']} />
                     <Area type="monotone" dataKey="revenue" fill="#bfdbfe" stroke="#3b82f6" fillOpacity={0.35} />
                     <Bar dataKey="revenue" barSize={18} fill="#3b82f6" />
                   </ComposedChart>
@@ -544,7 +545,7 @@ export default function AdminDashboard() {
                   {contributors.map((c, i) => (
                     <div key={i} className="flex items-center justify-between p-2 rounded hover:bg-gray-50 dark:hover:bg-gray-700">
                       <div className="flex items-center">
-                        <img src={c.image} alt={c.name} className="w-8 h-8 rounded mr-3 object-cover bg-gray-200 dark:bg-gray-600" onError={(e) => { e.currentTarget.src = '/placeholder.jpg'; }} />
+                        <Image src={c.image} alt={c.name} width={32} height={32} className="w-8 h-8 rounded mr-3 object-cover bg-gray-200 dark:bg-gray-600" onError={(e) => { e.currentTarget.src = '/placeholder.jpg'; }} />
                         <div>
                           <div className="text-sm font-medium text-gray-900 dark:text-white">{c.name}</div>
                           <div className="text-xs text-gray-500">{c.type}</div>
@@ -585,9 +586,11 @@ export default function AdminDashboard() {
                       <td className="py-3 text-sm text-gray-900 dark:text-white">{index + 1}</td>
                       <td className="py-3">
                         <div className="flex items-center">
-                          <img 
+                          <Image 
                             src={astrologer.image} 
                             alt={astrologer.name}
+                            width={32}
+                            height={32}
                             className="w-8 h-8 bg-gray-200 dark:bg-gray-600 rounded-full mr-3 object-cover"
                             onError={(e) => {
                               e.currentTarget.src = '/placeholder.jpg';
@@ -706,9 +709,11 @@ export default function AdminDashboard() {
                       <td className="py-3 text-sm text-gray-900 dark:text-white">{index + 1}</td>
                       <td className="py-3">
                         <div className="flex items-center">
-                          <img 
+                          <Image 
                             src={service.image} 
                             alt={service.name}
+                            width={32}
+                            height={32}
                             className="w-8 h-8 bg-gray-200 dark:bg-gray-600 rounded mr-3 object-cover"
                             onError={(e) => {
                               e.currentTarget.src = '/placeholder.jpg';
@@ -756,9 +761,11 @@ export default function AdminDashboard() {
                       <td className="py-3 text-sm text-gray-900 dark:text-white">{index + 1}</td>
                       <td className="py-3">
                         <div className="flex items-center">
-                          <img 
+                          <Image 
                             src={product.image} 
                             alt={product.name}
+                            width={32}
+                            height={32}
                             className="w-8 h-8 bg-gray-200 dark:bg-gray-600 rounded mr-3 object-cover"
                             onError={(e) => {
                               e.currentTarget.src = '/placeholder.jpg';

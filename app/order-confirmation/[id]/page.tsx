@@ -40,6 +40,41 @@ interface ConfirmOrder {
   };
 }
 
+interface ApiOrderItem {
+  id: number;
+  name?: string;
+  unit_price?: number;
+  quantity?: number;
+  total_price?: number;
+  products?: {
+    name?: string;
+  };
+  services?: {
+    title?: string;
+  };
+}
+
+interface ApiOrder {
+  id: number;
+  order_number: string;
+  created_at: string;
+  status: string;
+  payment_method?: string;
+  payment_status: string;
+  subtotal?: number;
+  total_amount?: number;
+  order_items?: ApiOrderItem[];
+  shipping_address?: {
+    fullName?: string;
+    addressLine1?: string;
+    addressLine2?: string;
+    city?: string;
+    state?: string;
+    pincode?: string;
+    phone?: string;
+  };
+}
+
 export default function OrderConfirmationPage({ params }: { params: { id: string } }) {
   const router = useRouter();
   const { data: session, status } = useSession();
@@ -68,8 +103,8 @@ export default function OrderConfirmationPage({ params }: { params: { id: string
           throw new Error(errorData.error || 'Failed to fetch orders');
         }
         const data = await res.json();
-        const orders = (data.orders || []) as Array<any>;
-        const raw = orders.find((o: any) => String(o.id) === String(params.id));
+        const orders = (data.orders || []) as ApiOrder[];
+        const raw = orders.find((o: ApiOrder) => String(o.id) === String(params.id));
         if (!raw) {
           throw new Error('Order not found');
         }
@@ -82,7 +117,7 @@ export default function OrderConfirmationPage({ params }: { params: { id: string
           payment_method: raw.payment_method ?? null,
           payment_status: raw.payment_status,
           estimated_delivery: '',
-          items: (raw.order_items || []).map((it: any) => ({
+          items: (raw.order_items || []).map((it: ApiOrderItem) => ({
             id: it.id,
             name: it.name || it.products?.name || it.services?.title || 'Item',
             unit_price: Number(it.unit_price ?? 0),
@@ -325,7 +360,7 @@ export default function OrderConfirmationPage({ params }: { params: { id: string
               </svg>
             </div>
             <h3 className="text-xl font-semibold text-neutral-900 mb-2">Order not found</h3>
-            <p className="text-neutral-600 mb-6">We couldn't find the order you're looking for.</p>
+            <p className="text-neutral-600 mb-6">We couldn&apos;t find the order you&apos;re looking for.</p>
             <Button 
               onClick={() => router.push('/orders')}
               className="bg-green-800 hover:bg-green-900 text-white rounded-xl px-6 py-3 shadow-lg"
