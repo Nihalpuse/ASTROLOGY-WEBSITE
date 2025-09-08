@@ -23,16 +23,21 @@ export async function GET(request: Request) {
     const { searchParams } = new URL(request.url)
     const userIdParam = searchParams.get('userId')
 
+    console.log('Orders API: Received request with userId:', userIdParam)
+
     if (!userIdParam) {
+      console.log('Orders API: No userId provided')
       return NextResponse.json({ error: 'userId is required' }, { status: 400 })
     }
 
     const userId = Number(userIdParam)
     if (Number.isNaN(userId)) {
+      console.log('Orders API: Invalid userId format:', userIdParam)
       return NextResponse.json({ error: 'userId must be a number' }, { status: 400 })
     }
 
-    // @ts-expect-error Prisma client may be awaiting generation for new models
+    console.log('Orders API: Fetching orders for userId:', userId)
+ 
     const orders = await prisma.orders.findMany({
       where: { user_id: userId },
       orderBy: { created_at: 'desc' },
@@ -46,8 +51,10 @@ export async function GET(request: Request) {
       },
     })
 
+    console.log('Orders API: Found orders:', orders.length)
     return NextResponse.json({ orders })
   } catch (error) {
+    console.error('Orders API: Error fetching orders:', error)
     return NextResponse.json({ error: 'Failed to fetch orders' }, { status: 500 })
   }
 }
@@ -93,7 +100,7 @@ export async function POST(request: Request) {
 
     // Create order with items in a transaction
     const created = await prisma.$transaction(async (tx) => {
-      // @ts-expect-error Prisma client may be awaiting generation for new models
+
       const order = await tx.orders.create({
         data: {
           user_id: userId,
@@ -130,7 +137,7 @@ export async function POST(request: Request) {
         total_price: Number(ci.price) * ci.quantity,
       }))
 
-      // @ts-expect-error Prisma client may be awaiting generation for new models
+     
       await tx.order_items.createMany({ data: itemsData })
 
       // Clear the cart after ordering
@@ -161,7 +168,7 @@ export async function PATCH(request: Request) {
       return NextResponse.json({ error: 'orderId and userId are required' }, { status: 400 })
     }
 
-    // @ts-expect-error Prisma client may be awaiting generation for new models
+
     const order = await prisma.orders.findUnique({ where: { id: body.orderId } })
     if (!order || order.user_id !== body.userId) {
       return NextResponse.json({ error: 'Order not found' }, { status: 404 })
@@ -172,7 +179,7 @@ export async function PATCH(request: Request) {
         return NextResponse.json({ error: 'Order cannot be cancelled' }, { status: 400 })
       }
 
-      // @ts-expect-error Prisma client may be awaiting generation for new models
+   
       const updated = await prisma.orders.update({
         where: { id: body.orderId },
         data: {

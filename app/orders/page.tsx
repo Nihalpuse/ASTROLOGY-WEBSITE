@@ -12,6 +12,11 @@ interface OrderItem {
   name: string;
   quantity: number;
   price: number;
+  image_url?: string;
+  alt_text?: string;
+  item_type?: string;
+  service_id?: number;
+  product_id?: number;
 }
 
 interface Order {
@@ -27,11 +32,26 @@ interface ApiOrderItem {
   quantity?: number;
   total_price?: number;
   unit_price?: number;
+  item_type?: string;
+  service_id?: number;
+  product_id?: number;
   products?: {
     name?: string;
+    product_media?: Array<{
+      media_url: string;
+      alt_text?: string;
+      is_primary?: boolean;
+      media_type: string;
+    }>;
   };
   services?: {
     title?: string;
+    service_media?: Array<{
+      media_url: string;
+      alt_text?: string;
+      is_primary?: boolean;
+      media_type: string;
+    }>;
   };
 }
 
@@ -65,44 +85,83 @@ export default function OrdersPage() {
       try {
         setLoading(true);
         
-        if (!isAuthenticated || !userId) {
-          throw new Error('User not authenticated');
+        // Wait for authentication to be ready
+        if (status === 'loading') {
+          return; // Still loading, wait for next effect run
         }
+        
+        // Check if we have a valid userId
+        if (!userId) {
+          console.log('No userId available yet, waiting...');
+          return; // Wait for userId to be available
+        }
+
+        console.log('Fetching orders for userId:', userId);
 
         // Fetch order history from existing route
         const ordersRes = await fetch(`/api/orders?userId=${userId}`);
         if (!ordersRes.ok) {
           const errData = await ordersRes.json().catch(() => ({}));
-          throw new Error(errData.error || 'Failed to fetch orders');
+          const errorMessage = errData.error || `HTTP ${ordersRes.status}: Failed to fetch orders`;
+          console.error("API Error:", errorMessage);
+          throw new Error(errorMessage);
         }
 
         const data = await ordersRes.json();
+        console.log('Orders API response:', data);
+        
         const apiOrders = (data.orders || []) as ApiOrder[];
         const mapped: Order[] = apiOrders.map((o: ApiOrder) => ({
           id: o.id,
           total_amount: Number(o.total_amount ?? o.subtotal ?? 0),
           status: o.status,
           created_at: o.created_at,
-          items: (o.order_items || []).map((it: ApiOrderItem) => ({
-            name: it.name || it.products?.name || it.services?.title || 'Item',
-            quantity: it.quantity ?? 1,
-            price: Number(it.total_price ?? (Number(it.unit_price ?? 0) * (it.quantity ?? 1)))
-          }))
+          items: (o.order_items || []).map((it: ApiOrderItem) => {
+            // Get image from product or service media
+            let image_url = '';
+            let alt_text = '';
+            
+            if (it.products?.product_media && it.products.product_media.length > 0) {
+              // Find primary image or use first image
+              const primaryMedia = it.products.product_media.find(media => media.is_primary) || it.products.product_media[0];
+              image_url = primaryMedia.media_url;
+              alt_text = primaryMedia.alt_text || it.products.name || 'Product image';
+            } else if (it.services?.service_media && it.services.service_media.length > 0) {
+              // Find primary image or use first image
+              const primaryMedia = it.services.service_media.find(media => media.is_primary) || it.services.service_media[0];
+              image_url = primaryMedia.media_url;
+              alt_text = primaryMedia.alt_text || it.services.title || 'Service image';
+            }
+            
+            return {
+              name: it.name || it.products?.name || it.services?.title || 'Item',
+              quantity: it.quantity ?? 1,
+              price: Number(it.total_price ?? (Number(it.unit_price ?? 0) * (it.quantity ?? 1))),
+              image_url,
+              alt_text,
+              item_type: it.item_type || (it.products ? 'product' : 'service'),
+              service_id: it.service_id,
+              product_id: it.product_id
+            };
+          })
         }));
 
+        console.log('Mapped orders:', mapped);
         setOrders(mapped);
       } catch (err) {
         console.error("Failed to fetch orders:", err);
-        toast.error("Failed to load order history");
+        const errorMessage = err instanceof Error ? err.message : 'Failed to load order history';
+        toast.error(errorMessage);
       } finally {
         setLoading(false);
       }
     };
     
-    if (status === 'authenticated') {
+    // Only fetch orders when we have a valid session and userId
+    if (status === 'authenticated' && userId) {
       fetchOrders();
     }
-  }, [status, router, isAuthenticated, userId]);
+  }, [status, router, userId]);
   
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
@@ -142,7 +201,7 @@ export default function OrdersPage() {
     }
   };
   
-  if (status === 'loading' || loading) {
+  if (status === 'loading' || loading || (status === 'authenticated' && !userId)) {
     return (
       <div className="relative min-h-screen overflow-hidden bg-gradient-to-b from-golden-amber-dark via-sunburst-yellow to-golden-amber-dark">
         <AnimatedStars />
@@ -267,7 +326,33 @@ export default function OrdersPage() {
                     <div className="flex space-x-3 overflow-x-auto">
                       {order.items.slice(0, 3).map((item, idx) => (
                         <div key={idx} className="flex-shrink-0 bg-neutral-50 rounded-lg p-3 min-w-[200px]">
-                          <div className="w-12 h-12 bg-neutral-200 rounded-lg mb-2"></div>
+                          <div className="w-12 h-12 bg-neutral-200 rounded-lg mb-2 overflow-hidden">
+                            {item.image_url ? (
+                              <img 
+                                src={item.image_url} 
+                                alt={item.alt_text || item.name}
+                                className="w-full h-full object-cover"
+                                onError={(e) => {
+                                  // Fallback to placeholder if image fails to load
+                                  const target = e.target as HTMLImageElement;
+                                  target.style.display = 'none';
+                                  target.parentElement!.innerHTML = `
+                                    <div class="w-full h-full bg-neutral-200 flex items-center justify-center">
+                                      <svg class="w-6 h-6 text-neutral-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                                      </svg>
+                                    </div>
+                                  `;
+                                }}
+                              />
+                            ) : (
+                              <div className="w-full h-full bg-neutral-200 flex items-center justify-center">
+                                <svg className="w-6 h-6 text-neutral-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                                </svg>
+                              </div>
+                            )}
+                          </div>
                           <h4 className="font-medium text-neutral-900 text-sm mb-1 truncate">{item.name}</h4>
                           <p className="text-neutral-600 text-xs">Qty: {item.quantity}</p>
                         </div>
@@ -287,14 +372,67 @@ export default function OrdersPage() {
                         <h4 className="font-semibold text-neutral-900 mb-4">Order Details</h4>
                         <div className="space-y-3">
                           {order.items.map((item, idx) => (
-                            <div key={idx} className="flex justify-between items-center py-2">
-                              <div className="flex-1">
-                                <h5 className="font-medium text-neutral-900">{item.name}</h5>
-                                <p className="text-neutral-600 text-sm">Quantity: {item.quantity}</p>
+                            <div key={idx} className="flex justify-between items-center py-3 border-b border-neutral-200 last:border-b-0">
+                              <div className="flex items-center space-x-3 flex-1">
+                                <div className="w-16 h-16 bg-neutral-200 rounded-lg overflow-hidden flex-shrink-0">
+                                  {item.image_url ? (
+                                    <img 
+                                      src={item.image_url} 
+                                      alt={item.alt_text || item.name}
+                                      className="w-full h-full object-cover"
+                                      onError={(e) => {
+                                        // Fallback to placeholder if image fails to load
+                                        const target = e.target as HTMLImageElement;
+                                        target.style.display = 'none';
+                                        target.parentElement!.innerHTML = `
+                                          <div class="w-full h-full bg-neutral-200 flex items-center justify-center">
+                                            <svg class="w-8 h-8 text-neutral-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                                            </svg>
+                                          </div>
+                                        `;
+                                      }}
+                                    />
+                                  ) : (
+                                    <div className="w-full h-full bg-neutral-200 flex items-center justify-center">
+                                      <svg className="w-8 h-8 text-neutral-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                                      </svg>
+                                    </div>
+                                  )}
+                                </div>
+                                <div className="flex-1">
+                                  <h5 className="font-medium text-neutral-900">{item.name}</h5>
+                                  <p className="text-neutral-600 text-sm">Quantity: {item.quantity}</p>
+                                  {item.item_type === 'service' && (
+                                    <div className="mt-2">
+                                      <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                                        <svg className="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                        </svg>
+                                        Service
+                                      </span>
+                                    </div>
+                                  )}
+                                </div>
                               </div>
-                              <span className="font-medium text-neutral-900">
-                                ₹{item.price.toLocaleString('en-IN')}
-                              </span>
+                              <div className="flex flex-col items-end space-y-2">
+                                <span className="font-medium text-neutral-900">
+                                  ₹{item.price.toLocaleString('en-IN')}
+                                </span>
+                                {item.item_type === 'service' && (
+                                  <Button 
+                                    size="sm"
+                                    className="bg-blue-600 hover:bg-blue-700 text-white text-xs px-3 py-1 h-auto"
+                                    onClick={() => router.push(`/service-booking?serviceId=${item.service_id}&orderId=${order.id}`)}
+                                  >
+                                    <svg className="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                                    </svg>
+                                    Claim Service
+                                  </Button>
+                                )}
+                              </div>
                             </div>
                           ))}
                         </div>
