@@ -128,7 +128,12 @@ export default function ProductShowcase({
 		});
 	}, [products]);
 
-	const totalCards = normalized.length;
+	// Strip "new" and "featured" markers so cards don't render those tags.
+	const sanitized: ReusableProduct[] = useMemo(() => {
+		return normalized.map(p => ({ ...p, isNew: false, isFeatured: false }));
+	}, [normalized]);
+
+	const totalCards = sanitized.length;
 	const maxIndex = Math.max(0, totalCards - responsiveCardsPerView);
 	// Desktop scroll logic
 	const canScrollLeftDesktop = currentIndex > 0;
@@ -219,7 +224,7 @@ export default function ProductShowcase({
 								stiffness: 300,
 							}}
 							style={{
-								width: `${normalized.length * (288 + 24)}px`,
+								width: `${sanitized.length * (288 + 24)}px`,
 							}}
 							drag="x"
 							dragConstraints={{
@@ -239,7 +244,7 @@ export default function ProductShowcase({
 								}
 							}}
 						>
-							{normalized.map((product) => (
+							{sanitized.map((product) => (
 								<div key={product.id} className="w-72 flex-shrink-0">
 									<ReusableProductCard product={product} viewMode={viewMode} />
 								</div>
@@ -285,7 +290,7 @@ export default function ProductShowcase({
 								WebkitOverflowScrolling: 'touch',
 							}}
 						>
-							{normalized.map((product) => (
+							{sanitized.map((product) => (
 								<div
 									key={product.id}
 									className="flex-none w-[calc(52%-6px)] min-w-[170px] snap-start"
@@ -300,7 +305,7 @@ export default function ProductShowcase({
 			) : (
 				/* List mode - vertical stack, no carousel */
 				<div className="flex flex-col gap-6">
-					{normalized.map((product) => (
+					{sanitized.map((product) => (
 						<div key={product.id}>
 							<ReusableProductCard product={product} viewMode={viewMode} />
 						</div>
