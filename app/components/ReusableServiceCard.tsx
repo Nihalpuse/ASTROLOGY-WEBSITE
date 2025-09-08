@@ -4,7 +4,7 @@ import { useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
-import { Star, Clock, Users, Calendar, Video, Phone } from 'lucide-react';
+import { Star, Clock, Users, Calendar, Video, Phone, MessageCircle } from 'lucide-react';
 import { UniversalCartButton } from '@/app/components/UniversalCartButton';
 import { Card, CardContent, CardFooter } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -33,6 +33,7 @@ export interface Service {
   isPopular?: boolean;
   isNew?: boolean;
   availability?: 'available' | 'busy' | 'offline';
+  nextAvailableSlot?: string;
 }
 
 interface ReusableServiceCardProps {
@@ -55,19 +56,23 @@ const getDiscountPercentage = (price: number, originalPrice?: number): number =>
   return originalPrice > 0 ? Math.round(((originalPrice - price) / originalPrice) * 100) : 0;
 };
 
-// Helper function to get consultation type icon
+// Helper function to get consultation type icon and color
 const getConsultationIcon = (type?: string) => {
   switch (type?.toLowerCase()) {
     case 'video call':
     case 'video/audio call':
-      return <Video className="w-4 h-4" />;
+      return { icon: <Video className="w-3 h-3" />, color: 'bg-blue-100 text-blue-700' };
     case 'phone call':
     case 'audio call':
-      return <Phone className="w-4 h-4" />;
+    case 'voice call':
+      return { icon: <Phone className="w-3 h-3" />, color: 'bg-green-100 text-green-700' };
+    case 'chat':
+    case 'text chat':
+      return { icon: <MessageCircle className="w-3 h-3" />, color: 'bg-purple-100 text-purple-700' };
     case 'in-person':
-      return <Users className="w-4 h-4" />;
+      return { icon: <Users className="w-3 h-3" />, color: 'bg-orange-100 text-orange-700' };
     default:
-      return <Video className="w-4 h-4" />;
+      return { icon: <Video className="w-3 h-3" />, color: 'bg-blue-100 text-blue-700' };
   }
 };
 
@@ -111,13 +116,13 @@ export const ReusableServiceCard = ({
         animate={{ opacity: 1, y: 0 }}
         exit={{ opacity: 0, y: -20 }}
         className={cn(
-          "group bg-white rounded-xl shadow-sm hover:shadow-lg transition-all duration-300 border border-gray-100 overflow-hidden",
+          "group bg-white rounded-2xl shadow-sm hover:shadow-lg transition-all duration-300 border border-gray-100 overflow-hidden",
           className
         )}
       >
-        <div className="flex flex-col sm:flex-row">
+        <div className="flex flex-col md:flex-row">
           {/* Image Section */}
-          <div className="relative w-full sm:w-48 h-48 sm:h-auto overflow-hidden">
+          <div className="relative w-full md:w-64 h-48 md:h-auto overflow-hidden flex-shrink-0">
             <Link href={`/services/${service.slug}`}>
               <Image
                 src={mainImage}
@@ -135,76 +140,88 @@ export const ReusableServiceCard = ({
               )}
             </Link>
             
-            {/* Badges */}
+            {/* Service Type Badge */}
+            {service.consultationType && (
+              <div className="absolute top-3 right-3">
+                <Badge 
+                  className={cn(
+                    "flex items-center gap-1.5 text-xs font-medium px-3 py-1.5 rounded-full border-0 shadow-sm",
+                    getConsultationIcon(service.consultationType).color
+                  )}
+                >
+                  {getConsultationIcon(service.consultationType).icon}
+                  <span className="font-semibold">{service.consultationType}</span>
+                </Badge>
+              </div>
+            )}
+
+            {/* Popular/New Badge */}
             <div className="absolute top-3 left-3 flex flex-col gap-2">
-              {discount > 0 && (
-                <Badge variant="destructive" className="text-xs font-medium">
-                  {discount}% OFF
+              {service.isPopular && (
+                <Badge className="bg-amber-500 hover:bg-amber-600 text-white text-xs font-semibold px-3 py-1.5 rounded-full shadow-sm">
+                  ⭐ Popular
                 </Badge>
               )}
               {service.isNew && (
-                <Badge className="bg-green-500 hover:bg-green-600 text-xs font-medium">
-                  New
-                </Badge>
-              )}
-              {service.isPopular && (
-                <Badge className="bg-amber-500 hover:bg-amber-600 text-xs font-medium">
-                  Popular
+                <Badge className="bg-emerald-500 hover:bg-emerald-600 text-white text-xs font-semibold px-3 py-1.5 rounded-full shadow-sm">
+                  ✨ New
                 </Badge>
               )}
             </div>
 
-            {/* Availability Indicator */}
-            {service.availability && (
-              <div className="absolute top-3 right-3 flex items-center gap-1">
-                <div className={cn("w-2 h-2 rounded-full", getAvailabilityColor(service.availability))} />
-                <span className="text-xs bg-white/90 px-1 py-0.5 rounded text-gray-700 font-medium">
-                  {service.availability === 'available' ? 'Available' : 
-                   service.availability === 'busy' ? 'Busy' : 'Offline'}
-                </span>
+            {/* Discount Badge */}
+            {discount > 0 && (
+              <div className="absolute bottom-3 left-3">
+                <Badge variant="destructive" className="text-xs font-semibold px-3 py-1.5 rounded-full shadow-sm">
+                  {discount}% OFF
+                </Badge>
               </div>
             )}
           </div>
 
           {/* Content Section */}
-          <div className="flex-1 p-4 flex flex-col justify-between">
-            <div>
-              {service.category && (
-                <Badge variant="outline" className="mb-2 text-xs">
-                  {service.category}
-                </Badge>
-              )}
+          <div className="flex-1 p-6 flex flex-col justify-between">
+            <div className="space-y-4">
+              {/* Header */}
+              <div>
+                <Link href={`/services/${service.slug}`}>
+                  <h3 className="font-bold text-xl text-gray-900 line-clamp-2 hover:text-green-700 transition-colors leading-tight">
+                    {service.title}
+                  </h3>
+                </Link>
+              </div>
               
-              <Link href={`/services/${service.slug}`}>
-                <h3 className="font-semibold text-gray-900 mb-2 line-clamp-2 hover:text-green-800 transition-colors">
-                  {service.title}
-                </h3>
-              </Link>
-              
-              <p className="text-sm text-gray-600 line-clamp-3 mb-3">
+              {/* Description */}
+              <p className="text-sm text-gray-600 line-clamp-2 leading-relaxed">
                 {service.description}
               </p>
 
-              {/* Service Details */}
-              <div className="flex flex-col gap-1 mb-3 text-xs text-gray-500">
-                {service.consultationType && (
-                  <div className="flex items-center gap-1">
-                    {getConsultationIcon(service.consultationType)}
-                    <span>{service.consultationType}</span>
+              {/* Service Info */}
+              <div className="flex items-center gap-6">
+                {/* Duration */}
+                {service.duration && (
+                  <div className="flex items-center gap-2 text-gray-600 bg-gray-50 px-3 py-1.5 rounded-lg">
+                    <Clock className="w-4 h-4" />
+                    <span className="text-sm font-medium">{service.duration}</span>
                   </div>
                 )}
-                {service.duration && (
-                  <div className="flex items-center gap-1">
-                    <Clock className="w-3 h-3" />
-                    <span>{service.duration}</span>
+                
+                {/* Availability */}
+                {service.availability && (
+                  <div className="flex items-center gap-2">
+                    <div className={cn("w-2.5 h-2.5 rounded-full", getAvailabilityColor(service.availability))} />
+                    <span className="text-sm font-medium text-gray-700">
+                      {service.availability === 'available' ? 'Available Now' : 
+                       service.availability === 'busy' ? 'Busy' : 'Offline'}
+                    </span>
                   </div>
                 )}
               </div>
-              
+
               {/* Rating */}
-              {service.rating && (
-                <div className="flex items-center mb-0.5">
-                  <div className="flex items-center">
+              {service.rating ? (
+                <div className="flex items-center gap-3">
+                  <div className="flex items-center gap-1">
                     {[...Array(5)].map((_, i) => (
                       <Star
                         key={i}
@@ -217,34 +234,58 @@ export const ReusableServiceCard = ({
                       />
                     ))}
                   </div>
-                  <span className="text-xs text-gray-500 ml-2">
-                    ({service.rating})
-                  </span>
+                  <div className="flex items-center gap-1">
+                    <span className="font-bold text-gray-900">{service.rating}</span>
+                    {service.reviewsCount && (
+                      <span className="text-sm text-gray-500">({service.reviewsCount} reviews)</span>
+                    )}
+                  </div>
+                </div>
+              ) : (
+                <div className="text-sm text-gray-500 flex items-center gap-1">
+                  <Star className="w-4 h-4 text-gray-300" />
+                  <span>No reviews yet</span>
                 </div>
               )}
             </div>
 
             {/* Price and Actions */}
-            <div className="flex items-center justify-between">
-              <div className="flex items-center space-x-2">
-                <span className="text-lg font-bold text-gray-900">₹{service.price}</span>
+            <div className="flex items-center justify-between pt-0 border-t border-gray-100 mt-1">
+              <div className="flex items-center space-x-3">
+                <span className="text-2xl font-bold text-gray-900">₹{service.price}</span>
                 {service.originalPrice && (
-                  <span className="text-sm text-gray-500 line-through">
+                  <span className="text-lg text-gray-500 line-through">
                     ₹{service.originalPrice}
                   </span>
                 )}
               </div>
               
-              <UniversalCartButton
-                productId={service.id}
-                productName={service.title}
-                price={service.price}
-                image={mainImage}
-                isService={true}
-                className="bg-green-800 text-white px-4 py-2 rounded-lg font-medium hover:bg-green-900 transition-colors"
-              >
-                Book Now
-              </UniversalCartButton>
+              <div className="flex flex-col items-end gap-0.5">
+                <UniversalCartButton
+                  productId={service.id}
+                  productName={service.title}
+                  price={service.price}
+                  image={mainImage}
+                  isService={true}
+                  className={cn(
+                    "py-2.5 px-5 rounded-xl font-semibold transition-all duration-200 flex items-center gap-2 text-sm",
+                    service.availability === 'offline'
+                      ? "bg-gray-100 text-gray-500 cursor-not-allowed"
+                      : "bg-green-700 hover:bg-green-800 text-white hover:shadow-lg transform hover:-translate-y-0.5"
+                  )}
+                  disabled={service.availability === 'offline'}
+                >
+                  <Calendar className="w-4 h-4" />
+                  {service.availability === 'offline' ? 'Unavailable' : 'Book Session'}
+                </UniversalCartButton>
+                
+                {/* Next Available Slot */}
+                {service.nextAvailableSlot && service.availability !== 'offline' && (
+                  <p className="text-xs text-green-600 font-medium">
+                    Next: {service.nextAvailableSlot}
+                  </p>
+                )}
+              </div>
             </div>
           </div>
         </div>
@@ -252,7 +293,7 @@ export const ReusableServiceCard = ({
     );
   }
 
-  // Grid view (default)
+  // Grid view (default) - Service-oriented design
   return (
     <motion.div
       layout
@@ -260,12 +301,12 @@ export const ReusableServiceCard = ({
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, y: -20 }}
       className={cn(
-        "group bg-white rounded-xl shadow-sm hover:shadow-lg transition-all duration-300 border border-gray-100 overflow-hidden h-full flex flex-col",
+        "group bg-white rounded-2xl shadow-sm hover:shadow-lg transition-all duration-300 border border-gray-100 overflow-hidden h-full flex flex-col",
         className
       )}
     >
-      {/* Image Section */}
-      <div className="relative aspect-[4/3] overflow-hidden flex-shrink-0">
+      {/* Image Section with Service Type Badge */}
+      <div className="relative aspect-[16/10] overflow-hidden flex-shrink-0">
         <Link href={`/services/${service.slug}`}>
           <Image
             src={mainImage}
@@ -283,60 +324,83 @@ export const ReusableServiceCard = ({
           )}
         </Link>
         
-        {/* Badges */}
+        {/* Service Type Badge - Top Right */}
+        {service.consultationType && (
+          <div className="absolute top-3 right-3">
+            <Badge 
+              className={cn(
+                "flex items-center gap-1.5 text-xs font-medium px-3 py-1.5 rounded-full border-0 shadow-sm",
+                getConsultationIcon(service.consultationType).color
+              )}
+            >
+              {getConsultationIcon(service.consultationType).icon}
+              <span className="font-semibold">{service.consultationType}</span>
+            </Badge>
+          </div>
+        )}
+
+        {/* Popular/New Badge - Top Left */}
         <div className="absolute top-3 left-3 flex flex-col gap-2">
-          {discount > 0 && (
-            <Badge variant="destructive" className="text-xs font-medium">
-              {discount}% OFF
+          {service.isPopular && (
+            <Badge className="bg-amber-500 hover:bg-amber-600 text-white text-xs font-semibold px-3 py-1.5 rounded-full shadow-sm">
+              ⭐ Popular
             </Badge>
           )}
           {service.isNew && (
-            <Badge className="bg-green-500 hover:bg-green-600 text-xs font-medium">
-              New
-            </Badge>
-          )}
-          {service.isPopular && (
-            <Badge className="bg-amber-500 hover:bg-amber-600 text-xs font-medium">
-              Popular
+            <Badge className="bg-emerald-500 hover:bg-emerald-600 text-white text-xs font-semibold px-3 py-1.5 rounded-full shadow-sm">
+              ✨ New
             </Badge>
           )}
         </div>
 
-        {/* Category Badge */}
-        {service.category && (
-          <Badge 
-            variant="secondary" 
-            className="absolute top-3 right-3 bg-white/90 backdrop-blur-sm text-gray-700 text-xs font-medium"
-          >
-            {service.category}
-          </Badge>
-        )}
-
-        {/* Availability Indicator */}
-        {service.availability && (
-          <div className="absolute bottom-3 right-3 flex items-center gap-1 bg-white/90 backdrop-blur-sm px-2 py-1 rounded-full">
-            <div className={cn("w-2 h-2 rounded-full", getAvailabilityColor(service.availability))} />
-            <span className="text-xs text-gray-700 font-medium">
-              {service.availability === 'available' ? 'Available' : 
-               service.availability === 'busy' ? 'Busy' : 'Offline'}
-            </span>
+        {/* Discount Badge - Bottom Left */}
+        {discount > 0 && (
+          <div className="absolute bottom-3 left-3">
+            <Badge variant="destructive" className="text-xs font-semibold px-3 py-1.5 rounded-full shadow-sm">
+              {discount}% OFF
+            </Badge>
           </div>
         )}
       </div>
       
       {/* Content Section */}
-      <CardContent className="p-4 pb-1 flex-1 flex flex-col">
-        <Link href={`/services/${service.slug}`}>
-          <h3 className="font-semibold text-gray-900 mb-2 line-clamp-2 hover:text-green-800 transition-colors min-h-[3rem]">
-            {service.title}
-          </h3>
-        </Link>
-                
-        {/* Rating */}
-        <div className="mb-0.5 min-h-[1.5rem]">
-          {service.rating && (
-            <div className="flex items-center">
-              <div className="flex items-center">
+      <div className="p-5 flex-1 flex flex-col">
+        {/* Service Title and Category */}
+        <div className="mb-3">
+          <Link href={`/services/${service.slug}`}>
+            <h3 className="font-bold text-lg text-gray-900 line-clamp-2 hover:text-green-700 transition-colors leading-tight">
+              {service.title}
+            </h3>
+          </Link>
+        </div>
+        
+        {/* Service Info Row */}
+        <div className="flex items-center justify-between mb-4">
+          {/* Duration */}
+          {service.duration && (
+            <div className="flex items-center gap-2 text-gray-600 bg-gray-50 px-3 py-1.5 rounded-lg">
+              <Clock className="w-4 h-4" />
+              <span className="text-sm font-medium">{service.duration}</span>
+            </div>
+          )}
+          
+          {/* Availability Status */}
+          {service.availability && (
+            <div className="flex items-center gap-2">
+              <div className={cn("w-2.5 h-2.5 rounded-full", getAvailabilityColor(service.availability))} />
+              <span className="text-sm font-medium text-gray-700">
+                {service.availability === 'available' ? 'Available Now' : 
+                 service.availability === 'busy' ? 'Busy' : 'Offline'}
+              </span>
+            </div>
+          )}
+        </div>
+        
+        {/* Rating and Reviews */}
+        <div className="mb-4">
+          {service.rating ? (
+            <div className="flex items-center gap-3">
+              <div className="flex items-center gap-1">
                 {[...Array(5)].map((_, i) => (
                   <Star
                     key={i}
@@ -349,41 +413,72 @@ export const ReusableServiceCard = ({
                   />
                 ))}
               </div>
-              <span className="text-xs text-gray-500 ml-2">
-                ({service.rating})
-              </span>
+              <div className="flex items-center gap-1">
+                <span className="font-bold text-gray-900">{service.rating}</span>
+                {service.reviewsCount && (
+                  <span className="text-sm text-gray-500">({service.reviewsCount} reviews)</span>
+                )}
+              </div>
+            </div>
+          ) : (
+            <div className="text-sm text-gray-500 flex items-center gap-1">
+              <Star className="w-4 h-4 text-gray-300" />
+              <span>No reviews yet</span>
             </div>
           )}
         </div>
         
-        {/* Price */}
-        <div className="flex items-center justify-between mt-auto mb-0.5">
-          <div className="flex items-center space-x-2">
-            <span className="text-lg font-bold text-gray-900">₹{service.price}</span>
+  {/* Price Section */}
+  <div className="flex items-center justify-between mb-1 pt-0 border-t border-gray-100">
+          <div className="flex items-center gap-2">
+            <span className="text-2xl font-bold text-gray-900">₹{service.price}</span>
             {service.originalPrice && (
-              <span className="text-sm text-gray-500 line-through">
+              <span className="text-lg text-gray-500 line-through">
                 ₹{service.originalPrice}
               </span>
             )}
           </div>
         </div>
-      </CardContent>
+      </div>
 
-      {/* Footer with Book Button */}
-      <CardFooter className="p-4 pt-0.5">
-        <UniversalCartButton
+  {/* Footer with Book Button */}
+  <div className="p-4 pt-0 space-y-2">
+          <UniversalCartButton
           productId={service.id}
           productName={service.title}
           price={service.price}
           image={mainImage}
           isService={true}
-          className="w-full bg-green-800 text-white py-2 px-4 rounded-lg font-medium hover:bg-green-900 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+          className={cn(
+            "w-full py-2.5 px-4 rounded-xl font-semibold transition-all duration-200 flex items-center justify-center gap-2 text-sm",
+            service.availability === 'offline'
+              ? "bg-gray-100 text-gray-500 cursor-not-allowed"
+              : "bg-green-700 hover:bg-green-800 text-white hover:shadow-lg transform hover:-translate-y-0.5"
+          )}
           disabled={service.availability === 'offline'}
         >
-          <Calendar className="w-4 h-4 mr-2" />
-          {service.availability === 'offline' ? 'Currently Unavailable' : 'Book Now'}
+          <Calendar className="w-4 h-4" />
+          {service.availability === 'offline' ? 'Currently Unavailable' : 'Book Session'}
         </UniversalCartButton>
-      </CardFooter>
+        
+        {/* Next Available Slot */}
+        {service.nextAvailableSlot && service.availability !== 'offline' && (
+          <div className="text-center">
+            <p className="text-xs text-green-600 font-medium bg-green-50 px-3 py-1.5 rounded-lg">
+              Next available: {service.nextAvailableSlot}
+            </p>
+          </div>
+        )}
+        
+        {/* Quick Info */}
+        {!service.nextAvailableSlot && service.availability === 'available' && (
+          <div className="text-center">
+            <p className="text-xs text-green-600 font-medium">
+              ✅ Available for immediate booking
+            </p>
+          </div>
+        )}
+      </div>
     </motion.div>
   );
 };

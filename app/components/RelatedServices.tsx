@@ -96,7 +96,7 @@ const RelatedServices: React.FC<RelatedServicesProps> = ({
                     {service.category}
                   </div>
                   {/* Discount Badge */}
-                  {discount && (
+                  {discount !== null && discount > 0 && (
                     <div className="absolute top-2 right-2 bg-red-500 text-white px-2 py-1 rounded text-xs font-bold">
                       {discount}% OFF
                     </div>

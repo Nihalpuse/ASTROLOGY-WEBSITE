@@ -238,11 +238,7 @@ export default function ServicePage({ params }: { params: { slug: string } }) {
               <span className="text-base font-medium text-[#23244a]">4.5</span>
               <span className="text-sm text-[#23244a]">(50+ reviews)</span>
             </div>
-            <div className="flex gap-2 mt-2">
-              <span className="px-3 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">{service.delivery_type || 'Online'}</span>
-              <span className="px-3 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">{service.delivery_type || 'Online'}</span>
-              <span className="px-3 py-0.5 rounded-full text-xs font-medium bg-purple-100 text-purple-800">{service.duration || 'Flexible'}</span>
-            </div>
+            {/* Tags above price removed for cleaner layout */}
             <div className="flex items-end gap-3 mt-3">
               <span className="text-xl font-bold text-black" style={{ fontFamily: 'Playfair Display, serif', fontWeight: 500 }}>₹{service.price}</span>
             </div>
