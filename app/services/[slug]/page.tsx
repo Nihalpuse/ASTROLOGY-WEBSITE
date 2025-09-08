@@ -199,350 +199,381 @@ export default function ServicePage({ params }: { params: { slug: string } }) {
           -ms-overflow-style: none !important;
         }
       `}</style>
-      <div className="min-h-screen bg-white flex flex-col items-center justify-start py-6 px-2 md:px-0 mt-8">
-        {/* Main Service Section with Fixed Left and Scrollable Right */}
-        <div className="max-w-7xl w-full flex flex-col lg:flex-row gap-8 relative">
-          {/* Left: Fixed Image Section */}
-          <div className="lg:w-1/2 lg:sticky lg:top-8 lg:self-start flex flex-col items-center">
-            <div className="w-full rounded-xl overflow-hidden bg-[#f7f5ed] flex items-center justify-center mb-3" style={{ aspectRatio: '1/1', maxWidth: 400 }}>
-              <Image
-                src={serviceImages[selectedImage]}
-                alt={service.title}
-                width={380}
-                height={380}
-                className="object-cover w-full h-full"
-                priority
-              />
-            </div>
-            {serviceImages.length > 1 && (
-              <div className="flex flex-row gap-2 w-full overflow-x-auto pb-2 justify-center">
-                {serviceImages.map((img, idx) => (
-                  <button
-                    key={`${img}-${idx}`}
-                    onClick={() => setSelectedImage(idx)}
-                    className={`rounded-lg border-2 ${selectedImage === idx ? 'border-black' : 'border-transparent'} overflow-hidden focus:outline-none`}
-                    style={{ minWidth: 64, minHeight: 64 }}
-                  >
-                    <Image src={img} alt={service.title} width={64} height={64} className="object-cover w-full h-full" />
-                  </button>
-                ))}
-              </div>
-            )}
-          </div>
-
-          {/* Right: Scrollable Service Info Section */}
-          <div className="lg:w-1/2 flex flex-col gap-4 lg:max-h-screen lg:overflow-y-auto lg:pr-4" style={{ scrollbarWidth: 'thin' }}>
-            <h1 className="text-2xl md:text-3xl font-semibold text-[#23244a]" style={{ fontFamily: 'Playfair Display, serif', fontWeight: 500 }}>{service.title}</h1>
-            <div className="flex items-center gap-2 mt-1">
-              <span className="text-[#FFD700] text-lg">&#9733;</span>
-              <span className="text-base font-medium text-[#23244a]">4.5</span>
-              <span className="text-sm text-[#23244a]">(50+ reviews)</span>
-            </div>
-            {/* Tags above price removed for cleaner layout */}
-            <div className="flex items-end gap-3 mt-3">
-              <span className="text-xl font-bold text-black" style={{ fontFamily: 'Playfair Display, serif', fontWeight: 500 }}>₹{service.price}</span>
-            </div>
-            
-            <div className="text-xs text-gray-600 mt-1">
-              Expert astrologers • Personalized guidance
-            </div>
-            
-            {/* Service Details */}
-            <div className="mt-3 bg-gray-50 rounded-lg p-4">
-              <div className="grid grid-cols-2 gap-4 text-sm">
-                <div className="flex items-center gap-2">
-                  <FaClock className="text-purple-500" />
-                  <span className="text-gray-700">Duration: {service.duration || 'Flexible'}</span>
+      <div className="min-h-screen bg-gradient-to-b from-neutral-50 via-white to-neutral-50 py-6 px-4">
+        <div className="max-w-5xl mx-auto">
+          {/* Main Service Section */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-12">
+            {/* Left: Service Images */}
+            <div className="lg:sticky lg:top-6 lg:self-start">
+              <div className="bg-white rounded-2xl shadow-lg overflow-hidden">
+                <div className="aspect-square bg-neutral-50 flex items-center justify-center p-3">
+                  <Image
+                    src={serviceImages[selectedImage]}
+                    alt={service.title}
+                    width={320}
+                    height={320}
+                    className="object-cover w-full h-full rounded-xl"
+                    priority
+                  />
                 </div>
-                <div className="flex items-center gap-2">
-                  <FaVideo className="text-green-500" />
-                  <span className="text-gray-700">{service.delivery_type || 'Online'}</span>
-                </div>
-              </div>
-            </div>
-            
-            {/* Book Now Button */}
-            <div className="flex gap-3 mt-5">
-              <UniversalCartButton
-                productId={service.id.toString()}
-                productName={service.title}
-                price={service.price}
-                className="flex-1 bg-black text-white py-3 rounded-md font-semibold text-base hover:bg-[#23244a] transition"
-              >
-                BOOK CONSULTATION
-              </UniversalCartButton>
-              <button className="flex-1 bg-yellow-400 text-black py-3 rounded-md font-semibold text-base hover:bg-yellow-500 transition">BOOK NOW</button>
-            </div>
-
-            {/* Service Description Dropdown */}
-            <div className="mt-6 border border-gray-200 rounded-lg">
-              <button
-                className="w-full text-left p-4 font-medium text-[#23244a] cursor-pointer text-base focus:outline-none flex justify-between items-center hover:bg-gray-50"
-                onClick={() => setDescriptionOpen(!descriptionOpen)}
-                aria-expanded={descriptionOpen}
-              >
-                <span className="font-semibold">Service Description</span>
-                <span className={`ml-2 transition-transform text-lg ${descriptionOpen ? 'rotate-90' : ''}`}>▶</span>
-              </button>
-              <AnimatePresence initial={false}>
-                {descriptionOpen && (
-                  <motion.div
-                    key="description-content"
-                    initial={{ height: 0, opacity: 0 }}
-                    animate={{ height: 'auto', opacity: 1 }}
-                    exit={{ height: 0, opacity: 0 }}
-                    transition={{ duration: 0.35 }}
-                    className="overflow-hidden"
-                  >
-                    <div className="p-4 pt-0 border-t border-gray-100">
-                      <div 
-                        className="service-description"
-                        style={{
-                          fontSize: '14px',
-                          lineHeight: '1.6',
-                          color: '#374151'
-                        }}
-                        dangerouslySetInnerHTML={{ 
-                          __html: getDefaultDetailedDescription(service)
-                        }}
-                      />
+                {serviceImages.length > 1 && (
+                  <div className="p-2.5 bg-white border-t border-neutral-100">
+                    <div className="flex gap-1.5 overflow-x-auto">
+                      {serviceImages.map((img, idx) => (
+                        <button
+                          key={`${img}-${idx}`}
+                          onClick={() => setSelectedImage(idx)}
+                          className={`flex-shrink-0 w-12 h-12 rounded-lg border-2 overflow-hidden transition-all ${
+                            selectedImage === idx 
+                              ? 'border-green-800 shadow-md' 
+                              : 'border-neutral-200 hover:border-neutral-300'
+                          }`}
+                        >
+                          <Image 
+                            src={img} 
+                            alt={service.title} 
+                            width={48} 
+                            height={48} 
+                            className="object-cover w-full h-full" 
+                          />
+                        </button>
+                      ))}
                     </div>
-                  </motion.div>
+                  </div>
                 )}
-              </AnimatePresence>
+              </div>
+            </div>
+
+            {/* Right: Service Info */}
+            <div className="bg-white rounded-2xl shadow-lg p-5 flex flex-col">
+              {/* Service Header */}
+              <div className="mb-0">
+                <span className="inline-block px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800 mb-2">
+                  {service.delivery_type || 'Consultation'}
+                </span>
+                <h1 className="text-xl lg:text-2xl font-serif font-bold text-neutral-900 mb-1">
+                  {service.title}
+                </h1>
+                <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-1">
+                    <span className="text-yellow-400 text-base">★</span>
+                    <span className="font-medium text-neutral-900 text-sm">4.5</span>
+                  </div>
+                  <span className="text-neutral-600 text-sm">(50+ reviews)</span>
+                </div>
+              </div>
+
+              {/* Middle content that grows to push description to bottom */}
+              <div className="flex flex-col gap-6 mt-3 flex-1">
+                {/* Pricing */}
+                <div>
+                  <div className="flex items-baseline gap-2">
+                    <span className="text-xl font-bold text-neutral-900">
+                      ₹{service.price}
+                    </span>
+                  </div>
+                </div>
+
+                {/* Service Details - Vertical Layout */}
+                <div>
+                  <div className="bg-neutral-50 rounded-lg p-4">
+                    <h3 className="text-sm font-medium text-neutral-900 mb-4">
+                      Consultation Details
+                    </h3>
+                    <div className="space-y-4">
+                      <div className="flex items-center gap-3">
+                        <div className="w-8 h-8 rounded-full bg-purple-100 flex items-center justify-center">
+                          <FaClock className="text-purple-600 text-sm" />
+                        </div>
+                        <div>
+                          <p className="text-sm font-medium text-neutral-900">Duration</p>
+                          <p className="text-sm text-neutral-600">{service.duration || 'Flexible timing'}</p>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-3">
+                        <div className="w-8 h-8 rounded-full bg-green-100 flex items-center justify-center">
+                          <FaVideo className="text-green-600 text-sm" />
+                        </div>
+                        <div>
+                          <p className="text-sm font-medium text-neutral-900">Consultation Type</p>
+                          <p className="text-sm text-neutral-600">{service.delivery_type || 'Online consultation'}</p>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-3">
+                        <div className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center">
+                          <FaRegStar className="text-blue-600 text-sm" />
+                        </div>
+                        <div>
+                          <p className="text-sm font-medium text-neutral-900">Expert Guidance</p>
+                          <p className="text-sm text-neutral-600">Certified Vedic astrologers</p>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Book Consultation Button - Above Description */}
+              <div className="mt-4">
+                <UniversalCartButton
+                  productId={service.id.toString()}
+                  productName={service.title}
+                  price={service.price}
+                  className="w-full py-3 bg-green-800 hover:bg-green-900 text-white rounded-lg font-semibold text-sm shadow-lg transition-all duration-200 hover:shadow-xl"
+                >
+                  Book Consultation
+                </UniversalCartButton>
+              </div>
+
+              {/* Service Description */}
+              <div className="mt-4">
+                <div className="border border-neutral-200 rounded-lg overflow-hidden">
+                  <button
+                    className="w-full text-left p-4 bg-neutral-50 hover:bg-neutral-100 transition-colors flex justify-between items-center"
+                    onClick={() => setDescriptionOpen(!descriptionOpen)}
+                    aria-expanded={descriptionOpen}
+                  >
+                    <span className="font-semibold text-neutral-900 text-sm">Service Description</span>
+                    <svg 
+                      className={`w-4 h-4 transition-transform ${descriptionOpen ? 'rotate-180' : ''}`}
+                      fill="none" 
+                      stroke="currentColor" 
+                      viewBox="0 0 24 24"
+                    >
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                    </svg>
+                  </button>
+                  <AnimatePresence initial={false}>
+                    {descriptionOpen && (
+                      <motion.div
+                        key="description-content"
+                        initial={{ height: 0, opacity: 0 }}
+                        animate={{ height: 'auto', opacity: 1 }}
+                        exit={{ height: 0, opacity: 0 }}
+                        transition={{ duration: 0.35 }}
+                        className="overflow-hidden"
+                      >
+                        <div className="p-4 border-t border-neutral-200 bg-white">
+                          <div 
+                            className="text-neutral-700 leading-relaxed text-sm"
+                            dangerouslySetInnerHTML={{ 
+                              __html: getDefaultDetailedDescription(service)
+                            }}
+                          />
+                        </div>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                </div>
+              </div>
             </div>
           </div>
         </div>
 
-        {/* Service Sections and Additional Content */}
-        <div className="max-w-7xl w-full mt-12 space-y-8">
-          {/* Service Assurance Bar */}
-          <div className="bg-gray-50 p-4 rounded-lg">
-            <div className="flex flex-wrap justify-center gap-6 text-sm text-gray-600">
-              <div className="flex items-center gap-2">
-                <FaClock className="text-blue-500" />
-                <span>Quick & Expert Consultation</span>
+        {/* Consultation Promise Cards */}
+        <div className="max-w-7xl mx-auto mb-16">
+          <div className="text-center mb-12">
+            <h2 className="text-3xl font-serif font-bold text-neutral-900 mb-4">
+              Our Promise to You
+            </h2>
+            <p className="text-lg text-neutral-600">
+              Expert guidance, confidentiality, and customer satisfaction guaranteed
+            </p>
+          </div>
+          
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            {/* Expert Guidance Card */}
+            <div className="bg-white rounded-2xl shadow-lg p-8 text-center hover:shadow-xl transition-shadow">
+              <div className="w-16 h-16 mx-auto mb-6 bg-green-100 rounded-full flex items-center justify-center">
+                <FaRegStar className="text-2xl text-green-800" />
               </div>
-              <div className="flex items-center gap-2">
-                <FaStar className="text-yellow-500" />
-                <span>5-Star Rated Astrologers</span>
+              <h3 className="text-xl font-bold text-neutral-900 mb-4">Expert Guidance</h3>
+              <div className="text-neutral-600 space-y-2 mb-6">
+                <p>• Certified Vedic astrologers</p>
+                <p>• Personalized consultations</p>
+                <p>• Traditional wisdom with modern insights</p>
               </div>
-              <div className="flex items-center gap-2">
-                <FaShieldAlt className="text-green-500" />
-                <span>100% Confidential</span>
+              <a 
+                href="/about"
+                className="inline-flex items-center px-6 py-3 bg-green-800 text-white rounded-xl hover:bg-green-900 transition-colors font-medium"
+              >
+                Learn More
+              </a>
+            </div>
+
+            {/* Privacy Card */}
+            <div className="bg-white rounded-2xl shadow-lg p-8 text-center hover:shadow-xl transition-shadow">
+              <div className="w-16 h-16 mx-auto mb-6 bg-green-100 rounded-full flex items-center justify-center">
+                <FaShieldAlt className="text-2xl text-green-800" />
               </div>
-              <div className="flex items-center gap-2">
-                <FaVideo className="text-purple-500" />
-                <span>Online & Offline Available</span>
+              <h3 className="text-xl font-bold text-neutral-900 mb-4">Complete Privacy</h3>
+              <div className="text-neutral-600 space-y-2 mb-6">
+                <p>• 100% confidential sessions</p>
+                <p>• Secure data protection</p>
+                <p>• Private consultation environment</p>
               </div>
+              <a 
+                href="/privacy-policy"
+                className="inline-flex items-center px-6 py-3 bg-green-800 text-white rounded-xl hover:bg-green-900 transition-colors font-medium"
+              >
+                Learn More
+              </a>
+            </div>
+
+            {/* Support Card */}
+            <div className="bg-white rounded-2xl shadow-lg p-8 text-center hover:shadow-xl transition-shadow">
+              <div className="w-16 h-16 mx-auto mb-6 bg-green-100 rounded-full flex items-center justify-center">
+                <FaRegComments className="text-2xl text-green-800" />
+              </div>
+              <h3 className="text-xl font-bold text-neutral-900 mb-4">24/7 Support</h3>
+              <div className="text-neutral-600 space-y-2 mb-6">
+                <p>• Round-the-clock customer support</p>
+                <p>• Follow-up guidance available</p>
+                <p>• Multiple communication channels</p>
+              </div>
+              <a 
+                href="/contact"
+                className="inline-flex items-center px-6 py-3 bg-green-800 text-white rounded-xl hover:bg-green-900 transition-colors font-medium"
+              >
+                Contact Us
+              </a>
             </div>
           </div>
+        </div>
 
-          {/* ProductAssuranceBar */}
-          <div className="w-full flex justify-center px-2 md:px-0 my-8">
-            <div className="max-w-5xl w-full bg-[#F9F6F2] rounded-2xl shadow-lg border border-gray-100 overflow-hidden">
-              <div className="py-8 md:py-12 px-4 md:px-8">
-                <h2 className="text-xl md:text-2xl lg:text-3xl font-bold mb-6 md:mb-10 text-black text-center tracking-wide uppercase" style={{ fontFamily: 'Playfair Display, serif', letterSpacing: '0.08em' }}>
-                  OUR CONSULTATION PROMISE
-                </h2>
-                <div className="flex flex-col md:flex-row w-full justify-between items-stretch gap-4 md:gap-8">
-                  {/* CONSULTATION */}
-                  <div className="flex flex-col items-center flex-1 min-w-0 mb-8 md:mb-0">
-                    <div className="flex flex-col items-center text-center">
-                      <div className="w-6 h-6 md:w-8 md:h-8">
-                        <svg width="32" height="32" fill="none" viewBox="0 0 32 32"><circle cx="16" cy="16" r="15" stroke="#FFD600" strokeWidth="1.5" fill="none"/><path d="M10 22h12M16 10v12" stroke="#FFD600" strokeWidth="1.2"/></svg>
-                      </div>
-                      <div className="mt-2 md:mt-3 text-base md:text-lg font-bold text-black tracking-wide uppercase" style={{ fontFamily: 'Playfair Display, serif', letterSpacing: '0.08em' }}>CONSULTATION</div>
-                      <div className="mt-2 mb-4 text-black w-full text-sm md:text-base">
-                        <ul className="list-disc ml-6 text-base" style={{fontFamily: 'Lora, Georgia, serif', color: 'black'}}>
-                          <li>Expert Vedic astrologers</li>
-                          <li>Personalized guidance</li>
-                        </ul>
-                      </div>
-                      <a href="/about" className="mt-auto px-4 md:px-6 py-2 border border-black text-black rounded transition hover:bg-black hover:text-white text-xs md:text-sm font-medium" style={{minWidth:100, fontFamily: 'Inter, Montserrat, Playfair Display, Arial, sans-serif'}}>
-                        Learn More
-                      </a>
-                    </div>
-                  </div>
-                  {/* Separator */}
-                  <div className="hidden md:flex items-center" style={{height:180, width:0}}>
-                    <div className="h-32 border-r" style={{borderColor: '#FFD600'}} />
-                  </div>
-                  {/* PRIVACY */}
-                  <div className="flex flex-col items-center flex-1 min-w-0 mb-8 md:mb-0">
-                    <div className="flex flex-col items-center text-center">
-                      <div className="w-6 h-6 md:w-8 md:h-8">
-                        <svg width="32" height="32" fill="none" viewBox="0 0 32 32"><circle cx="16" cy="16" r="15" stroke="#FFD600" strokeWidth="1.5" fill="none"/><rect x="12" y="12" width="8" height="8" stroke="#FFD600" strokeWidth="1.2" fill="none"/></svg>
-                      </div>
-                      <div className="mt-2 md:mt-3 text-base md:text-lg font-bold text-black tracking-wide uppercase" style={{ fontFamily: 'Playfair Display, serif', letterSpacing: '0.08em' }}>PRIVACY</div>
-                      <div className="mt-2 mb-4 text-black w-full text-sm md:text-base">
-                        <ul className="list-disc ml-6 text-base" style={{fontFamily: 'Lora, Georgia, serif', color: 'black'}}>
-                          <li>100% Confidential sessions</li>
-                          <li>Secure data protection</li>
-                        </ul>
-                      </div>
-                      <a href="/privacy-policy" className="mt-auto px-4 md:px-6 py-2 border border-black text-black rounded transition hover:bg-black hover:text-white text-xs md:text-sm font-medium" style={{minWidth:100, fontFamily: 'Inter, Montserrat, Playfair Display, Arial, sans-serif'}}>
-                        Learn More
-                      </a>
-                    </div>
-                  </div>
-                  {/* Separator */}
-                  <div className="hidden md:flex items-center" style={{height:180, width:0}}>
-                    <div className="h-32 border-r" style={{borderColor: '#FFD600'}} />
-                  </div>
-                  {/* SUPPORT */}
-                  <div className="flex flex-col items-center flex-1 min-w-0 mb-8 md:mb-0">
-                    <div className="flex flex-col items-center text-center">
-                      <div className="w-6 h-6 md:w-8 md:h-8">
-                        <svg width="32" height="32" fill="none" viewBox="0 0 32 32"><circle cx="16" cy="16" r="15" stroke="#FFD600" strokeWidth="1.5" fill="none"/><path d="M10 18l3.5 3.5L22 13" stroke="#FFD600" strokeWidth="1.5" fill="none"/></svg>
-                      </div>
-                      <div className="mt-2 md:mt-3 text-base md:text-lg font-bold text-black tracking-wide uppercase" style={{ fontFamily: 'Playfair Display, serif', letterSpacing: '0.08em' }}>SUPPORT</div>
-                      <div className="mt-2 mb-4 text-black w-full text-sm md:text-base">
-                        <ul className="list-disc ml-6 text-base" style={{fontFamily: 'Lora, Georgia, serif', color: 'black'}}>
-                          <li>24/7 customer support</li>
-                          <li>Follow-up guidance</li>
-                        </ul>
-                      </div>
-                      <a href="/contact" className="mt-auto px-4 md:px-6 py-2 border border-black text-black rounded transition hover:bg-black hover:text-white text-xs md:text-sm font-medium" style={{minWidth:100, fontFamily: 'Inter, Montserrat, Playfair Display, Arial, sans-serif'}}>
-                        Contact Us
-                      </a>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Service Quality Assurance */}
-          <div className="w-full flex justify-center px-2 md:px-0 my-8">
-            <div className="max-w-5xl w-full bg-[#F9F6F2] rounded-2xl shadow-lg border border-gray-100 overflow-hidden">
-              <div className="py-8 md:py-12 px-4 md:px-8">
-                {/* Mobile: 2 rows (3+2), Desktop: 1 row */}
-                <div className="w-full">
-                  {/* Mobile layout */}
-                  <div className="flex flex-col gap-6 md:hidden">
-                    <div className="flex w-full justify-between items-center">
-                      <div className="flex flex-col items-center">
-                        <div className="w-12 h-12 flex items-center justify-center">
-                          <FaRegStar className="text-2xl text-[#FFD600]" />
-                        </div>
-                        <span className="mt-3 text-sm font-bold text-black tracking-wide uppercase text-center" style={{letterSpacing: '0.08em', fontFamily: 'Playfair Display, serif'}}>EXPERT<br/>GUIDANCE</span>
-                      </div>
-                      <div className="flex flex-col items-center">
-                        <div className="w-12 h-12 flex items-center justify-center">
-                          <FaShieldAlt className="text-2xl text-[#FFD600]" />
-                        </div>
-                        <span className="mt-3 text-sm font-bold text-black tracking-wide uppercase text-center" style={{letterSpacing: '0.08em', fontFamily: 'Playfair Display, serif'}}>AUTHENTIC<br/>VEDIC</span>
-                      </div>
-                      <div className="flex flex-col items-center">
-                        <div className="w-12 h-12 flex items-center justify-center">
-                          <FaRegHeart className="text-2xl text-[#FFD600]" />
-                        </div>
-                        <span className="mt-3 text-sm font-bold text-black tracking-wide uppercase text-center" style={{letterSpacing: '0.08em', fontFamily: 'Playfair Display, serif'}}>PERSONALIZED<br/>APPROACH</span>
-                      </div>
-                    </div>
-                    <div className="flex w-full justify-center gap-16">
-                      <div className="flex flex-col items-center">
-                        <div className="w-12 h-12 flex items-center justify-center">
-                          <FaClock className="text-2xl text-[#FFD600]" />
-                        </div>
-                        <span className="mt-3 text-sm font-bold text-black tracking-wide uppercase text-center" style={{letterSpacing: '0.08em', fontFamily: 'Playfair Display, serif'}}>TIMELY<br/>SESSIONS</span>
-                      </div>
-                      <div className="flex flex-col items-center">
-                        <div className="w-12 h-12 flex items-center justify-center">
-                          <FaVideo className="text-2xl text-[#FFD600]" />
-                        </div>
-                        <span className="mt-3 text-sm font-bold text-black tracking-wide uppercase text-center" style={{letterSpacing: '0.08em', fontFamily: 'Playfair Display, serif'}}>ONLINE &<br/>OFFLINE</span>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Desktop layout - consistent with mobile */}
-                  <div className="hidden md:flex w-full justify-between items-center">
-                    <div className="flex flex-col items-center">
-                      <div className="w-12 h-12 flex items-center justify-center">
-                        <FaRegStar className="text-2xl text-[#FFD600]" />
-                      </div>
-                      <span className="mt-3 text-sm font-bold text-black tracking-wide uppercase text-center" style={{letterSpacing: '0.08em', fontFamily: 'Playfair Display, serif'}}>EXPERT<br/>GUIDANCE</span>
-                    </div>
-                    <div className="flex flex-col items-center">
-                      <div className="w-12 h-12 flex items-center justify-center">
-                        <FaShieldAlt className="text-2xl text-[#FFD600]" />
-                      </div>
-                      <span className="mt-3 text-sm font-bold text-black tracking-wide uppercase text-center" style={{letterSpacing: '0.08em', fontFamily: 'Playfair Display, serif'}}>AUTHENTIC<br/>VEDIC</span>
-                    </div>
-                    <div className="flex flex-col items-center">
-                      <div className="w-12 h-12 flex items-center justify-center">
-                        <FaRegHeart className="text-2xl text-[#FFD600]" />
-                      </div>
-                      <span className="mt-3 text-sm font-bold text-black tracking-wide uppercase text-center" style={{letterSpacing: '0.08em', fontFamily: 'Playfair Display, serif'}}>PERSONALIZED<br/>APPROACH</span>
-                    </div>
-                    <div className="flex flex-col items-center">
-                      <div className="w-12 h-12 flex items-center justify-center">
-                        <FaClock className="text-2xl text-[#FFD600]" />
-                      </div>
-                      <span className="mt-3 text-sm font-bold text-black tracking-wide uppercase text-center" style={{letterSpacing: '0.08em', fontFamily: 'Playfair Display, serif'}}>TIMELY<br/>SESSIONS</span>
-                    </div>
-                    <div className="flex flex-col items-center">
-                      <div className="w-12 h-12 flex items-center justify-center">
-                        <FaVideo className="text-2xl text-[#FFD600]" />
-                      </div>
-                      <span className="mt-3 text-sm font-bold text-black tracking-wide uppercase text-center" style={{letterSpacing: '0.08em', fontFamily: 'Playfair Display, serif'}}>ONLINE &<br/>OFFLINE</span>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* FAQs Section */}
-          {serviceFaqs.length > 0 && (
-            <div className="bg-white rounded-lg p-6 shadow-sm">
-              <h2 className="text-2xl font-bold text-[#23244a] mb-6" style={{ fontFamily: 'Playfair Display, serif' }}>
-                Frequently Asked Questions
+        {/* Service Quality Assurance */}
+        <div className="max-w-7xl mx-auto mb-16">
+          <div className="bg-gradient-to-r from-green-50 to-emerald-50 rounded-3xl p-12">
+            <div className="text-center mb-12">
+              <h2 className="text-3xl font-serif font-bold text-neutral-900 mb-4">
+                Quality Assurance
               </h2>
-              <div className="space-y-4">
-                {serviceFaqs.map((faq, index) => (
-                  <div key={index} className="border border-gray-200 rounded-lg">
+              <p className="text-lg text-neutral-600">
+                Every consultation meets our highest standards
+              </p>
+            </div>
+            
+            <div className="grid grid-cols-2 md:grid-cols-5 gap-8">
+              <div className="text-center">
+                <div className="w-16 h-16 mx-auto mb-4 bg-white rounded-full flex items-center justify-center shadow-lg">
+                  <FaRegStar className="text-2xl text-green-800" />
+                </div>
+                <h3 className="font-bold text-neutral-900 text-sm uppercase tracking-wide">
+                  Expert Guidance
+                </h3>
+              </div>
+              
+              <div className="text-center">
+                <div className="w-16 h-16 mx-auto mb-4 bg-white rounded-full flex items-center justify-center shadow-lg">
+                  <FaShieldAlt className="text-2xl text-green-800" />
+                </div>
+                <h3 className="font-bold text-neutral-900 text-sm uppercase tracking-wide">
+                  Authentic Vedic
+                </h3>
+              </div>
+              
+              <div className="text-center">
+                <div className="w-16 h-16 mx-auto mb-4 bg-white rounded-full flex items-center justify-center shadow-lg">
+                  <FaRegHeart className="text-2xl text-green-800" />
+                </div>
+                <h3 className="font-bold text-neutral-900 text-sm uppercase tracking-wide">
+                  Personalized Approach
+                </h3>
+              </div>
+              
+              <div className="text-center">
+                <div className="w-16 h-16 mx-auto mb-4 bg-white rounded-full flex items-center justify-center shadow-lg">
+                  <FaClock className="text-2xl text-green-800" />
+                </div>
+                <h3 className="font-bold text-neutral-900 text-sm uppercase tracking-wide">
+                  Timely Sessions
+                </h3>
+              </div>
+              
+              <div className="text-center col-span-2 md:col-span-1">
+                <div className="w-16 h-16 mx-auto mb-4 bg-white rounded-full flex items-center justify-center shadow-lg">
+                  <FaVideo className="text-2xl text-green-800" />
+                </div>
+                <h3 className="font-bold text-neutral-900 text-sm uppercase tracking-wide">
+                  Online & Offline
+                </h3>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* FAQ Section */}
+        <div className="max-w-7xl mx-auto mb-16">
+          <div className="text-center mb-12">
+            <h2 className="text-3xl font-serif font-bold text-neutral-900 mb-4">
+              Frequently Asked Questions
+            </h2>
+            <p className="text-lg text-neutral-600">
+              Everything you need to know about this service
+            </p>
+          </div>
+          
+          <div className="max-w-4xl mx-auto">
+            <div className="space-y-4">
+              {serviceFaqs.map((faq, idx) => {
+                const isOpen = openFaqs.has(idx);
+                return (
+                  <motion.div
+                    key={idx}
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.4, delay: idx * 0.07 }}
+                    className="bg-white rounded-2xl shadow-lg overflow-hidden hover:shadow-xl transition-all duration-300"
+                  >
                     <button
-                      className="w-full text-left p-4 font-medium text-[#23244a] cursor-pointer focus:outline-none flex justify-between items-center hover:bg-gray-50"
+                      className="w-full text-left p-6 flex justify-between items-center hover:bg-neutral-50 transition-colors"
                       onClick={() => {
                         const newOpenFaqs = new Set(openFaqs);
-                        if (newOpenFaqs.has(index)) {
-                          newOpenFaqs.delete(index);
+                        if (isOpen) {
+                          newOpenFaqs.delete(idx);
                         } else {
-                          newOpenFaqs.add(index);
+                          newOpenFaqs.add(idx);
                         }
                         setOpenFaqs(newOpenFaqs);
                       }}
-                      aria-expanded={openFaqs.has(index)}
+                      aria-expanded={isOpen}
                     >
-                      <span>{faq.question}</span>
-                      <span className={`ml-2 transition-transform ${openFaqs.has(index) ? 'rotate-90' : ''}`}>▶</span>
+                      <span className="font-semibold text-neutral-900 text-lg pr-4">
+                        {faq.question}
+                      </span>
+                      <div className={`w-8 h-8 rounded-full bg-green-100 flex items-center justify-center flex-shrink-0 transition-transform ${isOpen ? 'rotate-180' : ''}`}>
+                        <svg className="w-4 h-4 text-green-800" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                        </svg>
+                      </div>
                     </button>
                     <AnimatePresence initial={false}>
-                      {openFaqs.has(index) && (
+                      {isOpen && (
                         <motion.div
-                          key="faq-content"
+                          key="content"
                           initial={{ height: 0, opacity: 0 }}
                           animate={{ height: 'auto', opacity: 1 }}
                           exit={{ height: 0, opacity: 0 }}
-                          transition={{ duration: 0.3 }}
+                          transition={{ duration: 0.35 }}
                           className="overflow-hidden"
                         >
-                          <div className="p-4 pt-0 border-t border-gray-100">
-                            <p className="text-gray-600">{faq.answer}</p>
+                          <div className="px-6 pb-6 border-t border-neutral-100">
+                            <div className="pt-4 text-neutral-700 leading-relaxed">
+                              {faq.answer}
+                            </div>
                           </div>
                         </motion.div>
                       )}
                     </AnimatePresence>
-                  </div>
-                ))}
-              </div>
+                  </motion.div>
+                );
+              })}
             </div>
-          )}
+          </div>
+        </div>
 
-          {/* Related Services */}
+        {/* Related Services */}
+        <div className="max-w-7xl mx-auto mb-16">
           <RelatedServices 
             currentServiceId={service.id.toString()}
             category={service.delivery_type || 'Astrology'}
