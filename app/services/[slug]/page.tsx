@@ -313,7 +313,7 @@ export default function ServicePage({ params }: { params: { slug: string } }) {
                 </div>
               </div>
 
-              {/* Book Consultation Button - Above Description */}
+              {/* Book Session Button - Above Description */}
               <div className="mt-4">
                 <UniversalCartButton
                   productId={service.id.toString()}
@@ -321,7 +321,7 @@ export default function ServicePage({ params }: { params: { slug: string } }) {
                   price={service.price}
                   className="w-full py-3 bg-green-800 hover:bg-green-900 text-white rounded-lg font-semibold text-sm shadow-lg transition-all duration-200 hover:shadow-xl"
                 >
-                  Book Consultation
+                  Book Session
                 </UniversalCartButton>
               </div>
 
