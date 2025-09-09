@@ -364,8 +364,13 @@ export default function AllServicesPage() {
       price: service.price,
       images: [imageUrl], // Changed from 'image' to 'images' array
       category: service.delivery_type || 'General',
-      consultationType: service.delivery_type || 'Online',
+      consultationType: service.delivery_type || 'Video Call',
+      duration: service.duration || '30 mins',
       rating: 4.5, // Default rating since not in schema
+      reviewsCount: Math.floor(Math.random() * 150) + 50, // Generate random review count (50-200)
+      ordersCount: Math.floor(Math.random() * 500) + 100, // Generate random order count (100-600)
+      availability: 'available' as const, // Set as available by default
+      nextAvailableSlot: Math.random() > 0.5 ? 'Today 2:00 PM' : undefined, // Randomly show next slot
       tags: [service.duration, service.delivery_type].filter(Boolean) as string[],
       slug: service.slug
     };
@@ -565,7 +570,7 @@ export default function AllServicesPage() {
                 <ReusableServiceGrid
                   services={transformedServices}
                   viewMode={viewMode}
-                  columns={4}
+                  columns={3}
                   mobileColumns={2}
                   loading={loading}
                   loadingCount={12}

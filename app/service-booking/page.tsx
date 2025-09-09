@@ -333,7 +333,7 @@ export default function ServiceBookingPage() {
                 <div>
                   <h5 className="font-medium text-blue-800">Google Meet Integration</h5>
                   <p className="text-sm text-blue-700 mt-1">
-                    After booking, you'll receive a Google Meet link via email. The meeting will be automatically scheduled in your calendar.
+                    After booking, you&apos;ll receive a Google Meet link via email. The meeting will be automatically scheduled in your calendar.
                   </p>
                 </div>
               </div>

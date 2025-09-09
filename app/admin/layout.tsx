@@ -220,6 +220,18 @@ const AdminLayout = ({ children }: { children: React.ReactNode }) => {
       href: '/admin/courses',
       active: pathname === '/admin/courses'
     },
+      {
+        icon: Package,
+        label: 'Inventory',
+        href: '/admin/inventory',
+        active: pathname === '/admin/inventory'
+      },
+      {
+        icon: Package,
+        label: 'Orders',
+        href: '/admin/orders',
+        active: pathname === '/admin/orders'
+      },
     {
       icon: Package,
       label: 'Products',

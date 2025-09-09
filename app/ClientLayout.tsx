@@ -29,6 +29,8 @@ const EXACT_PATHS = [
   "/admin/reviews",
   "/admin/settings",
   "/admin/login",
+  "/admin/inventory",
+  "/admin/orders",
   "/signin",
   "/admin/stone",
   "/astrologer/profile",

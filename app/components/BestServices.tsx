@@ -56,8 +56,9 @@ export function BestServices() {
       images: images.length > 0 ? images : ['/images/placeholder.jpg'],
       rating: 4.8, // Default rating since API doesn't provide this yet
       reviewsCount: 100, // Default review count
-      ordersCount: 50, // Default order count
-      isPopular: true, // Mark as popular for display
+  ordersCount: 50, // Default order count
+  // Disable non-essential 'popular' tag on service cards
+  isPopular: false,
       availability: 'available' as const
     };
   };

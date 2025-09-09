@@ -65,9 +65,10 @@ export function BestProducts() {
       category: product.category?.name,
       rating: 4.5, // Default rating since API doesn't provide this yet
       reviewCount: 50, // Default review count
-      inStock: currentStock > 0,
-      isNew: true, // Mark as new for display
-      isFeatured: true // Mark as featured for display
+  inStock: currentStock > 0,
+  // Disable tag badges on product cards
+  isNew: false,
+  isFeatured: false,
     };
   };
 

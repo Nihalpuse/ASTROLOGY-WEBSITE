@@ -40,8 +40,6 @@ export default function CelestialJourneyMainGrid() {
                 </CarouselItem>
               ))}
             </CarouselContent>
-            <CarouselPrevious />
-            <CarouselNext />
           </Carousel>
         </div>
       </div>
@@ -74,8 +72,6 @@ export default function CelestialJourneyMainGrid() {
                 </CarouselItem>
               ))}
             </CarouselContent>
-            <CarouselPrevious />
-            <CarouselNext />
           </Carousel>
         </div>
 
@@ -106,8 +102,6 @@ export default function CelestialJourneyMainGrid() {
                   </CarouselItem>
                 ))}
               </CarouselContent>
-              <CarouselPrevious />
-              <CarouselNext />
             </Carousel>
           </div>
 
@@ -135,8 +129,6 @@ export default function CelestialJourneyMainGrid() {
                   </CarouselItem>
                 ))}
               </CarouselContent>
-              <CarouselPrevious />
-              <CarouselNext />
             </Carousel>
           </div>
         </div>
@@ -168,8 +160,6 @@ export default function CelestialJourneyMainGrid() {
                 </CarouselItem>
               ))}
             </CarouselContent>
-            <CarouselPrevious />
-            <CarouselNext />
           </Carousel>
         </div>
       </div>

@@ -71,8 +71,8 @@
     "lucide-react": "^0.454.0",
     "mongoose": "^8.10.1",
     "multer": "^2.0.2",
-    "Nakshtragyaan": "file:",
     "mysql2": "^3.14.0",
+    "Nakshtragyaan": "file:",
     "next": "^14.2.24",
     "next-auth": "^4.24.11",
     "next-i18next": "^15.4.2",
@@ -98,6 +98,7 @@
     "tailwindcss-animate": "^1.0.7",
     "uuid": "^11.1.0",
     "vaul": "^0.9.6",
+    "xlsx": "^0.18.5",
     "zod": "^3.25.76",
     "zustand": "^5.0.3"
   },
