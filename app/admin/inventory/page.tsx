@@ -120,7 +120,7 @@ const InventoryPage = () => {
   }, [searchTerm, selectedCategory, selectedBrand, selectedStatus]);
 
   // Export handlers
-  const downloadCSV = (rows: any[]) => {
+  const downloadCSV = (rows: typeof inventoryData) => {
     if (!rows || rows.length === 0) return;
     const headers = ['Product Name','SKU','Category','Stock Qty','Available','Price','Status'];
     const csvRows = [headers.join(',')];
@@ -157,7 +157,7 @@ const InventoryPage = () => {
     URL.revokeObjectURL(url);
   };
 
-  const downloadExcel = async (rows: any[]) => {
+  const downloadExcel = async (rows: typeof inventoryData) => {
     if (!rows || rows.length === 0) return;
     try {
       const XLSX = (await import('xlsx')).default || (await import('xlsx'));
