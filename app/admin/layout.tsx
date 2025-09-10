@@ -303,7 +303,7 @@ const AdminLayout = ({ children }: { children: React.ReactNode }) => {
       <RouteLoadingIndicator />
       <div className="flex h-screen bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100">
         {/* Sidebar */}
-        <div className="w-64 bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 shadow-sm">
+        <div className="w-64 flex-shrink-0 bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 shadow-sm">
         <div className="p-6 border-b border-gray-200 dark:border-gray-700">
           <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100">Nakshatra Gyaan</h2>
           <p className="text-sm text-gray-500 dark:text-gray-400">Admin Portal</p>
@@ -344,7 +344,7 @@ const AdminLayout = ({ children }: { children: React.ReactNode }) => {
         </div>
 
         {/* Main Content Area */}
-        <div className="flex-1 flex flex-col">
+        <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
         {/* Bagisto-style Header */}
         <header className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 px-4 py-3 flex justify-between items-center">
           {/* Left side - Mega Search */}

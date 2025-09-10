@@ -49,6 +49,7 @@ const EXACT_PATHS = [
 
 const DYNAMIC_PATTERNS: RegExp[] = [
   /^\/admin\/astrologers\/[^/]+$/, // matches /admin/astrologers/anything
+  /^\/admin\/orders\/[^/]+$/,
 ];
 
 const TOASTER_OPTIONS = {
