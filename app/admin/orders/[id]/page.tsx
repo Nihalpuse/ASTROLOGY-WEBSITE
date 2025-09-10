@@ -2,107 +2,147 @@
 
 import React, { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
-import { ArrowLeft, Printer, Package, User, CreditCard, MapPin } from 'lucide-react';
+import { ArrowLeft, Printer, Package, User, CreditCard, MapPin, Loader2, AlertTriangle, RefreshCw } from 'lucide-react';
 
-// Mock data - replace with actual API call
-// Updated to use astrology-themed products (from data/products.js)
-const mockOrderData = {
-  id: 'ASTRO-ORD-20250909-RA-001',
-  orderNumber: 'ASTRO-ORD-20250909-RA-001',
-  status: 'processing',
-  paymentStatus: 'paid',
-  placedOn: '9/09/2025',
-  items: [
-    {
-      id: 1,
-      name: 'Astrology Reports & Kundli Services',
-      sku: 'AST-REP-KUN-202509',
-      quantity: 1,
-      unitPrice: 499.0,
-      totalPrice: 499.0
-    },
-    {
-      id: 2,
-      name: 'Rudraksha Mala & Beads (108 Mala)',
-      sku: 'RUD-MALA-108-NP',
-      quantity: 1,
-      unitPrice: 1199.0,
-      totalPrice: 1199.0
-    },
-    {
-      id: 3,
-      name: 'Energized Sri Yantra (Brass)',
-      sku: 'YAN-SRI-BR-001',
-      quantity: 1,
-      unitPrice: 799.0,
-      totalPrice: 799.0
-    }
-  ],
-  subtotal: 2497.0,
-  tax: 0.0,
-  shipping: 50.0,
-  total: 2547.0,
+// Types for the order data structure
+interface OrderItem {
+  id: number;
+  name: string;
+  sku: string;
+  quantity: number;
+  unitPrice: number;
+  totalPrice: number;
+  type: string;
+  product?: {
+    id: number;
+    name: string;
+    sku: string;
+    image_url: string;
+    description: string;
+    price: number;
+  };
+  service?: {
+    id: number;
+    title: string;
+    slug: string;
+    description: string;
+    price: number;
+  };
+}
+
+interface OrderData {
+  id: number;
+  orderNumber: string;
+  status: string;
+  paymentStatus: string;
+  placedOn: string;
+  items: OrderItem[];
+  subtotal: number;
+  tax: number;
+  shipping: number;
+  discount: number;
+  total: number;
   customer: {
-    name: 'Ravi Sharma',
-    email: 'ravi.sharma@example.com',
-    phone: '+91 98765 43210'
-  },
+    name: string;
+    email: string;
+    phone: string;
+  };
   shippingAddress: {
-    name: 'Ravi Sharma',
-    address: 'Flat 103, Shanti Apartments, Near Sankat Mochan Temple',
-    city: 'Varanasi',
-    state: 'Uttar Pradesh',
-    pincode: '221005',
-    country: 'India'
-  },
-  paymentMethod: 'online_payment',
-  statusHistory: [
-    {
-      status: 'Order Placed',
-      date: '9/09/2025 09:12 AM',
-      description: 'Order created and payment confirmed'
-    },
-    {
-      status: 'Astrologer Review',
-      date: '9/09/2025 10:00 AM',
-      description: 'Astrologer assigned for report generation'
-    },
-    {
-      status: 'Dispatched',
-      date: '9/09/2025 04:30 PM',
-      description: 'Physical items dispatched from warehouse'
-    }
-  ]
-};
+    name: string;
+    address: string;
+    address2?: string;
+    city: string;
+    state: string;
+    pincode: string;
+    country: string;
+  };
+  billingAddress?: unknown;
+  paymentMethod: string;
+  notes?: string;
+  createdAt: string;
+  updatedAt: string;
+  statusHistory: Array<{
+    status: string;
+    date: string;
+    description: string;
+  }>;
+}
 
 const OrderDetailsPage = () => {
   const params = useParams();
   const router = useRouter();
-  const [orderData, setOrderData] = useState(mockOrderData);
-  const [loading, setLoading] = useState(false);
+  const [orderData, setOrderData] = useState<OrderData | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [refreshing, setRefreshing] = useState(false);
+  const [updating, setUpdating] = useState(false);
 
   const orderId = params?.id as string;
 
-  useEffect(() => {
-    // Here you would fetch the actual order data based on the orderId
-    // For now, we're using mock data
-    const fetchOrderData = async () => {
-      setLoading(true);
-      try {
-        // Replace with actual API call
-        // const response = await fetch(`/api/admin/orders/${orderId}`);
-        // const data = await response.json();
-        // setOrderData(data);
-        
-        // Using mock data for now
-        setOrderData({ ...mockOrderData, id: orderId, orderNumber: orderId });
-      } catch (error) {
-        console.error('Error fetching order data:', error);
-      } finally {
-        setLoading(false);
+  // Fetch order data from API
+  const fetchOrderData = async () => {
+    try {
+      setError(null);
+      const response = await fetch(`/api/orders/${orderId}?admin=true`);
+      const result = await response.json();
+      
+      if (result.success && result.order) {
+        setOrderData(result.order);
+      } else {
+        setError(result.error || 'Failed to fetch order data');
       }
-    };
+    } catch (err) {
+      setError('Network error occurred while fetching order data');
+      console.error('Error fetching order data:', err);
+    } finally {
+      setLoading(false);
+      setRefreshing(false);
+    }
+  };
 
+  // Update order status
+  const updateOrderStatus = async (status: string, paymentStatus?: string) => {
+    try {
+      setUpdating(true);
+      const updateData: Record<string, unknown> = {
+        status
+      };
+
+      if (paymentStatus) {
+        updateData.paymentStatus = paymentStatus;
+      }
+
+      const response = await fetch(`/api/orders/${orderId}`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(updateData),
+      });
+      
+      const result = await response.json();
+      
+      if (result.success) {
+        // Refresh the data
+        await fetchOrderData();
+      } else {
+        setError(result.error || 'Failed to update order');
+      }
+    } catch (err) {
+      setError('Network error occurred while updating order');
+      console.error('Error updating order:', err);
+    } finally {
+      setUpdating(false);
+    }
+  };
+
+  // Handle refresh
+  const handleRefresh = async () => {
+    setRefreshing(true);
+    await fetchOrderData();
+  };
+
+  useEffect(() => {
     if (orderId) {
       fetchOrderData();
     }
@@ -112,7 +152,7 @@ const OrderDetailsPage = () => {
     switch (status) {
       case 'pending':
         return (
-          <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200">
+          <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200">
             Pending
           </span>
         );
@@ -134,6 +174,18 @@ const OrderDetailsPage = () => {
             Delivered
           </span>
         );
+      case 'cancelled':
+        return (
+          <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200">
+            Cancelled
+          </span>
+        );
+      case 'refunded':
+        return (
+          <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200">
+            Refunded
+          </span>
+        );
       default:
         return (
           <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-200">
@@ -145,16 +197,28 @@ const OrderDetailsPage = () => {
 
   const getPaymentStatusBadge = (paymentStatus: string) => {
     switch (paymentStatus) {
-      case 'pending payment':
+      case 'pending':
         return (
-          <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200">
-            Pending Payment
+          <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200">
+            Pending
           </span>
         );
       case 'paid':
         return (
           <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200">
             Paid
+          </span>
+        );
+      case 'failed':
+        return (
+          <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200">
+            Failed
+          </span>
+        );
+      case 'refunded':
+        return (
+          <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200">
+            Refunded
           </span>
         );
       default:
@@ -173,7 +237,55 @@ const OrderDetailsPage = () => {
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-600"></div>
+        <div className="flex flex-col items-center space-y-4">
+          <Loader2 className="w-8 h-8 animate-spin text-purple-600" />
+          <span className="text-gray-600 dark:text-gray-400">Loading order details...</span>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="max-w-7xl mx-auto">
+        <div className="flex items-center justify-between mb-6">
+          <button
+            onClick={() => router.back()}
+            className="flex items-center space-x-2 text-purple-600 hover:text-purple-700 transition-colors"
+          >
+            <ArrowLeft className="w-5 h-5" />
+            <span className="font-medium">Back to Orders</span>
+          </button>
+        </div>
+        
+        <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-6">
+          <div className="flex items-center">
+            <AlertTriangle className="w-5 h-5 text-red-400 mr-2" />
+            <p className="text-red-800 dark:text-red-200">{error}</p>
+          </div>
+          <button
+            onClick={handleRefresh}
+            disabled={refreshing}
+            className="mt-4 flex items-center space-x-2 bg-red-600 hover:bg-red-700 disabled:bg-red-400 text-white px-4 py-2 rounded-lg transition-colors"
+          >
+            {refreshing ? (
+              <Loader2 className="w-4 h-4 animate-spin" />
+            ) : (
+              <RefreshCw className="w-4 h-4" />
+            )}
+            <span>Retry</span>
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  if (!orderData) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <div className="text-center">
+          <p className="text-gray-600 dark:text-gray-400">No order data available</p>
+        </div>
       </div>
     );
   }
@@ -197,6 +309,18 @@ const OrderDetailsPage = () => {
             Order #{orderData.orderNumber}
           </h1>
           <button
+            onClick={handleRefresh}
+            disabled={refreshing}
+            className="flex items-center space-x-2 bg-gray-600 hover:bg-gray-700 disabled:bg-gray-400 text-white px-4 py-2 rounded-lg transition-colors"
+          >
+            {refreshing ? (
+              <Loader2 className="w-4 h-4 animate-spin" />
+            ) : (
+              <RefreshCw className="w-4 h-4" />
+            )}
+            <span>Refresh</span>
+          </button>
+          <button
             onClick={handlePrintInvoice}
             className="flex items-center space-x-2 bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-lg transition-colors"
           >
@@ -216,9 +340,47 @@ const OrderDetailsPage = () => {
               {getPaymentStatusBadge(orderData.paymentStatus)}
               {getStatusBadge(orderData.status)}
             </div>
-            <p className="text-sm text-gray-600 dark:text-gray-400">
+            <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
               Placed on {orderData.placedOn}
             </p>
+            
+            {/* Status Update Controls */}
+            <div className="border-t border-gray-200 dark:border-gray-700 pt-4">
+              <h3 className="text-sm font-medium text-gray-900 dark:text-gray-100 mb-3">Update Status</h3>
+              <div className="flex flex-wrap gap-3">
+                <select
+                  value={orderData.status}
+                  onChange={(e) => updateOrderStatus(e.target.value)}
+                  disabled={updating}
+                  className="border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 text-sm"
+                >
+                  <option value="pending">Pending</option>
+                  <option value="processing">Processing</option>
+                  <option value="shipped">Shipped</option>
+                  <option value="delivered">Delivered</option>
+                  <option value="cancelled">Cancelled</option>
+                </select>
+                
+                <select
+                  value={orderData.paymentStatus}
+                  onChange={(e) => updateOrderStatus(orderData.status, e.target.value)}
+                  disabled={updating}
+                  className="border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 text-sm"
+                >
+                  <option value="pending">Pending Payment</option>
+                  <option value="paid">Paid</option>
+                  <option value="failed">Failed</option>
+                  <option value="refunded">Refunded</option>
+                </select>
+                
+                {updating && (
+                  <div className="flex items-center space-x-2 text-sm text-gray-600 dark:text-gray-400">
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                    <span>Updating...</span>
+                  </div>
+                )}
+              </div>
+            </div>
           </div>
 
           {/* Order Items */}
@@ -241,13 +403,16 @@ const OrderDetailsPage = () => {
                       <p className="text-sm text-gray-500 dark:text-gray-400 mb-2">
                         SKU: {item.sku}
                       </p>
+                      <div className="text-sm text-gray-600 dark:text-gray-400 mb-1">
+                        Type: {item.type}
+                      </div>
                       <div className="text-sm text-gray-600 dark:text-gray-400">
-                        ({item.quantity} × INR {item.unitPrice.toFixed(2)})
+                        ({item.quantity} × ₹{item.unitPrice.toFixed(2)})
                       </div>
                     </div>
                     <div className="text-right">
                       <div className="font-semibold text-gray-900 dark:text-gray-100">
-                        INR {item.totalPrice.toFixed(2)}
+                        ₹{item.totalPrice.toFixed(2)}
                       </div>
                     </div>
                   </div>
@@ -284,20 +449,26 @@ const OrderDetailsPage = () => {
             <div className="space-y-3">
               <div className="flex justify-between text-sm">
                 <span className="text-gray-600 dark:text-gray-400">Subtotal</span>
-                <span className="text-gray-900 dark:text-gray-100">INR {orderData.subtotal.toFixed(2)}</span>
+                <span className="text-gray-900 dark:text-gray-100">₹{orderData.subtotal.toFixed(2)}</span>
               </div>
               <div className="flex justify-between text-sm">
                 <span className="text-gray-600 dark:text-gray-400">Tax</span>
-                <span className="text-gray-900 dark:text-gray-100">INR {orderData.tax.toFixed(2)}</span>
+                <span className="text-gray-900 dark:text-gray-100">₹{orderData.tax.toFixed(2)}</span>
               </div>
               <div className="flex justify-between text-sm">
                 <span className="text-gray-600 dark:text-gray-400">Shipping</span>
-                <span className="text-gray-900 dark:text-gray-100">INR {orderData.shipping.toFixed(2)}</span>
+                <span className="text-gray-900 dark:text-gray-100">₹{orderData.shipping.toFixed(2)}</span>
               </div>
+              {orderData.discount > 0 && (
+                <div className="flex justify-between text-sm">
+                  <span className="text-gray-600 dark:text-gray-400">Discount</span>
+                  <span className="text-green-600 dark:text-green-400">-₹{orderData.discount.toFixed(2)}</span>
+                </div>
+              )}
               <div className="border-t border-gray-200 dark:border-gray-700 pt-3">
                 <div className="flex justify-between font-semibold text-lg">
                   <span className="text-gray-900 dark:text-gray-100">Total</span>
-                  <span className="text-gray-900 dark:text-gray-100">INR {orderData.total.toFixed(2)}</span>
+                  <span className="text-gray-900 dark:text-gray-100">₹{orderData.total.toFixed(2)}</span>
                 </div>
               </div>
             </div>
@@ -312,10 +483,22 @@ const OrderDetailsPage = () => {
             
             <div className="space-y-4">
               <div>
+                <h4 className="font-medium text-gray-900 dark:text-gray-100 mb-2">Customer Details</h4>
+                <div className="text-sm text-gray-600 dark:text-gray-400 space-y-1">
+                  <p><strong>Name:</strong> {orderData.customer.name}</p>
+                  <p><strong>Email:</strong> {orderData.customer.email}</p>
+                  <p><strong>Phone:</strong> {orderData.customer.phone}</p>
+                </div>
+              </div>
+              
+              <div>
                 <h4 className="font-medium text-gray-900 dark:text-gray-100 mb-2">Shipping Address</h4>
                 <div className="text-sm text-gray-600 dark:text-gray-400 space-y-1">
                   <p>{orderData.shippingAddress.name}</p>
                   <p>{orderData.shippingAddress.address}</p>
+                  {orderData.shippingAddress.address2 && (
+                    <p>{orderData.shippingAddress.address2}</p>
+                  )}
                   <p>{orderData.shippingAddress.city}, {orderData.shippingAddress.pincode}</p>
                   <p>{orderData.shippingAddress.state}, {orderData.shippingAddress.country}</p>
                 </div>
@@ -334,9 +517,20 @@ const OrderDetailsPage = () => {
               <div>
                 <h4 className="font-medium text-gray-900 dark:text-gray-100 mb-1">Payment Method</h4>
                 <p className="text-sm text-gray-600 dark:text-gray-400">
-                  {orderData.paymentMethod.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase())}
+                  {orderData.paymentMethod ? 
+                    orderData.paymentMethod.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase()) : 
+                    'Not specified'
+                  }
                 </p>
               </div>
+              {orderData.notes && (
+                <div>
+                  <h4 className="font-medium text-gray-900 dark:text-gray-100 mb-1">Order Notes</h4>
+                  <p className="text-sm text-gray-600 dark:text-gray-400">
+                    {orderData.notes}
+                  </p>
+                </div>
+              )}
             </div>
           </div>
         </div>

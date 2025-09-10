@@ -56,12 +56,12 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     try {
       const astrologer = await prisma.astrologer.findUnique({ where: { email } });
       if (!astrologer) return res.status(404).json({ error: 'Astrologer not found' });
-      const verification = await prisma.astrologerVerification.findUnique({
+      const verification = await prisma.astrologerverification.findUnique({
         where: { astrologerId: astrologer.id },
         include: {
           astrologer: true,
-          certifications: true,
-          educations: true,
+          astrologercertification: true,
+          astrologereducation: true,
         },
       });
       if (!verification) return res.status(404).json({ error: 'Verification not found' });
@@ -90,14 +90,14 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
           [statusFields[docKey]]: status,
           [remarksFields[docKey]]: remarks || null,
         };
-        const updated = await prisma.astrologerVerification.update({
+        const updated = await prisma.astrologerverification.update({
           where: { astrologerId: astrologer.id },
           data: updateData,
         });
         return res.status(200).json({ success: true, updated });
       } else if (type === 'education') {
         // key is education id
-        const updated = await prisma.astrologerEducation.update({
+        const updated = await prisma.astrologereducation.update({
           where: { id: Number(key) },
           data: {
             status,
@@ -107,7 +107,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         return res.status(200).json({ success: true, updated });
       } else if (type === 'certification') {
         // key is certification id
-        const updated = await prisma.astrologerCertification.update({
+        const updated = await prisma.astrologercertification.update({
           where: { id: Number(key) },
           data: {
             status,
@@ -121,7 +121,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
           where: { email },
           data: { verificationStatus: status },
         });
-        const updatedVerification = await prisma.astrologerVerification.update({
+        const updatedVerification = await prisma.astrologerverification.update({
           where: { astrologerId: astrologer.id },
           data: { status, adminRemarks: remarks || null },
         });
