@@ -79,13 +79,15 @@ export const ReusableProductCard = ({
         animate={{ opacity: 1, y: 0 }}
         exit={{ opacity: 0, y: -20 }}
         className={cn(
-          "group bg-white rounded-xl shadow-sm hover:shadow-lg transition-all duration-300 border border-gray-100 overflow-hidden",
+          "group bg-white rounded-xl p-4 transition-all duration-300 border border-[#e6e6e6] overflow-hidden",
+          "shadow-[0px_4px_12px_rgba(0,0,0,0.1)] hover:shadow-[0px_8px_24px_rgba(0,0,0,0.15)]",
+          "hover:-translate-y-[5px] transform-gpu",
           className
         )}
       >
-        <div className="flex flex-col sm:flex-row">
+        <div className="flex flex-col sm:flex-row -m-4">
           {/* Image Section */}
-          <div className="relative w-full sm:w-48 h-48 sm:h-auto overflow-hidden">
+          <div className="relative w-full sm:w-48 h-48 sm:h-auto overflow-hidden rounded-t-xl sm:rounded-l-xl sm:rounded-tr-none">
             <Link href={`/shop/${product.slug}`}>
               <Image
                 src={product.image || "/images/placeholder.jpg"}
@@ -126,7 +128,7 @@ export const ReusableProductCard = ({
           </div>
 
           {/* Content Section */}
-          <div className="flex-1 p-4 flex flex-col justify-between">
+          <div className="flex-1 flex flex-col justify-between ml-4">
             <div>
               {product.category && (
                 <Badge variant="outline" className="mb-2 text-xs">
@@ -203,12 +205,14 @@ export const ReusableProductCard = ({
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, y: -20 }}
       className={cn(
-        "group bg-white rounded-xl shadow-sm hover:shadow-lg transition-all duration-300 border border-gray-100 overflow-hidden h-full flex flex-col",
+        "group bg-white rounded-xl p-4 transition-all duration-300 border border-[#e6e6e6] overflow-hidden h-full flex flex-col",
+        "shadow-[0px_4px_12px_rgba(0,0,0,0.1)] hover:shadow-[0px_8px_24px_rgba(0,0,0,0.15)]",
+        "hover:-translate-y-[5px] transform-gpu",
         className
       )}
     >
       {/* Image Section */}
-      <div className="relative aspect-square overflow-hidden flex-shrink-0">
+      <div className="relative aspect-square overflow-hidden flex-shrink-0 -m-4 mb-0 rounded-t-xl">
         <Link href={`/shop/${product.slug}`}>
           <Image
             src={product.image || "/images/placeholder.jpg"}
@@ -267,7 +271,7 @@ export const ReusableProductCard = ({
       </div>
       
       {/* Content Section */}
-      <CardContent className="p-4 pb-1 flex-1 flex flex-col">
+      <CardContent className="p-0 pb-1 flex-1 flex flex-col">
         <Link href={`/shop/${product.slug}`}>
           <h3 className="font-semibold text-gray-900 mb-2 line-clamp-2 hover:text-green-800 transition-colors min-h-[3rem]">
             {product.title}
@@ -316,7 +320,7 @@ export const ReusableProductCard = ({
       </CardContent>
 
       {/* Footer with Cart Button */}
-      <CardFooter className="p-4 pt-0.5">
+      <CardFooter className="p-0 pt-0.5">
         <UniversalCartButton
           productId={product.id}
           productName={product.title}

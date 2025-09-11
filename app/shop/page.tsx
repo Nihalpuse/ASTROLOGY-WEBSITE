@@ -40,7 +40,7 @@ export default function ShopPage() {
   }, []);
 
   return (
-    <div className="relative min-h-screen overflow-hidden bg-gradient-to-br from-amber-50 via-white to-orange-50">
+    <div className="relative min-h-screen overflow-hidden">
       <ShopBanner />
       {/* NakshatraTicker - Moved right after banner for better flow */}
       <NakshatraTicker />
@@ -50,7 +50,7 @@ export default function ShopPage() {
       <CelestialJourneyMainGrid />
       
       {/* Nakshatra Gyaan Banner */}
-      <NakshatraGyaanBanner />
+      {/* <NakshatraGyaanBanner /> */}
       
       {/* Shop Categories Minimal - CINEMATIC VERSION */}
       <ShopCategoriesMinimal />
@@ -66,7 +66,7 @@ export default function ShopPage() {
 
       {/* Existing Content */}
       
-        <div className="container mx-auto px-4 py-16 relative z-10">
+        <div className="container mx-auto px-4 relative z-10">
           {/* Main Page Heading */}
           {/* Removed duplicate <h1>Spiritual Shop</h1> here */}
           {/* Full-width Product Carousel (dynamically imported) */}

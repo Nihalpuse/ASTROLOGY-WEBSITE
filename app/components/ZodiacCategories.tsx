@@ -121,15 +121,17 @@ export default function ZodiacCategories() {
 
   // Helper function to get zodiac sign data with colors and dates
   const getZodiacData = (sign: ZodiacSign) => {
-    const colorData = zodiacColors[sign.slug.toLowerCase()] || {
-      color: 'from-gray-300 via-slate-300 to-gray-400',
-      shadowColor: 'shadow-gray-400/40',
-      dates: 'Unknown'
+    // Use a single amber gradient + shadow for all zodiac signs to keep UI consistent
+    const unifiedColor = {
+      color: 'from-amber-300 via-amber-400 to-amber-500',
+      shadowColor: 'shadow-amber-500/30',
+      // preserve original date ranges when available
+      dates: zodiacColors[sign.slug.toLowerCase()]?.dates || 'Unknown'
     };
-    
+
     return {
       ...sign,
-      ...colorData,
+      ...unifiedColor,
       image: sign.image_url || '/placeholder-user.jpg',
       symbol: '' // Empty symbol for now
     };

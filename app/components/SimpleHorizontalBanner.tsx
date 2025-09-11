@@ -17,19 +17,19 @@ const SimpleHorizontalBanner = () => {
   const posterData = [
     {
       id: 1,
-      title: 'Unlock Your Cosmic Destiny',
-      subtitle: 'Premium Astrology Collection',
-      image: 'https://res.cloudinary.com/dxwspucxw/image/upload/v1752042871/continue-learning_mtpgqr.jpg',
-      link: '/shop',
+      title: 'Shop Cosmic Essentials',
+      subtitle: 'Handpicked crystals, tools & guides for every sign',
+      image: 'https://res.cloudinary.com/dxwspucxw/image/upload/v1757489039/ShopBanner_qa6r5g.jpg',
+      link: '/shop/all-products',
       direction: 'rightToLeft'
     },
     {
       id: 2,
-      title: 'Sacred Gemstone Collection',
-      subtitle: 'Transform Your Energy',
-      image: 'https://res.cloudinary.com/dxwspucxw/image/upload/c_crop,ar_4:3/v1752753177/naturalstones_xsst5z.jpg',
-      link: '/shop',
-      direction: 'leftToRight'
+      title: 'Explore Astrology Services',
+      subtitle: 'Readings, consultations & personalized guidance',
+      image: 'https://res.cloudinary.com/dxwspucxw/image/upload/v1757489039/ServicesBanner_gosbnf.jpg',
+      link: '/services/all',
+      direction: 'rightToLeft'
     },
     {
       id: 3,
@@ -87,7 +87,7 @@ const SimpleHorizontalBanner = () => {
       onMouseLeave={() => setIsPaused(false)}
     >
       <div className="relative h-[300px] md:h-[450px] w-full">
-        <AnimatePresence mode="wait">
+  <AnimatePresence mode="sync">
           <motion.div
             key={`poster-${posterIndex}-${animationKey}`}
             className="absolute inset-0 w-full h-full px-2"

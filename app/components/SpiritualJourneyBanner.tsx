@@ -74,7 +74,7 @@ export default function SpiritualJourneyBanner() {
 
               {/* CTA Button */}
               <div className="pt-4">
-                <Link href="/services/all">
+                <Link href="/signin">
                   <motion.button
                     whileHover={{ scale: 1.05 }}
                     whileTap={{ scale: 0.95 }}
@@ -140,7 +140,7 @@ export default function SpiritualJourneyBanner() {
 
               {/* CTA Button for desktop */}
               <div className="pt-6">
-                <Link href="/services/all">
+                <Link href="/signin">
                   <motion.button
                     whileHover={{ scale: 1.05 }}
                     whileTap={{ scale: 0.95 }}
