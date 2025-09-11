@@ -151,7 +151,7 @@ export default function ProductShowcase({
 	if (!products || products.length === 0) return null;
 
 	return (
-		<div className="mb-12" ref={desktopContainerRef}>
+		<div className="mt-8 mb-12" ref={desktopContainerRef}>
 			{/* Heading with navigation arrows (desktop/tablet only) */}
 			<div className="mb-6 flex flex-col gap-3">
 				<div className="flex flex-col md:flex-row md:items-end md:justify-between gap-4">

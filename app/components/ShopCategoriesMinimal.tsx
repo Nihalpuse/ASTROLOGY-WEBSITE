@@ -170,7 +170,12 @@ export default function ShopCategoriesMinimal() {
 
   // Helper function to get color scheme for a category
   const getColorScheme = (index: number) => {
-    return colorSchemes[index % colorSchemes.length];
+    // Return a unified amber gradient and shadow for all categories to match ZodiacCategories
+    return {
+      color: 'from-amber-300 via-amber-400 to-amber-500',
+      shadowColor: 'shadow-amber-500/30',
+      glowColor: 'shadow-amber-500/20'
+    };
   };
 
   // CINEMATIC PAGE TRANSITION
@@ -212,7 +217,7 @@ export default function ShopCategoriesMinimal() {
       </AnimatePresence>
 
       <section 
-        className="w-screen py-20 relative overflow-hidden bg-gradient-to-b from-transparent via-white/50 to-transparent"
+        className="w-screen py-20 relative overflow-visible bg-gradient-to-b from-transparent via-white/50 to-transparent"
         style={{ 
           marginLeft: 'calc(-50vw + 50%)', 
           marginRight: 'calc(-50vw + 50%)',
@@ -259,7 +264,7 @@ export default function ShopCategoriesMinimal() {
             variants={containerVariants}
             initial="hidden"
             animate={isInView ? "visible" : "hidden"}
-            className="mb-16 max-w-none"
+            className="mb-16 max-w-none overflow-visible"
           >
             {loading ? (
               <div className="flex items-center justify-center py-20">
@@ -281,7 +286,7 @@ export default function ShopCategoriesMinimal() {
                 <p className="text-lg text-gray-600">No categories found. Create your first category!</p>
               </div>
             ) : (
-              <div className="overflow-x-auto pb-8 relative hide-scrollbar" style={{ scrollBehavior: 'smooth' }}>
+              <div className="overflow-x-auto pb-8 pt-8 relative hide-scrollbar overflow-y-visible" style={{ scrollBehavior: 'smooth' }}>
                 {/* Left fade indicator */}
                 <div className="absolute left-0 top-0 bottom-0 w-12 bg-gradient-to-r from-white via-white/90 to-transparent pointer-events-none z-10" />
                 
@@ -293,7 +298,7 @@ export default function ShopCategoriesMinimal() {
                   ← Scroll to explore →
                 </div>
                 
-                <div className="flex gap-8 md:gap-10 lg:gap-12 min-w-max px-6">
+                <div className="flex gap-8 md:gap-10 lg:gap-12 min-w-max px-6 py-4">
                   {categories.map((category, index) => {
                     const colorScheme = getColorScheme(index);
                     return (
@@ -311,7 +316,7 @@ export default function ShopCategoriesMinimal() {
                           >
                             {/* MAIN CIRCLE - MUCH LARGER SIZE WITH IMAGE */}
                             <motion.div
-                              className={`relative w-28 h-28 md:w-32 md:h-32 lg:w-36 lg:h-36 xl:w-40 xl:h-40 rounded-full bg-gradient-to-br ${colorScheme.color} shadow-xl ${colorScheme.shadowColor} border-4 border-white/30 overflow-hidden`}
+                              className={`relative w-24 h-24 md:w-32 md:h-32 lg:w-36 lg:h-36 xl:w-40 xl:h-40 rounded-full bg-gradient-to-br ${colorScheme.color} shadow-lg ${colorScheme.shadowColor} border-3 border-white/40 overflow-hidden`}
                               whileHover={{
                                 scale: 1.15,
                                 boxShadow: '0 25px 50px rgba(251, 146, 60, 0.4)',
@@ -336,10 +341,10 @@ export default function ShopCategoriesMinimal() {
                               </div>
                               
                               {/* SUBTLE COLOR OVERLAY */}
-                              <div className={`absolute inset-0 rounded-full bg-gradient-to-br ${colorScheme.color} opacity-20 mix-blend-soft-light`} />
+                              <div className={`absolute inset-0 rounded-full bg-gradient-to-br ${colorScheme.color} opacity-30 mix-blend-soft-light`} />
                               
                               {/* INNER GLOW BORDER */}
-                              <div className="absolute inset-2 rounded-full bg-gradient-to-br from-white/20 to-transparent" />
+                              <div className="absolute inset-2 rounded-full bg-gradient-to-br from-white/10 to-transparent" />
                             </motion.div>
                           </motion.div>
                         </Link>
