@@ -478,118 +478,162 @@ export default function AddProductPage() {
 
 
   return (
-    <div className="w-full p-6 bg-white dark:bg-gray-800 rounded-xl shadow-md mt-8">
-      <h1 className="text-2xl font-semibold mb-6 text-gray-800 dark:text-gray-100">
+    <div className="w-full p-3 sm:p-4 lg:p-6 bg-white dark:bg-gray-800 rounded-xl shadow-md mt-4 sm:mt-6 lg:mt-8 mx-auto max-w-7xl">
+      <h1 className="text-xl sm:text-2xl lg:text-3xl font-semibold mb-4 sm:mb-6 text-gray-800 dark:text-gray-100 text-center sm:text-left">
         {isEditMode ? 'Edit Product' : 'Add Product'}
       </h1>
 
       {/* Progress Bar */}
-      <div className="mb-8">
-        <div className="flex items-center justify-between mb-2">
-          {steps.map((label, idx) => (
-            <div key={label} className="flex-1 flex flex-col items-center">
-              <div
-                className={`w-8 h-8 flex items-center justify-center rounded-full border-2 text-sm font-semibold transition-colors duration-200 
-                  ${activeStep === idx
-                    ? 'bg-purple-600 border-purple-600 text-white'
-                    : activeStep > idx
-                    ? 'bg-purple-500 border-purple-500 text-white'
-                    : 'bg-gray-200 dark:bg-gray-700 border-gray-300 dark:border-gray-600 text-gray-500 dark:text-gray-300'}
-                `}
-              >
-                {idx + 1}
-              </div>
-              <span className={`mt-2 text-xs font-medium ${activeStep === idx ? 'text-purple-600' : 'text-gray-500 dark:text-gray-300'}`}>{label}</span>
+      <div className="mb-6 sm:mb-8">
+        {/* Mobile Progress Indicator */}
+        <div className="block sm:hidden">
+          <div className="flex items-center justify-between mb-4">
+            <div className="text-sm font-medium text-gray-600 dark:text-gray-300">
+              Step {activeStep + 1} of {steps.length}
             </div>
-          ))}
-        </div>
-        <div className="relative h-2 bg-gray-200 dark:bg-gray-700 rounded-full">
-          <div
-            className="absolute top-0 left-0 h-2 bg-purple-600 rounded-full transition-all duration-300"
-            style={{ width: `${((activeStep) / (steps.length - 1)) * 100}%` }}
-          ></div>
-        </div>
-        {isEditMode && (
-          <div className="mt-2 text-sm text-purple-600 text-center">
-            Editing existing product - All data will be pre-filled
+            <div className="text-sm font-medium text-purple-600">
+              {steps[activeStep]}
+            </div>
           </div>
-        )}
+          <div className="relative h-2 bg-gray-200 dark:bg-gray-700 rounded-full mb-2">
+            <div
+              className="absolute top-0 left-0 h-2 bg-purple-600 rounded-full transition-all duration-300"
+              style={{ width: `${((activeStep + 1) / steps.length) * 100}%` }}
+            ></div>
+          </div>
+          <div className="text-xs text-gray-500 dark:text-gray-400 text-center">
+            {isEditMode ? 'Editing existing product - All data will be pre-filled' : `${activeStep + 1}/${steps.length} completed`}
+          </div>
+        </div>
+
+        {/* Tablet/Desktop Progress Steps */}
+        <div className="hidden sm:block">
+          <div className="flex items-center justify-between mb-4">
+            {steps.map((label, idx) => (
+              <div key={label} className="flex-1 flex flex-col items-center relative">
+                <div
+                  className={`w-8 h-8 flex items-center justify-center rounded-full border-2 text-sm font-semibold transition-colors duration-200 relative z-10
+                    ${activeStep === idx
+                      ? 'bg-purple-600 border-purple-600 text-white'
+                      : activeStep > idx
+                      ? 'bg-purple-500 border-purple-500 text-white'
+                      : 'bg-gray-200 dark:bg-gray-700 border-gray-300 dark:border-gray-600 text-gray-500 dark:text-gray-300'}
+                  `}
+                >
+                  {idx + 1}
+                </div>
+                <span className={`mt-2 text-xs font-medium text-center max-w-[80px] leading-tight ${activeStep === idx ? 'text-purple-600' : 'text-gray-500 dark:text-gray-300'}`}>
+                  {label}
+                </span>
+                {/* Connection line */}
+                {idx < steps.length - 1 && (
+                  <div 
+                    className={`absolute top-4 left-1/2 w-full h-0.5 -z-0 transition-colors duration-200 ${
+                      activeStep > idx ? 'bg-purple-500' : 'bg-gray-300 dark:bg-gray-600'
+                    }`}
+                    style={{ 
+                      transform: 'translateX(50%)',
+                      width: 'calc(100% - 16px)',
+                    }}
+                  />
+                )}
+              </div>
+            ))}
+          </div>
+          {isEditMode && (
+            <div className="text-sm text-purple-600 text-center">
+              Editing existing product - All data will be pre-filled
+            </div>
+          )}
+        </div>
       </div>
       {/* End Progress Bar */}
-      <div className="">
+      <div className="w-full">
         {activeStep === 0 && (
-          <StepCategorySelection
-            zodiacSign={formData.zodiacSign}
-            categoryId={formData.categoryId}
-            onZodiacChange={handleZodiacChange}
-            onCategoryChange={handleCategoryChange}
-            onNext={handleNext}
-            errors={errors}
-            productId={createdProductId || editProductId || undefined}
-          />
+          <div className="w-full">
+            <StepCategorySelection
+              zodiacSign={formData.zodiacSign}
+              categoryId={formData.categoryId}
+              onZodiacChange={handleZodiacChange}
+              onCategoryChange={handleCategoryChange}
+              onNext={handleNext}
+              errors={errors}
+              productId={createdProductId || editProductId || undefined}
+            />
+          </div>
         )}
         {activeStep === 1 && (
-          <StepProductDetails
-            categoryId={formData.categoryId}
-            zodiacSign={zodiacLabel}
-            formData={formData}
-            onFieldChange={handleFieldChange as (field: string, value: string | number | boolean | string[] | null | undefined) => void}
-            onBack={handleBack}
-            onSubmit={handleSubmit}
-            categoryLabel={categoryLabel}
-            errors={errors}
-            productId={createdProductId || editProductId || undefined}
-          />
+          <div className="w-full">
+            <StepProductDetails
+              categoryId={formData.categoryId}
+              zodiacSign={zodiacLabel}
+              formData={formData}
+              onFieldChange={handleFieldChange as (field: string, value: string | number | boolean | string[] | null | undefined) => void}
+              onBack={handleBack}
+              onSubmit={handleSubmit}
+              categoryLabel={categoryLabel}
+              errors={errors}
+              productId={createdProductId || editProductId || undefined}
+            />
+          </div>
         )}
         {activeStep === 2 && (
-          <StepAttributeMedia
-            categoryId={formData.categoryId}
-            zodiacId={formData.zodiacSign ? parseInt(formData.zodiacSign) : null}
-            selectedAttributes={{ color: formData.color || '' }}
-            onAttributeChange={handleAttributeChange}
-            onBack={() => setActiveStep(1)}
-            onSubmit={handleAttributeMediaSubmit}
-            errors={errors}
-            productId={createdProductId || editProductId || undefined}
-            isSubmitting={loading}
-          />
+          <div className="w-full">
+            <StepAttributeMedia
+              categoryId={formData.categoryId}
+              zodiacId={formData.zodiacSign ? parseInt(formData.zodiacSign) : null}
+              selectedAttributes={{ color: formData.color || '' }}
+              onAttributeChange={handleAttributeChange}
+              onBack={() => setActiveStep(1)}
+              onSubmit={handleAttributeMediaSubmit}
+              errors={errors}
+              productId={createdProductId || editProductId || undefined}
+              isSubmitting={loading}
+            />
+          </div>
         )}
         {activeStep === 3 && (
-          <StepShippingDetails
-            productId={createdProductId || editProductId || undefined}
-            shipping={shipping}
-            onFieldChange={handleShippingFieldChange as (field: string, value: string | number | boolean | string[] | null | undefined) => void}
-            onBack={() => setActiveStep(2)}
-            onNext={() => setActiveStep(4)}
-            errors={{}}
-            isSubmitting={loading}
-          />
+          <div className="w-full">
+            <StepShippingDetails
+              productId={createdProductId || editProductId || undefined}
+              shipping={shipping}
+              onFieldChange={handleShippingFieldChange as (field: string, value: string | number | boolean | string[] | null | undefined) => void}
+              onBack={() => setActiveStep(2)}
+              onNext={() => setActiveStep(4)}
+              errors={{}}
+              isSubmitting={loading}
+            />
+          </div>
         )}
         {activeStep === 4 && (
-          <StepDetailedSEO
-            productId={createdProductId || editProductId || undefined}
-            productName={formData.name}
-            productDescription={formData.description}
-            productImage={formData.images[0] || ''}
-            seo={seo}
-            onFieldChange={handleSEOFieldChange}
-            onBack={() => setActiveStep(3)}
-            onNext={handleSEONext}
-            errors={{}}
-            isSubmitting={loading}
-          />
+          <div className="w-full">
+            <StepDetailedSEO
+              productId={createdProductId || editProductId || undefined}
+              productName={formData.name}
+              productDescription={formData.description}
+              productImage={formData.images[0] || ''}
+              seo={seo}
+              onFieldChange={handleSEOFieldChange}
+              onBack={() => setActiveStep(3)}
+              onNext={handleSEONext}
+              errors={{}}
+              isSubmitting={loading}
+            />
+          </div>
         )}
-                 {activeStep === 5 && (
-           <StepStockManagement
-             productId={createdProductId || editProductId || undefined}
-             stock={stock}
-             onFieldChange={handleStockFieldChange}
-             onBack={() => setActiveStep(4)}
-             onNext={handleStockUpdate}
-             errors={{}}
-             isSubmitting={loading}
-           />
-         )}
+        {activeStep === 5 && (
+          <div className="w-full">
+            <StepStockManagement
+              productId={createdProductId || editProductId || undefined}
+              stock={stock}
+              onFieldChange={handleStockFieldChange}
+              onBack={() => setActiveStep(4)}
+              onNext={handleStockUpdate}
+              errors={{}}
+              isSubmitting={loading}
+            />
+          </div>
+        )}
       </div>
     </div>
   );

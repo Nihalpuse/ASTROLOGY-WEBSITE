@@ -326,7 +326,7 @@ const AdminLayout = ({ children }: { children: React.ReactNode }) => {
       <div className="flex h-screen bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100">
         {/* Sidebar */}
         {/* Desktop sidebar */}
-        <div className="hidden md:block w-64 flex-shrink-0 bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 shadow-sm">
+        <div className="hidden lg:block w-64 flex-shrink-0 bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 shadow-sm">
         <div className="p-6 border-b border-gray-200 dark:border-gray-700">
           <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100">Nakshatra Gyaan</h2>
           <p className="text-sm text-gray-500 dark:text-gray-400">Admin Portal</p>
@@ -367,7 +367,7 @@ const AdminLayout = ({ children }: { children: React.ReactNode }) => {
         </div>
 
         {/* Mobile sidebar - overlay + slide-in panel */}
-        <div aria-hidden={!mobileSidebarOpen} className={`md:hidden`}> 
+        <div aria-hidden={!mobileSidebarOpen} className={`lg:hidden`}> 
           {/* Overlay */}
           <div
             onClick={closeMobileSidebar}
@@ -445,30 +445,30 @@ const AdminLayout = ({ children }: { children: React.ReactNode }) => {
   {/* Bagisto-style Header */}
   <header className="relative bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 px-3 py-2 flex items-center justify-between">
           {/* Left side - Mega Search */}
-    <div className="flex items-center gap-2 flex-1 md:w-1/3">
+    <div className="flex items-center gap-2 flex-1 lg:w-1/3">
             {/* Mobile menu toggle - visible on small screens */}
             <button
         onClick={toggleMobileSidebar}
-        className="md:hidden mr-2 p-2 rounded-md hover:bg-gray-100 dark:hover:bg-gray-700"
+        className="lg:hidden mr-2 p-2 rounded-md hover:bg-gray-100 dark:hover:bg-gray-700"
               aria-label="Toggle sidebar"
             >
               <Menu className="text-gray-600 dark:text-gray-300" size={20} />
             </button>
-                  {/* Search: show icon on mobile (toggles overlay), full input on md+ */}
+                  {/* Search: show icon on mobile (toggles overlay), full input on lg+ */}
                   {/* mobile search icon removed — search now lives inside the sidebar */}
 
-                  <Search className="hidden md:inline-block text-gray-400 dark:text-gray-500 mr-2" size={20} />
+                  <Search className="hidden lg:inline-block text-gray-400 dark:text-gray-500 mr-2" size={20} />
                   <input 
                     type="text" 
                     placeholder="Mega Search" 
-                    className="hidden md:block md:max-w-xs w-full text-sm focus:outline-none bg-transparent text-gray-900 dark:text-gray-100"
+                    className="hidden lg:block lg:max-w-xs w-full text-sm focus:outline-none bg-transparent text-gray-900 dark:text-gray-100"
                   />
 
                   {/* Mobile search now lives inside the sidebar (opens sidebar and focuses input) */}
           </div>
 
           {/* Right side - Icons and User */}
-          <div className="flex items-center space-x-2 md:space-x-4">
+          <div className="flex items-center space-x-2 lg:space-x-4">
             {/* Dark Mode Toggle */}
             <button 
               onClick={toggleDarkMode}
@@ -495,7 +495,7 @@ const AdminLayout = ({ children }: { children: React.ReactNode }) => {
             {/* User Profile and Logout */}
             <div className="flex items-center space-x-2">
               <UserCircle2 className="text-gray-600 dark:text-gray-300" size={30} />
-              <div className="mr-1 md:mr-2">
+              <div className="mr-1 lg:mr-2">
                 <p className="text-sm font-medium">Hi | Example</p>
                 <p className="text-xs text-gray-500 dark:text-gray-400">Admin</p>
               </div>
@@ -506,8 +506,8 @@ const AdminLayout = ({ children }: { children: React.ReactNode }) => {
                 aria-label="Logout"
                 className="bg-red-50 dark:bg-red-900 text-red-600 dark:text-red-300 p-2 rounded-lg hover:bg-red-100 dark:hover:bg-red-800 transition-colors flex items-center justify-center"
               >
-                <LogOut className="w-4 h-4 md:mr-1" />
-                <span className="hidden md:inline">Logout</span>
+                <LogOut className="w-4 h-4 lg:mr-1" />
+                <span className="hidden lg:inline">Logout</span>
               </button>
             </div>
           </div>
