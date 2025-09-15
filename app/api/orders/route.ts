@@ -42,7 +42,7 @@ export async function GET(request: Request) {
       const limit = parseInt(limitParam || '10')
       const skip = (page - 1) * limit
 
-      let whereClause: Record<string, unknown> = {}
+      const whereClause: Record<string, unknown> = {}
 
       // Add status filter
       if (statusParam && statusParam !== 'All Status') {

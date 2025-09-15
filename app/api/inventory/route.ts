@@ -75,7 +75,7 @@ export async function GET(request: NextRequest): Promise<NextResponse<InventoryR
       );
     }
 
-    let whereClause: Record<string, unknown> = {};
+    const whereClause: Record<string, unknown> = {};
 
     if (productId) {
       whereClause.product_id = parseInt(productId);
