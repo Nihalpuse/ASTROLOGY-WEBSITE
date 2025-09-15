@@ -831,22 +831,30 @@ export default function AstrologerDetailPage({ params }: { params: { email: stri
   }
 
   return (
-    <div className="flex h-screen bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100">
-      <div className="w-full p-6 space-y-6">
+    <div className="min-h-screen bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100">
+      <div className="w-full p-3 md:p-6 space-y-4 md:space-y-6">
         {/* Header Section */}
-        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 border border-gray-200 dark:border-gray-700">
-          <div className="flex items-center space-x-6">
+        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-4 md:p-6 border border-gray-200 dark:border-gray-700">
+          <div className="flex flex-col md:flex-row md:items-center space-y-4 md:space-y-0 md:space-x-6">
             {astrologer.profilePicture && (
-              <Image src={astrologer.profilePicture || "/placeholder.svg"} alt="Profile" width={128} height={128} className="w-32 h-32 object-cover rounded-full border-4 border-gray-300 dark:border-gray-600" />
+              <div className="flex justify-center md:justify-start">
+                <Image 
+                  src={astrologer.profilePicture || "/placeholder.svg"} 
+                  alt="Profile" 
+                  width={128} 
+                  height={128} 
+                  className="w-24 h-24 md:w-32 md:h-32 object-cover rounded-full border-4 border-gray-300 dark:border-gray-600" 
+                />
+              </div>
             )}
-            <div>
-              <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100">{astrologer.name}</h1>
-              <p className="text-lg text-gray-600 dark:text-gray-300 mt-2">{astrologer.expertise}</p>
-              <div className="flex items-center mt-3">
-                <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200">
+            <div className="text-center md:text-left">
+              <h1 className="text-2xl md:text-3xl font-bold text-gray-900 dark:text-gray-100">{astrologer.name}</h1>
+              <p className="text-base md:text-lg text-gray-600 dark:text-gray-300 mt-2">{astrologer.expertise}</p>
+              <div className="flex flex-col sm:flex-row sm:items-center justify-center md:justify-start mt-3 gap-2 sm:gap-4">
+                <span className="inline-flex items-center justify-center px-3 py-1 rounded-full text-sm font-medium bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200">
                   {astrologer.documentStatus}
                 </span>
-                <span className="ml-4 text-sm text-gray-500 dark:text-gray-400">
+                <span className="text-sm text-gray-500 dark:text-gray-400">
                   {astrologer.experience} years experience
                 </span>
               </div>
@@ -855,12 +863,12 @@ export default function AstrologerDetailPage({ params }: { params: { email: stri
         </div>
 
         {/* Cards Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 md:gap-6">
           {/* Contact Info Card */}
-          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 border border-gray-200 dark:border-gray-700">
-            <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-4 flex items-center">
+          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-4 md:p-6 border border-gray-200 dark:border-gray-700">
+            <h2 className="text-lg md:text-xl font-semibold text-gray-900 dark:text-gray-100 mb-4 flex items-center">
               <svg
-                className="w-5 h-5 mr-2 text-blue-600 dark:text-blue-400"
+                className="w-4 h-4 md:w-5 md:h-5 mr-2 text-blue-600 dark:text-blue-400"
                 fill="none"
                 stroke="currentColor"
                 viewBox="0 0 24 24"
@@ -876,25 +884,25 @@ export default function AstrologerDetailPage({ params }: { params: { email: stri
             </h2>
             <div className="space-y-3">
               <div>
-                <p className="text-sm text-gray-500 dark:text-gray-400">Email</p>
-                <p className="font-medium text-gray-900 dark:text-gray-100">{astrologer.email}</p>
+                <p className="text-xs md:text-sm text-gray-500 dark:text-gray-400">Email</p>
+                <p className="font-medium text-sm md:text-base text-gray-900 dark:text-gray-100 break-all">{astrologer.email}</p>
               </div>
               <div>
-                <p className="text-sm text-gray-500 dark:text-gray-400">Phone</p>
-                <p className="font-medium text-gray-900 dark:text-gray-100">{astrologer.phone}</p>
+                <p className="text-xs md:text-sm text-gray-500 dark:text-gray-400">Phone</p>
+                <p className="font-medium text-sm md:text-base text-gray-900 dark:text-gray-100">{astrologer.phone}</p>
               </div>
               <div>
-                <p className="text-sm text-gray-500 dark:text-gray-400">Joined</p>
-                <p className="font-medium text-gray-900 dark:text-gray-100">{astrologer.joined}</p>
+                <p className="text-xs md:text-sm text-gray-500 dark:text-gray-400">Joined</p>
+                <p className="font-medium text-sm md:text-base text-gray-900 dark:text-gray-100">{astrologer.joined}</p>
               </div>
             </div>
           </div>
 
           {/* Expertise Card */}
-          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 border border-gray-200 dark:border-gray-700">
-            <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-4 flex items-center">
+          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-4 md:p-6 border border-gray-200 dark:border-gray-700">
+            <h2 className="text-lg md:text-xl font-semibold text-gray-900 dark:text-gray-100 mb-4 flex items-center">
               <svg
-                className="w-5 h-5 mr-2 text-purple-600 dark:text-purple-400"
+                className="w-4 h-4 md:w-5 md:h-5 mr-2 text-purple-600 dark:text-purple-400"
                 fill="none"
                 stroke="currentColor"
                 viewBox="0 0 24 24"
@@ -910,21 +918,21 @@ export default function AstrologerDetailPage({ params }: { params: { email: stri
             </h2>
             <div className="space-y-3">
               <div>
-                <p className="text-sm text-gray-500 dark:text-gray-400">Specialization</p>
-                <p className="font-medium text-gray-900 dark:text-gray-100">{astrologer.expertise}</p>
+                <p className="text-xs md:text-sm text-gray-500 dark:text-gray-400">Specialization</p>
+                <p className="font-medium text-sm md:text-base text-gray-900 dark:text-gray-100">{astrologer.expertise}</p>
               </div>
               <div>
-                <p className="text-sm text-gray-500 dark:text-gray-400">Experience</p>
-                <p className="font-medium text-gray-900 dark:text-gray-100">{astrologer.experience} years</p>
+                <p className="text-xs md:text-sm text-gray-500 dark:text-gray-400">Experience</p>
+                <p className="font-medium text-sm md:text-base text-gray-900 dark:text-gray-100">{astrologer.experience} years</p>
               </div>
             </div>
           </div>
 
           {/* Bank Details Card */}
-          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 border border-gray-200 dark:border-gray-700">
-            <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-4 flex items-center">
+          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-4 md:p-6 border border-gray-200 dark:border-gray-700">
+            <h2 className="text-lg md:text-xl font-semibold text-gray-900 dark:text-gray-100 mb-4 flex items-center">
               <svg
-                className="w-5 h-5 mr-2 text-green-600 dark:text-green-400"
+                className="w-4 h-4 md:w-5 md:h-5 mr-2 text-green-600 dark:text-green-400"
                 fill="none"
                 stroke="currentColor"
                 viewBox="0 0 24 24"
@@ -940,25 +948,25 @@ export default function AstrologerDetailPage({ params }: { params: { email: stri
             </h2>
             <div className="space-y-3">
               <div>
-                <p className="text-sm text-gray-500 dark:text-gray-400">Account Number</p>
-                <p className="font-medium text-gray-900 dark:text-gray-100">{astrologer.bankDetails.accountNo}</p>
+                <p className="text-xs md:text-sm text-gray-500 dark:text-gray-400">Account Number</p>
+                <p className="font-medium text-sm md:text-base text-gray-900 dark:text-gray-100 font-mono">{astrologer.bankDetails.accountNo}</p>
               </div>
               <div>
-                <p className="text-sm text-gray-500 dark:text-gray-400">Bank Name</p>
-                <p className="font-medium text-gray-900 dark:text-gray-100">{astrologer.bankDetails.bankName}</p>
+                <p className="text-xs md:text-sm text-gray-500 dark:text-gray-400">Bank Name</p>
+                <p className="font-medium text-sm md:text-base text-gray-900 dark:text-gray-100">{astrologer.bankDetails.bankName}</p>
               </div>
               <div>
-                <p className="text-sm text-gray-500 dark:text-gray-400">IFSC Code</p>
-                <p className="font-medium text-gray-900 dark:text-gray-100">{astrologer.bankDetails.ifsc}</p>
+                <p className="text-xs md:text-sm text-gray-500 dark:text-gray-400">IFSC Code</p>
+                <p className="font-medium text-sm md:text-base text-gray-900 dark:text-gray-100 font-mono">{astrologer.bankDetails.ifsc}</p>
               </div>
             </div>
           </div>
 
           {/* Documents Card */}
-          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 border border-gray-200 dark:border-gray-700">
-            <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-4 flex items-center">
+          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-4 md:p-6 border border-gray-200 dark:border-gray-700 md:col-span-2 xl:col-span-1">
+            <h2 className="text-lg md:text-xl font-semibold text-gray-900 dark:text-gray-100 mb-4 flex items-center">
               <svg
-                className="w-5 h-5 mr-2 text-orange-600 dark:text-orange-400"
+                className="w-4 h-4 md:w-5 md:h-5 mr-2 text-orange-600 dark:text-orange-400"
                 fill="none"
                 stroke="currentColor"
                 viewBox="0 0 24 24"
@@ -976,9 +984,9 @@ export default function AstrologerDetailPage({ params }: { params: { email: stri
               <div>
                 <button
                   onClick={() => setIsPopupOpen(true)}
-                  className="inline-flex items-center text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 underline font-medium"
+                  className="inline-flex items-center text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 underline font-medium text-sm md:text-base"
                 >
-                  <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <svg className="w-3 h-3 md:w-4 md:h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path
                       strokeLinecap="round"
                       strokeLinejoin="round"
@@ -990,7 +998,7 @@ export default function AstrologerDetailPage({ params }: { params: { email: stri
                 </button>
               </div>
               <div>
-                <p className="text-sm text-gray-500 dark:text-gray-400">Status</p>
+                <p className="text-xs md:text-sm text-gray-500 dark:text-gray-400">Status</p>
                 <span
                   className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${astrologer.documentStatus === "approved"
                       ? "bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200"
@@ -1015,10 +1023,10 @@ export default function AstrologerDetailPage({ params }: { params: { email: stri
         </div>
 
         {/* Enhanced Profile Verification Control */}
-        <div className="mt-12 p-6 bg-white dark:bg-gray-800 rounded-2xl shadow-lg border border-gray-200 dark:border-gray-700  mx-auto">
-          <h2 className="text-xl font-bold mb-4 text-gray-900 dark:text-gray-100 flex items-center">
+        <div className="mt-8 md:mt-12 p-4 md:p-6 bg-white dark:bg-gray-800 rounded-2xl shadow-lg border border-gray-200 dark:border-gray-700 mx-auto">
+          <h2 className="text-lg md:text-xl font-bold mb-4 text-gray-900 dark:text-gray-100 flex items-center">
             <svg
-              className="w-5 h-5 mr-2 text-yellow-600 dark:text-yellow-400"
+              className="w-4 h-4 md:w-5 md:h-5 mr-2 text-yellow-600 dark:text-yellow-400"
               fill="none"
               stroke="currentColor"
               viewBox="0 0 24 24"
@@ -1035,11 +1043,11 @@ export default function AstrologerDetailPage({ params }: { params: { email: stri
           </h2>
 
           {/* Auto-Processing Toggle */}
-          <div className="mb-6 p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
-            <div className="flex items-center justify-between mb-3">
+          <div className="mb-4 md:mb-6 p-3 md:p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-3">
               <div>
-                <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">Auto-Processing</h3>
-                <p className="text-sm text-gray-600 dark:text-gray-400">
+                <h3 className="text-base md:text-lg font-semibold text-gray-900 dark:text-gray-100">Auto-Processing</h3>
+                <p className="text-xs md:text-sm text-gray-600 dark:text-gray-400">
                   Automatically approve/reject based on document status
                 </p>
               </div>
@@ -1061,7 +1069,7 @@ export default function AstrologerDetailPage({ params }: { params: { email: stri
                   {autoProcessing && (
                     <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-600 mr-2"></div>
                   )}
-                  <span className="text-sm text-blue-800 dark:text-blue-200">{processingStatus}</span>
+                  <span className="text-xs md:text-sm text-blue-800 dark:text-blue-200">{processingStatus}</span>
                 </div>
               </div>
             )}
@@ -1083,7 +1091,7 @@ export default function AstrologerDetailPage({ params }: { params: { email: stri
                       d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
                     />
                   </svg>
-                  <span className="text-sm text-green-800 dark:text-green-200">Last action: {lastAutoAction}</span>
+                  <span className="text-xs md:text-sm text-green-800 dark:text-green-200">Last action: {lastAutoAction}</span>
                 </div>
               </div>
             )}
@@ -1092,9 +1100,9 @@ export default function AstrologerDetailPage({ params }: { params: { email: stri
           {/* Current Status */}
           <div className="mb-4 grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <p className="text-sm text-gray-500 dark:text-gray-400">Current Status</p>
+              <p className="text-xs md:text-sm text-gray-500 dark:text-gray-400">Current Status</p>
               <span
-                className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${astrologer.documentStatus === "approved"
+                className={`inline-flex items-center px-3 py-1 rounded-full text-xs md:text-sm font-medium ${astrologer.documentStatus === "approved"
                     ? "bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200"
                     : astrologer.documentStatus === "rejected"
                       ? "bg-red-100 dark:bg-red-900 text-red-800 dark:text-red-200"
@@ -1107,41 +1115,41 @@ export default function AstrologerDetailPage({ params }: { params: { email: stri
               </span>
             </div>
             <div>
-              <p className="text-sm text-gray-500 dark:text-gray-400">Admin Remarks</p>
-              <p className="font-medium text-gray-700 dark:text-gray-200">{adminRemarks || "—"}</p>
+              <p className="text-xs md:text-sm text-gray-500 dark:text-gray-400">Admin Remarks</p>
+              <p className="font-medium text-xs md:text-sm text-gray-700 dark:text-gray-200 break-words">{adminRemarks || "—"}</p>
             </div>
           </div>
 
           {/* Enhanced Verification Summary */}
-          <div className="mb-6 p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
+          <div className="mb-4 md:mb-6 p-3 md:p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
             <h3 className="text-sm font-medium text-gray-900 dark:text-gray-100 mb-3">Detailed Verification Summary</h3>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
-              <div className="p-3 bg-green-100 dark:bg-green-900/30 rounded-lg">
-                <div className="text-2xl font-bold text-green-800 dark:text-green-200">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4 text-center">
+              <div className="p-2 md:p-3 bg-green-100 dark:bg-green-900/30 rounded-lg">
+                <div className="text-lg md:text-2xl font-bold text-green-800 dark:text-green-200">
                   {Object.values(documentStatuses).filter((s) => s === "accepted").length +
                     Object.values(eduStatuses).filter((s) => s === "accepted").length +
                     Object.values(certStatuses).filter((s) => s === "accepted").length}
                 </div>
                 <div className="text-xs text-green-600 dark:text-green-400">Accepted</div>
               </div>
-              <div className="p-3 bg-red-100 dark:bg-red-900/30 rounded-lg">
-                <div className="text-2xl font-bold text-red-800 dark:text-red-200">
+              <div className="p-2 md:p-3 bg-red-100 dark:bg-red-900/30 rounded-lg">
+                <div className="text-lg md:text-2xl font-bold text-red-800 dark:text-red-200">
                   {Object.values(documentStatuses).filter((s) => s === "rejected").length +
                     Object.values(eduStatuses).filter((s) => s === "rejected").length +
                     Object.values(certStatuses).filter((s) => s === "rejected").length}
                 </div>
                 <div className="text-xs text-red-600 dark:text-red-400">Rejected</div>
               </div>
-              <div className="p-3 bg-yellow-100 dark:bg-yellow-900/30 rounded-lg">
-                <div className="text-2xl font-bold text-yellow-800 dark:text-yellow-200">
+              <div className="p-2 md:p-3 bg-yellow-100 dark:bg-yellow-900/30 rounded-lg">
+                <div className="text-lg md:text-2xl font-bold text-yellow-800 dark:text-yellow-200">
                   {Object.values(documentStatuses).filter((s) => s === "pending").length +
                     Object.values(eduStatuses).filter((s) => s === "pending").length +
                     Object.values(certStatuses).filter((s) => s === "pending").length}
                 </div>
                 <div className="text-xs text-yellow-600 dark:text-yellow-400">Pending</div>
               </div>
-              <div className="p-3 bg-gray-100 dark:bg-gray-900/30 rounded-lg">
-                <div className="text-2xl font-bold text-gray-800 dark:text-gray-200">
+              <div className="p-2 md:p-3 bg-gray-100 dark:bg-gray-900/30 rounded-lg">
+                <div className="text-lg md:text-2xl font-bold text-gray-800 dark:text-gray-200">
                   {Object.values(documentStatuses).filter((s) => s === "unverified").length +
                     Object.values(eduStatuses).filter((s) => s === "unverified").length +
                     Object.values(certStatuses).filter((s) => s === "unverified").length}
@@ -1150,7 +1158,7 @@ export default function AstrologerDetailPage({ params }: { params: { email: stri
               </div>
             </div>
             <div className="mt-3 text-center">
-              <span className="text-sm text-gray-600 dark:text-gray-400">
+              <span className="text-xs md:text-sm text-gray-600 dark:text-gray-400">
                 Total Documents:{" "}
                 {Object.entries(astrologer.documents).filter(([, url]) => url && url.trim() !== "").length +
                   educations.length +
@@ -1286,14 +1294,14 @@ export default function AstrologerDetailPage({ params }: { params: { email: stri
             <div className="mt-4 p-3 bg-green-50 dark:bg-green-900/20 rounded-lg">
               <div className="flex items-center">
                 <svg
-                  className="w-5 h-5 text-green-600 dark:text-green-400 mr-2"
+                  className="w-4 h-4 md:w-5 md:h-5 text-green-600 dark:text-green-400 mr-2 flex-shrink-0"
                   fill="none"
                   stroke="currentColor"
                   viewBox="0 0 24 24"
                 >
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                 </svg>
-                <span className="text-sm text-green-800 dark:text-green-200">{profileActionMsg}</span>
+                <span className="text-xs md:text-sm text-green-800 dark:text-green-200">{profileActionMsg}</span>
               </div>
             </div>
           )}
@@ -1302,8 +1310,8 @@ export default function AstrologerDetailPage({ params }: { params: { email: stri
 
       {/* Document Viewer Popup */}
       {isPopupOpen && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4 overflow-y-scroll">
-          <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl max-w-7xl w-full max-h-[95vh] overflow-y-scroll">
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl max-w-7xl w-full max-h-[90vh] overflow-y-auto">
             {/* Header */}
             <div className="flex items-center justify-between p-6 border-b border-gray-200 dark:border-gray-700 bg-gradient-to-r from-blue-50 to-purple-50 dark:from-blue-900/20 dark:to-purple-900/20">
               <div className="flex items-center space-x-4">
@@ -1345,13 +1353,13 @@ export default function AstrologerDetailPage({ params }: { params: { email: stri
             </div>
 
             {/* Document Navigation Pills */}
-            <div className="p-4 border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900/50">
-              <div className="flex space-x-2 overflow-x-auto pb-2">
+            <div className="p-2 sm:p-4 border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900/50">
+              <div className="flex space-x-1 sm:space-x-2 overflow-x-auto pb-2 scrollbar-hide">
                 {getAllDocuments().map((doc, index) => (
                   <button
                     key={doc.id}
                     onClick={() => setCurrentDocIndex(index)}
-                    className={`px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap transition-all ${index === currentDocIndex
+                    className={`px-2 py-1.5 sm:px-4 sm:py-2 rounded-full text-xs sm:text-sm font-medium whitespace-nowrap transition-all ${index === currentDocIndex
                         ? "bg-blue-500 text-white shadow-lg"
                         : "bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 border border-gray-200 dark:border-gray-600"
                       }`}
@@ -1375,9 +1383,9 @@ export default function AstrologerDetailPage({ params }: { params: { email: stri
             </div>
 
             {/* Content */}
-            <div className="flex h-[calc(95vh-280px)]">
+            <div className="flex min-h-[400px] max-h-[60vh]">
               {/* Navigation */}
-              <div className="flex flex-col justify-center p-4">
+              <div className="hidden sm:flex flex-col justify-center p-4">
                 <button
                   onClick={() => setCurrentDocIndex(Math.max(0, currentDocIndex - 1))}
                   className="p-3 rounded-full bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors disabled:opacity-50"
@@ -1395,7 +1403,7 @@ export default function AstrologerDetailPage({ params }: { params: { email: stri
               </div>
 
               {/* Document Display */}
-              <div className="flex-1 p-6 flex items-center justify-center">
+              <div className="flex-1 p-2 sm:p-6 flex items-center justify-center">
                 <div className="w-full h-full bg-gray-50 dark:bg-gray-900 rounded-lg flex items-center justify-center border-2 border-dashed border-gray-200 dark:border-gray-700">
                   {(() => {
                     const allDocs = getAllDocuments()
@@ -1440,7 +1448,7 @@ export default function AstrologerDetailPage({ params }: { params: { email: stri
               </div>
 
               {/* Navigation */}
-              <div className="flex flex-col justify-center p-4">
+              <div className="hidden sm:flex flex-col justify-center p-4">
                 <button
                   onClick={() => setCurrentDocIndex(Math.min(getAllDocuments().length - 1, currentDocIndex + 1))}
                   className="p-3 rounded-full bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors disabled:opacity-50"
@@ -1459,20 +1467,20 @@ export default function AstrologerDetailPage({ params }: { params: { email: stri
             </div>
 
             {/* Action Buttons */}
-            <div className="p-6 border-t border-gray-200 dark:border-gray-700 bg-gradient-to-r from-gray-50 to-blue-50 dark:from-gray-900/50 dark:to-blue-900/20">
-              <div className="flex flex-col space-y-4">
+            <div className="p-3 sm:p-6 border-t border-gray-200 dark:border-gray-700 bg-gradient-to-r from-gray-50 to-blue-50 dark:from-gray-900/50 dark:to-blue-900/20">
+              <div className="flex flex-col space-y-3 sm:space-y-4">
                 {/* Document Info Card */}
-                <div className="bg-white dark:bg-gray-800 rounded-xl p-4 border border-gray-200 dark:border-gray-700">
+                <div className="bg-white dark:bg-gray-800 rounded-xl p-3 sm:p-4 border border-gray-200 dark:border-gray-700">
                   <div className="flex items-center justify-between">
-                    <div className="flex items-center space-x-4">
-                      <div className="text-sm text-gray-500 dark:text-gray-400">
+                    <div className="flex items-center space-x-2 sm:space-x-4">
+                      <div className="text-xs sm:text-sm text-gray-500 dark:text-gray-400">
                         {(() => {
                           const allDocs = getAllDocuments()
                           const currentDoc = allDocs[currentDocIndex]
                           return currentDoc ? currentDoc.category : "Document"
                         })()}
                       </div>
-                      <div className="text-sm font-medium text-gray-900 dark:text-gray-100">
+                      <div className="text-xs sm:text-sm font-medium text-gray-900 dark:text-gray-100">
                         {(() => {
                           const allDocs = getAllDocuments()
                           const currentDoc = allDocs[currentDocIndex]
@@ -1494,7 +1502,7 @@ export default function AstrologerDetailPage({ params }: { params: { email: stri
                         }
                         return (
                           <span
-                            className={`px-3 py-1 rounded-full text-xs font-medium ${statusColors[currentDoc.status] || statusColors.unverified}`}
+                            className={`px-2 py-1 sm:px-3 sm:py-1 rounded-full text-xs font-medium ${statusColors[currentDoc.status] || statusColors.unverified}`}
                           >
                             {currentDoc.status}
                           </span>
@@ -1541,7 +1549,7 @@ export default function AstrologerDetailPage({ params }: { params: { email: stri
                   const currentDoc = allDocs[currentDocIndex]
                   if (currentDoc && isRejectionInputShown(currentDoc.id)) {
                     return (
-                      <div className="bg-white dark:bg-gray-800 rounded-xl p-4 border border-gray-200 dark:border-gray-700">
+                      <div className="bg-white dark:bg-gray-800 rounded-xl p-3 sm:p-4 border border-gray-200 dark:border-gray-700">
                         <div className="space-y-3">
                           <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
                             Rejection Reason
@@ -1551,19 +1559,19 @@ export default function AstrologerDetailPage({ params }: { params: { email: stri
                             onChange={(e) => setCurrentRejectionReason(currentDoc.id, e.target.value)}
                             placeholder="Please provide a detailed reason for rejection..."
                             rows={3}
-                            className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-gray-100 resize-none"
+                            className="w-full px-3 py-2 sm:px-4 sm:py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-gray-100 resize-none text-sm"
                           />
-                          <div className="flex justify-end space-x-3">
+                          <div className="flex flex-col sm:flex-row sm:justify-end space-y-2 sm:space-y-0 sm:space-x-3">
                             <button
                               onClick={() => handleRejectCancel(currentDoc.id)}
-                              className="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-700 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
+                              className="w-full sm:w-auto px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-700 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
                             >
                               Cancel
                             </button>
                             <button
                               onClick={() => handleRejectConfirm(currentDoc.id)}
                               disabled={!getCurrentRejectionReason(currentDoc.id)?.trim()}
-                              className="px-4 py-2 text-sm font-medium text-white bg-red-600 rounded-lg hover:bg-red-700 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors"
+                              className="w-full sm:w-auto px-4 py-2 text-sm font-medium text-white bg-red-600 rounded-lg hover:bg-red-700 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors"
                             >
                               Confirm Rejection
                             </button>
@@ -1580,24 +1588,24 @@ export default function AstrologerDetailPage({ params }: { params: { email: stri
                   const currentDoc = allDocs[currentDocIndex]
                   if (currentDoc && !isRejectionInputShown(currentDoc.id)) {
                     return (
-                      <div className="flex justify-center space-x-4">
+                      <div className="flex flex-col sm:flex-row justify-center space-y-3 sm:space-y-0 sm:space-x-4">
                         <button
                           onClick={() => handleAccept(currentDoc.id)}
-                          className="px-8 py-3 bg-gradient-to-r from-green-600 to-green-700 text-white rounded-lg hover:from-green-700 hover:to-green-800 transition-all duration-200 font-medium shadow-lg hover:shadow-xl transform hover:scale-105"
+                          className="w-full sm:w-auto px-6 py-3 sm:px-8 bg-gradient-to-r from-green-600 to-green-700 text-white rounded-lg hover:from-green-700 hover:to-green-800 transition-all duration-200 font-medium shadow-lg hover:shadow-xl transform hover:scale-105"
                         >
-                          <span className="flex items-center space-x-2">
-                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <span className="flex items-center justify-center space-x-2">
+                            <svg className="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                             </svg>
-                            <span>Accept Document</span>
+                            <span className="text-sm sm:text-base">Accept Document</span>
                           </span>
                         </button>
                         <button
                           onClick={() => handleReject(currentDoc.id)}
-                          className="px-8 py-3 bg-gradient-to-r from-red-600 to-red-700 text-white rounded-lg hover:from-red-700 hover:to-red-800 transition-all duration-200 font-medium shadow-lg hover:shadow-xl transform hover:scale-105"
+                          className="w-full sm:w-auto px-6 py-3 sm:px-8 bg-gradient-to-r from-red-600 to-red-700 text-white rounded-lg hover:from-red-700 hover:to-red-800 transition-all duration-200 font-medium shadow-lg hover:shadow-xl transform hover:scale-105"
                         >
-                          <span className="flex items-center space-x-2">
-                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <span className="flex items-center justify-center space-x-2">
+                            <svg className="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                               <path
                                 strokeLinecap="round"
                                 strokeLinejoin="round"
@@ -1605,7 +1613,7 @@ export default function AstrologerDetailPage({ params }: { params: { email: stri
                                 d="M6 18L18 6M6 6l12 12"
                               />
                             </svg>
-                            <span>Reject Document</span>
+                            <span className="text-sm sm:text-base">Reject Document</span>
                           </span>
                         </button>
                       </div>

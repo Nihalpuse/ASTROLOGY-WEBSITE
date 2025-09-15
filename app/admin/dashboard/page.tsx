@@ -220,184 +220,184 @@ export default function AdminDashboard() {
   ].sort((a, b) => b.revenue - a.revenue).slice(0, 5);
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 p-6">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 p-3 sm:p-4 lg:p-6">
       <div className="max-w-7xl mx-auto">
         {/* Header */}
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">Dashboard</h1>
+        <div className="mb-6 sm:mb-8">
+          <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white mb-2">Dashboard</h1>
         </div>
 
         {/* Main Metrics Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 mb-6 sm:mb-8">
           {/* Customers (Total Users) */}
-          <div className="bg-white dark:bg-gray-800 rounded-lg p-6 shadow-sm">
-            <div className="flex items-center justify-between mb-4">
+          <div className="bg-white dark:bg-gray-800 rounded-lg p-4 sm:p-6 shadow-sm">
+            <div className="flex items-center justify-between mb-3 sm:mb-4">
               <div className="flex items-center">
-                <Users className="w-5 h-5 text-blue-500 mr-2" />
-                <span className="text-sm font-medium text-gray-600 dark:text-gray-400">Customers</span>
+                <Users className="w-4 h-4 sm:w-5 sm:h-5 text-blue-500 mr-2" />
+                <span className="text-xs sm:text-sm font-medium text-gray-600 dark:text-gray-400">Customers</span>
               </div>
               {dashboardData.userGrowth > 0 ? (
-                <TrendingUp className="w-4 h-4 text-green-500" />
+                <TrendingUp className="w-3 h-3 sm:w-4 sm:h-4 text-green-500" />
               ) : (
-                <TrendingDown className="w-4 h-4 text-red-500" />
+                <TrendingDown className="w-3 h-3 sm:w-4 sm:h-4 text-red-500" />
               )}
             </div>
             <div className="mb-2">
-              <span className="text-2xl font-bold text-gray-900 dark:text-white">
+              <span className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white">
                 {dashboardData.totalUsers.toLocaleString()}
               </span>
             </div>
-            <div className="flex items-center">
-              <span className={`text-sm font-medium ${dashboardData.userGrowth > 0 ? 'text-green-600' : 'text-red-600'}`}>
+            <div className="flex flex-col sm:flex-row sm:items-center">
+              <span className={`text-xs sm:text-sm font-medium ${dashboardData.userGrowth > 0 ? 'text-green-600' : 'text-red-600'}`}>
                 {dashboardData.userGrowth > 0 ? '+' : ''}{dashboardData.userGrowth}%
               </span>
-              <span className="text-sm text-gray-500 ml-1">vs. previous month</span>
+              <span className="text-xs sm:text-sm text-gray-500 sm:ml-1">vs. previous month</span>
             </div>
           </div>
 
           {/* Total Sales (Revenue) */}
-          <div className="bg-white dark:bg-gray-800 rounded-lg p-6 shadow-sm">
-            <div className="flex items-center justify-between mb-4">
+          <div className="bg-white dark:bg-gray-800 rounded-lg p-4 sm:p-6 shadow-sm">
+            <div className="flex items-center justify-between mb-3 sm:mb-4">
               <div className="flex items-center">
-                <DollarSign className="w-5 h-5 text-green-500 mr-2" />
-                <span className="text-sm font-medium text-gray-600 dark:text-gray-400">Total Sales</span>
+                <DollarSign className="w-4 h-4 sm:w-5 sm:h-5 text-green-500 mr-2" />
+                <span className="text-xs sm:text-sm font-medium text-gray-600 dark:text-gray-400">Total Sales</span>
               </div>
               {dashboardData.revenueGrowth > 0 ? (
-                <TrendingUp className="w-4 h-4 text-green-500" />
+                <TrendingUp className="w-3 h-3 sm:w-4 sm:h-4 text-green-500" />
               ) : (
-                <TrendingDown className="w-4 h-4 text-red-500" />
+                <TrendingDown className="w-3 h-3 sm:w-4 sm:h-4 text-red-500" />
               )}
             </div>
             <div className="mb-2">
-              <span className="text-2xl font-bold text-gray-900 dark:text-white">
+              <span className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white">
                 ${dashboardData.totalRevenue.toLocaleString()}
               </span>
             </div>
-            <div className="flex items-center">
-              <span className={`text-sm font-medium ${dashboardData.revenueGrowth > 0 ? 'text-green-600' : 'text-red-600'}`}>
+            <div className="flex flex-col sm:flex-row sm:items-center">
+              <span className={`text-xs sm:text-sm font-medium ${dashboardData.revenueGrowth > 0 ? 'text-green-600' : 'text-red-600'}`}>
                 {dashboardData.revenueGrowth > 0 ? '+' : ''}{dashboardData.revenueGrowth}%
               </span>
-              <span className="text-sm text-gray-500 ml-1">vs. previous month</span>
+              <span className="text-xs sm:text-sm text-gray-500 sm:ml-1">vs. previous month</span>
             </div>
           </div>
 
           {/* Total Orders */}
-          <div className="bg-white dark:bg-gray-800 rounded-lg p-6 shadow-sm">
-            <div className="flex items-center justify-between mb-4">
+          <div className="bg-white dark:bg-gray-800 rounded-lg p-4 sm:p-6 shadow-sm">
+            <div className="flex items-center justify-between mb-3 sm:mb-4">
               <div className="flex items-center">
-                <ShoppingCart className="w-5 h-5 text-orange-500 mr-2" />
-                <span className="text-sm font-medium text-gray-600 dark:text-gray-400">Total Order</span>
+                <ShoppingCart className="w-4 h-4 sm:w-5 sm:h-5 text-orange-500 mr-2" />
+                <span className="text-xs sm:text-sm font-medium text-gray-600 dark:text-gray-400">Total Order</span>
               </div>
               {dashboardData.orderGrowth > 0 ? (
-                <TrendingUp className="w-4 h-4 text-green-500" />
+                <TrendingUp className="w-3 h-3 sm:w-4 sm:h-4 text-green-500" />
               ) : (
-                <TrendingDown className="w-4 h-4 text-red-500" />
+                <TrendingDown className="w-3 h-3 sm:w-4 sm:h-4 text-red-500" />
               )}
             </div>
             <div className="mb-2">
-              <span className="text-2xl font-bold text-gray-900 dark:text-white">
+              <span className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white">
                 {dashboardData.totalOrders.toLocaleString()}
               </span>
             </div>
-            <div className="flex items-center">
-              <span className={`text-sm font-medium ${dashboardData.orderGrowth > 0 ? 'text-green-600' : 'text-red-600'}`}>
+            <div className="flex flex-col sm:flex-row sm:items-center">
+              <span className={`text-xs sm:text-sm font-medium ${dashboardData.orderGrowth > 0 ? 'text-green-600' : 'text-red-600'}`}>
                 {dashboardData.orderGrowth > 0 ? '+' : ''}{dashboardData.orderGrowth}%
               </span>
-              <span className="text-sm text-gray-500 ml-1">vs. previous month</span>
+              <span className="text-xs sm:text-sm text-gray-500 sm:ml-1">vs. previous month</span>
             </div>
           </div>
         </div>
 
         {/* Revenue Breakdown Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 mb-6 sm:mb-8">
           {/* Total Products */}
-          <div className="bg-white dark:bg-gray-800 rounded-lg p-6 shadow-sm">
-            <div className="flex items-center justify-between mb-4">
+          <div className="bg-white dark:bg-gray-800 rounded-lg p-4 sm:p-6 shadow-sm">
+            <div className="flex items-center justify-between mb-3 sm:mb-4">
               <div className="flex items-center">
-                <Package className="w-5 h-5 text-blue-500 mr-2" />
-                <span className="text-sm font-medium text-gray-600 dark:text-gray-400">Total Products</span>
+                <Package className="w-4 h-4 sm:w-5 sm:h-5 text-blue-500 mr-2" />
+                <span className="text-xs sm:text-sm font-medium text-gray-600 dark:text-gray-400">Total Products</span>
               </div>
             </div>
             <div className="mb-2">
-              <span className="text-2xl font-bold text-gray-900 dark:text-white">
+              <span className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white">
                 {dashboardData.totalProducts}
               </span>
             </div>
-            <div className="text-sm text-gray-500">
+            <div className="text-xs sm:text-sm text-gray-500">
               Revenue: ${dashboardData.productRevenue.toLocaleString()}
             </div>
           </div>
 
           {/* Total Services */}
-          <div className="bg-white dark:bg-gray-800 rounded-lg p-6 shadow-sm">
-            <div className="flex items-center justify-between mb-4">
+          <div className="bg-white dark:bg-gray-800 rounded-lg p-4 sm:p-6 shadow-sm">
+            <div className="flex items-center justify-between mb-3 sm:mb-4">
               <div className="flex items-center">
-                <Star className="w-5 h-5 text-purple-500 mr-2" />
-                <span className="text-sm font-medium text-gray-600 dark:text-gray-400">Total Services</span>
+                <Star className="w-4 h-4 sm:w-5 sm:h-5 text-purple-500 mr-2" />
+                <span className="text-xs sm:text-sm font-medium text-gray-600 dark:text-gray-400">Total Services</span>
               </div>
             </div>
             <div className="mb-2">
-              <span className="text-2xl font-bold text-gray-900 dark:text-white">
+              <span className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white">
                 {dashboardData.totalServices}
               </span>
             </div>
-            <div className="text-sm text-gray-500">
+            <div className="text-xs sm:text-sm text-gray-500">
               Revenue: ${dashboardData.serviceRevenue.toLocaleString()}
             </div>
           </div>
 
           {/* Total Astrologers */}
-          <div className="bg-white dark:bg-gray-800 rounded-lg p-6 shadow-sm">
-            <div className="flex items-center justify-between mb-4">
+          <div className="bg-white dark:bg-gray-800 rounded-lg p-4 sm:p-6 shadow-sm">
+            <div className="flex items-center justify-between mb-3 sm:mb-4">
               <div className="flex items-center">
-                <UserCheck className="w-5 h-5 text-indigo-500 mr-2" />
-                <span className="text-sm font-medium text-gray-600 dark:text-gray-400">Total Astrologers</span>
+                <UserCheck className="w-4 h-4 sm:w-5 sm:h-5 text-indigo-500 mr-2" />
+                <span className="text-xs sm:text-sm font-medium text-gray-600 dark:text-gray-400">Total Astrologers</span>
               </div>
             </div>
             <div className="mb-2">
-              <span className="text-2xl font-bold text-gray-900 dark:text-white">
+              <span className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white">
                 {dashboardData.totalAstrologers}
               </span>
             </div>
-            <div className="text-sm text-gray-500">
+            <div className="text-xs sm:text-sm text-gray-500">
               Revenue: ${dashboardData.astrologerRevenue.toLocaleString()}
             </div>
           </div>
         </div>
 
   {/* Charts and Statistics Grid */}
-  <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8 items-stretch">
+  <div className="grid grid-cols-1 xl:grid-cols-3 gap-4 sm:gap-6 mb-6 sm:mb-8 items-stretch">
           {/* Sales Revenue (redesigned) */}
-          <div className="lg:col-span-2 bg-white dark:bg-gray-800 rounded-lg p-6 shadow-sm flex flex-col min-h-0">
-            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-4">
+          <div className="xl:col-span-2 bg-white dark:bg-gray-800 rounded-lg p-4 sm:p-6 shadow-sm flex flex-col min-h-0">
+            <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between mb-4">
               <div>
-                <h2 className="text-xl font-semibold text-gray-900 dark:text-white">Sales Revenue</h2>
-                <p className="text-sm text-gray-500">Visualize revenue over selectable ranges with quick metrics.</p>
+                <h2 className="text-lg sm:text-xl font-semibold text-gray-900 dark:text-white">Sales Revenue</h2>
+                <p className="text-xs sm:text-sm text-gray-500">Visualize revenue over selectable ranges with quick metrics.</p>
               </div>
 
-              <div className="mt-3 sm:mt-0 flex items-center space-x-3">
-                <div className="flex bg-gray-100 dark:bg-gray-700 rounded-lg p-1">
+              <div className="mt-3 lg:mt-0 flex flex-col sm:flex-row items-start sm:items-center space-y-3 sm:space-y-0 sm:space-x-3">
+                <div className="flex bg-gray-100 dark:bg-gray-700 rounded-lg p-1 w-full sm:w-auto">
                   <button
                     onClick={() => { setTimeRange('weekly'); }}
-                    className={`px-3 py-1 text-sm rounded-md transition-colors ${timeRange === 'weekly' ? 'bg-white dark:bg-gray-600 text-gray-900 dark:text-white shadow-sm' : 'text-gray-600 dark:text-gray-400'}`}
+                    className={`px-2 sm:px-3 py-1 text-xs sm:text-sm rounded-md transition-colors ${timeRange === 'weekly' ? 'bg-white dark:bg-gray-600 text-gray-900 dark:text-white shadow-sm' : 'text-gray-600 dark:text-gray-400'}`}
                   >
                     1W
                   </button>
                   <button
                     onClick={() => { setTimeRange('monthly'); setMonthRange(1); }}
-                    className={`px-3 py-1 text-sm rounded-md transition-colors ${timeRange === 'monthly' && monthRange === 1 ? 'bg-white dark:bg-gray-600 text-gray-900 dark:text-white shadow-sm' : 'text-gray-600 dark:text-gray-400'}`}
+                    className={`px-2 sm:px-3 py-1 text-xs sm:text-sm rounded-md transition-colors ${timeRange === 'monthly' && monthRange === 1 ? 'bg-white dark:bg-gray-600 text-gray-900 dark:text-white shadow-sm' : 'text-gray-600 dark:text-gray-400'}`}
                   >
                     1M
                   </button>
                   <button
                     onClick={() => { setTimeRange('monthly'); setMonthRange(3); }}
-                    className={`px-3 py-1 text-sm rounded-md transition-colors ${timeRange === 'monthly' && monthRange === 3 ? 'bg-white dark:bg-gray-600 text-gray-900 dark:text-white shadow-sm' : 'text-gray-600 dark:text-gray-400'}`}
+                    className={`px-2 sm:px-3 py-1 text-xs sm:text-sm rounded-md transition-colors ${timeRange === 'monthly' && monthRange === 3 ? 'bg-white dark:bg-gray-600 text-gray-900 dark:text-white shadow-sm' : 'text-gray-600 dark:text-gray-400'}`}
                   >
                     3M
                   </button>
                   <button
                     onClick={() => { setTimeRange('monthly'); setMonthRange(12); }}
-                    className={`px-3 py-1 text-sm rounded-md transition-colors ${timeRange === 'monthly' && monthRange === 12 ? 'bg-blue-600 text-white shadow-sm' : 'text-gray-600 dark:text-gray-400'}`}
+                    className={`px-2 sm:px-3 py-1 text-xs sm:text-sm rounded-md transition-colors ${timeRange === 'monthly' && monthRange === 12 ? 'bg-blue-600 text-white shadow-sm' : 'text-gray-600 dark:text-gray-400'}`}
                   >
                     1Y
                   </button>
@@ -416,7 +416,7 @@ export default function AdminDashboard() {
                     a.click();
                     URL.revokeObjectURL(url);
                   }}
-                  className="px-3 py-1 text-sm bg-gray-100 dark:bg-gray-700 rounded-md text-gray-700 dark:text-gray-200 hover:bg-gray-200"
+                  className="px-2 sm:px-3 py-1 text-xs sm:text-sm bg-gray-100 dark:bg-gray-700 rounded-md text-gray-700 dark:text-gray-200 hover:bg-gray-200 w-full sm:w-auto"
                 >
                   Export CSV
                 </button>
@@ -427,7 +427,7 @@ export default function AdminDashboard() {
             <div className="mb-4">
               <div className="flex items-center justify-between text-xs text-gray-500 mb-2">
                 <div>Range: {timeRange === 'monthly' ? `${monthRange} month${monthRange > 1 ? 's' : ''}` : 'Weekly'}</div>
-                <div className="text-xs text-gray-400">Drag to adjust months</div>
+                <div className="text-xs text-gray-400 hidden sm:block">Drag to adjust months</div>
               </div>
               <input
                 type="range"
@@ -441,24 +441,24 @@ export default function AdminDashboard() {
             </div>
 
             {/* Summary metrics */}
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-4">
-              <div className="p-3 bg-gray-50 dark:bg-gray-700 rounded">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4 mb-4">
+              <div className="p-2 sm:p-3 bg-gray-50 dark:bg-gray-700 rounded">
                 <div className="text-xs text-gray-500">Total Revenue</div>
-                <div className="text-lg font-semibold text-gray-900 dark:text-white">₹{(timeRange === 'monthly' ? getMonthlySlice(monthRange) : dashboardData.weeklyRevenue).reduce((s, r) => s + r.revenue, 0).toLocaleString()}</div>
+                <div className="text-sm sm:text-lg font-semibold text-gray-900 dark:text-white">₹{(timeRange === 'monthly' ? getMonthlySlice(monthRange) : dashboardData.weeklyRevenue).reduce((s, r) => s + r.revenue, 0).toLocaleString()}</div>
               </div>
-              <div className="p-3 bg-gray-50 dark:bg-gray-700 rounded">
+              <div className="p-2 sm:p-3 bg-gray-50 dark:bg-gray-700 rounded">
                 <div className="text-xs text-gray-500">Average / period</div>
-                <div className="text-lg font-semibold text-gray-900 dark:text-white">₹{Math.round((timeRange === 'monthly' ? getMonthlySlice(monthRange) : dashboardData.weeklyRevenue).reduce((s, r) => s + r.revenue, 0) / (timeRange === 'monthly' ? monthRange : (dashboardData.weeklyRevenue.length || 1))).toLocaleString()}</div>
+                <div className="text-sm sm:text-lg font-semibold text-gray-900 dark:text-white">₹{Math.round((timeRange === 'monthly' ? getMonthlySlice(monthRange) : dashboardData.weeklyRevenue).reduce((s, r) => s + r.revenue, 0) / (timeRange === 'monthly' ? monthRange : (dashboardData.weeklyRevenue.length || 1))).toLocaleString()}</div>
               </div>
-              <div className="p-3 bg-gray-50 dark:bg-gray-700 rounded">
+              <div className="p-2 sm:p-3 bg-gray-50 dark:bg-gray-700 rounded">
                 <div className="text-xs text-gray-500">Growth (vs prev)</div>
-                <div className="text-lg font-semibold text-green-600">{dashboardData.revenueGrowth}%</div>
+                <div className="text-sm sm:text-lg font-semibold text-green-600">{dashboardData.revenueGrowth}%</div>
               </div>
             </div>
 
             <div className="flex-1 min-h-0">
               {/* Main combined chart - extended */}
-              <div className="w-full h-full min-h-0">
+              <div className="w-full h-full min-h-0" style={{ minHeight: '250px' }}>
                 <ResponsiveContainer width="100%" height="100%">
                   <ComposedChart data={currentRevenueData}>
                     <CartesianGrid stroke="#f1f5f9" />
@@ -474,42 +474,44 @@ export default function AdminDashboard() {
           </div>
 
           {/* Revenue Breakdown */}
-          <div className="bg-white dark:bg-gray-800 rounded-lg p-6 shadow-sm">
-            <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-6">Revenue Breakdown</h3>
+          <div className="bg-white dark:bg-gray-800 rounded-lg p-4 sm:p-6 shadow-sm">
+            <h3 className="text-base sm:text-lg font-semibold text-gray-900 dark:text-white mb-4 sm:mb-6">Revenue Breakdown</h3>
 
-            <div className="flex items-center space-x-4">
-              <div className="w-32 h-32">
-                <ResponsiveContainer width="100%" height="100%">
-                  <PieChart>
-                    <Pie
-                      data={revenueBreakdown}
-                      cx="50%"
-                      cy="50%"
-                      innerRadius={38}
-                      outerRadius={56}
-                      paddingAngle={4}
-                      dataKey="value"
-                    >
-                      {revenueBreakdown.map((entry, idx) => (
-                        <Cell key={`cell-${idx}`} fill={entry.color} />
-                      ))}
-                    </Pie>
-                  </PieChart>
-                </ResponsiveContainer>
+            <div className="flex flex-col lg:flex-row lg:items-center lg:space-x-4">
+              <div className="w-full lg:w-32 h-32 mb-4 lg:mb-0 flex items-center justify-center">
+                <div className="w-24 h-24 sm:w-32 sm:h-32">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <PieChart>
+                      <Pie
+                        data={revenueBreakdown}
+                        cx="50%"
+                        cy="50%"
+                        innerRadius={28}
+                        outerRadius={42}
+                        paddingAngle={4}
+                        dataKey="value"
+                      >
+                        {revenueBreakdown.map((entry, idx) => (
+                          <Cell key={`cell-${idx}`} fill={entry.color} />
+                        ))}
+                      </Pie>
+                    </PieChart>
+                  </ResponsiveContainer>
+                </div>
               </div>
 
               <div className="flex-1">
-                <div className="text-sm text-gray-500 mb-2">Total Revenue</div>
-                <div className="text-2xl font-bold text-gray-900 dark:text-white">₹{(dashboardData.productRevenue + dashboardData.serviceRevenue + dashboardData.astrologerRevenue).toLocaleString()}</div>
+                <div className="text-xs sm:text-sm text-gray-500 mb-2">Total Revenue</div>
+                <div className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white">₹{(dashboardData.productRevenue + dashboardData.serviceRevenue + dashboardData.astrologerRevenue).toLocaleString()}</div>
 
                 <div className="mt-4 space-y-2">
                   {revenueBreakdown.map((r) => (
                     <div key={r.name} className="flex items-center justify-between">
                       <div className="flex items-center">
                         <div className="w-3 h-3 rounded-full mr-3" style={{ backgroundColor: r.color }}></div>
-                        <div className="text-sm text-gray-900 dark:text-white">{r.name}</div>
+                        <div className="text-xs sm:text-sm text-gray-900 dark:text-white">{r.name}</div>
                       </div>
-                      <div className="text-sm text-gray-600 dark:text-gray-300">₹{r.value.toLocaleString()}</div>
+                      <div className="text-xs sm:text-sm text-gray-600 dark:text-gray-300">₹{r.value.toLocaleString()}</div>
                     </div>
                   ))}
                 </div>
@@ -517,19 +519,19 @@ export default function AdminDashboard() {
             </div>
 
             {/* Bottom half: small KPIs + Top Contributors */}
-            <div className="mt-6 border-t border-gray-100 dark:border-gray-700 pt-4">
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-4">
-                <div className="p-3 bg-gray-50 dark:bg-gray-700 rounded">
+            <div className="mt-4 sm:mt-6 border-t border-gray-100 dark:border-gray-700 pt-4">
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 sm:gap-3 mb-4">
+                <div className="p-2 sm:p-3 bg-gray-50 dark:bg-gray-700 rounded">
                   <div className="text-xs text-gray-500">Top Segment</div>
                   <div className="text-sm font-semibold text-gray-900 dark:text-white">{topSegment.name}</div>
                   <div className="text-xs text-gray-400">₹{topSegment.value.toLocaleString()}</div>
                 </div>
-                <div className="p-3 bg-gray-50 dark:bg-gray-700 rounded">
+                <div className="p-2 sm:p-3 bg-gray-50 dark:bg-gray-700 rounded">
                   <div className="text-xs text-gray-500">Avg. Order Value</div>
                   <div className="text-sm font-semibold text-gray-900 dark:text-white">₹{avgOrderValue.toLocaleString()}</div>
                   <div className="text-xs text-gray-400">Across {dashboardData.totalOrders} orders</div>
                 </div>
-                <div className="p-3 bg-gray-50 dark:bg-gray-700 rounded">
+                <div className="p-2 sm:p-3 bg-gray-50 dark:bg-gray-700 rounded">
                   <div className="text-xs text-gray-500">Breakdown Share</div>
                   <div className="text-sm font-semibold text-gray-900 dark:text-white">{Math.round((topSegment.value / (totalBreakdown || 1)) * 100)}%</div>
                   <div className="text-xs text-gray-400">of total revenue</div>
@@ -538,20 +540,20 @@ export default function AdminDashboard() {
 
               <div>
                 <div className="flex items-center justify-between mb-3">
-                  <div className="text-sm font-medium text-gray-900 dark:text-white">Top Contributors</div>
+                  <div className="text-xs sm:text-sm font-medium text-gray-900 dark:text-white">Top Contributors</div>
                   <div className="text-xs text-gray-500">Showing top 5</div>
                 </div>
                 <div className="space-y-2">
                   {contributors.map((c, i) => (
                     <div key={i} className="flex items-center justify-between p-2 rounded hover:bg-gray-50 dark:hover:bg-gray-700">
-                      <div className="flex items-center">
-                        <Image src={c.image} alt={c.name} width={32} height={32} className="w-8 h-8 rounded mr-3 object-cover bg-gray-200 dark:bg-gray-600" onError={(e) => { e.currentTarget.src = '/placeholder.jpg'; }} />
-                        <div>
-                          <div className="text-sm font-medium text-gray-900 dark:text-white">{c.name}</div>
+                      <div className="flex items-center min-w-0 flex-1">
+                        <Image src={c.image} alt={c.name} width={32} height={32} className="w-6 h-6 sm:w-8 sm:h-8 rounded mr-2 sm:mr-3 object-cover bg-gray-200 dark:bg-gray-600 flex-shrink-0" onError={(e) => { e.currentTarget.src = '/placeholder.jpg'; }} />
+                        <div className="min-w-0 flex-1">
+                          <div className="text-xs sm:text-sm font-medium text-gray-900 dark:text-white truncate">{c.name}</div>
                           <div className="text-xs text-gray-500">{c.type}</div>
                         </div>
                       </div>
-                      <div className="text-sm font-semibold text-gray-900 dark:text-white">₹{c.revenue.toLocaleString()}</div>
+                      <div className="text-xs sm:text-sm font-semibold text-gray-900 dark:text-white ml-2">₹{c.revenue.toLocaleString()}</div>
                     </div>
                   ))}
                 </div>
@@ -561,12 +563,12 @@ export default function AdminDashboard() {
         </div>
 
         {/* Bottom Section */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+        <div className="grid grid-cols-1 xl:grid-cols-2 gap-4 sm:gap-6 mb-6 sm:mb-8">
           {/* Top Astrologers */}
-          <div className="bg-white dark:bg-gray-800 rounded-lg p-6 shadow-sm">
-            <div className="flex items-center justify-between mb-6">
-              <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Top Astrologers</h3>
-              <button className="text-sm text-blue-600 hover:text-blue-800">See All</button>
+          <div className="bg-white dark:bg-gray-800 rounded-lg p-4 sm:p-6 shadow-sm">
+            <div className="flex items-center justify-between mb-4 sm:mb-6">
+              <h3 className="text-base sm:text-lg font-semibold text-gray-900 dark:text-white">Top Astrologers</h3>
+              <button className="text-xs sm:text-sm text-blue-600 hover:text-blue-800">See All</button>
             </div>
             
             <div className="overflow-x-auto">
@@ -574,16 +576,16 @@ export default function AdminDashboard() {
                 <thead>
                   <tr className="text-left">
                     <th className="text-xs font-medium text-gray-500 uppercase tracking-wider pb-3">No</th>
-                    <th className="text-xs font-medium text-gray-500 uppercase tracking-wider pb-3">Astrologer Name</th>
-                    <th className="text-xs font-medium text-gray-500 uppercase tracking-wider pb-3">Review</th>
-                    <th className="text-xs font-medium text-gray-500 uppercase tracking-wider pb-3">Consultations</th>
+                    <th className="text-xs font-medium text-gray-500 uppercase tracking-wider pb-3">Name</th>
+                    <th className="text-xs font-medium text-gray-500 uppercase tracking-wider pb-3 hidden sm:table-cell">Review</th>
+                    <th className="text-xs font-medium text-gray-500 uppercase tracking-wider pb-3 hidden md:table-cell">Consultations</th>
                     <th className="text-xs font-medium text-gray-500 uppercase tracking-wider pb-3">Revenue</th>
                   </tr>
                 </thead>
                 <tbody className="space-y-3">
                   {dashboardData.topAstrologers.map((astrologer, index) => (
                     <tr key={astrologer.id} className="border-b border-gray-100 dark:border-gray-700">
-                      <td className="py-3 text-sm text-gray-900 dark:text-white">{index + 1}</td>
+                      <td className="py-3 text-xs sm:text-sm text-gray-900 dark:text-white">{index + 1}</td>
                       <td className="py-3">
                         <div className="flex items-center">
                           <Image 
@@ -591,22 +593,28 @@ export default function AdminDashboard() {
                             alt={astrologer.name}
                             width={32}
                             height={32}
-                            className="w-8 h-8 bg-gray-200 dark:bg-gray-600 rounded-full mr-3 object-cover"
+                            className="w-6 h-6 sm:w-8 sm:h-8 bg-gray-200 dark:bg-gray-600 rounded-full mr-2 sm:mr-3 object-cover flex-shrink-0"
                             onError={(e) => {
                               e.currentTarget.src = '/placeholder.jpg';
                             }}
                           />
-                          <span className="text-sm font-medium text-gray-900 dark:text-white">{astrologer.name}</span>
+                          <div className="min-w-0">
+                            <span className="text-xs sm:text-sm font-medium text-gray-900 dark:text-white truncate block">{astrologer.name}</span>
+                            <div className="sm:hidden flex items-center mt-1">
+                              <Star className="w-3 h-3 text-yellow-400 mr-1" />
+                              <span className="text-xs text-gray-900 dark:text-white">{astrologer.review}</span>
+                            </div>
+                          </div>
                         </div>
                       </td>
-                      <td className="py-3">
+                      <td className="py-3 hidden sm:table-cell">
                         <div className="flex items-center">
                           <Star className="w-4 h-4 text-yellow-400 mr-1" />
                           <span className="text-sm text-gray-900 dark:text-white">{astrologer.review}</span>
                         </div>
                       </td>
-                      <td className="py-3 text-sm text-gray-900 dark:text-white">{astrologer.consultations}</td>
-                      <td className="py-3 text-sm font-medium text-gray-900 dark:text-white">${astrologer.revenue.toLocaleString()}</td>
+                      <td className="py-3 text-sm text-gray-900 dark:text-white hidden md:table-cell">{astrologer.consultations}</td>
+                      <td className="py-3 text-xs sm:text-sm font-medium text-gray-900 dark:text-white">${astrologer.revenue.toLocaleString()}</td>
                     </tr>
                   ))}
                 </tbody>
@@ -615,22 +623,22 @@ export default function AdminDashboard() {
           </div>
 
           {/* Distribution Maps */}
-          <div className="bg-white dark:bg-gray-800 rounded-lg p-6 shadow-sm">
-            <div className="flex items-center justify-between mb-6">
-              <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Geographic Distribution</h3>
+          <div className="bg-white dark:bg-gray-800 rounded-lg p-4 sm:p-6 shadow-sm">
+            <div className="flex items-center justify-between mb-4 sm:mb-6">
+              <h3 className="text-base sm:text-lg font-semibold text-gray-900 dark:text-white">Geographic Distribution</h3>
               <div className="flex items-center space-x-2">
-                <span className="text-xs text-gray-500">
+                <span className="text-xs text-gray-500 hidden sm:block">
                   {selectedRegion ? `Selected: ${selectedRegion}` : 'Click regions for details'}
                 </span>
               </div>
             </div>
             
             {/* Interactive Geographic Distribution */}
-            <div className="space-y-4">
+            <div className="space-y-3 sm:space-y-4">
               {dashboardData.geographicData.map((region, index) => (
                 <div 
                   key={index} 
-                  className={`flex items-center justify-between p-3 rounded-lg cursor-pointer transition-all duration-200 ${
+                  className={`flex items-center justify-between p-2 sm:p-3 rounded-lg cursor-pointer transition-all duration-200 ${
                     selectedRegion === region.region 
                       ? 'bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-700' 
                       : 'hover:bg-gray-50 dark:hover:bg-gray-700'
@@ -639,13 +647,13 @@ export default function AdminDashboard() {
                     selectedRegion === region.region ? null : region.region
                   )}
                 >
-                  <div className="flex items-center">
+                  <div className="flex items-center min-w-0 flex-1">
                     <div 
-                      className="w-4 h-4 rounded-full mr-3 transition-transform duration-200" 
+                      className="w-3 h-3 sm:w-4 sm:h-4 rounded-full mr-2 sm:mr-3 transition-transform duration-200 flex-shrink-0" 
                       style={{ backgroundColor: region.color }}
                     ></div>
-                    <div>
-                      <span className={`text-sm font-medium transition-colors duration-200 ${
+                    <div className="min-w-0 flex-1">
+                      <span className={`text-xs sm:text-sm font-medium transition-colors duration-200 block truncate ${
                         selectedRegion === region.region 
                           ? 'text-blue-700 dark:text-blue-300' 
                           : 'text-gray-900 dark:text-white'
@@ -659,8 +667,8 @@ export default function AdminDashboard() {
                       )}
                     </div>
                   </div>
-                  <div className="flex items-center space-x-3">
-                    <div className="w-20 h-3 bg-gray-200 dark:bg-gray-700 rounded-full">
+                  <div className="flex items-center space-x-2 sm:space-x-3 flex-shrink-0">
+                    <div className="w-16 sm:w-20 h-2 sm:h-3 bg-gray-200 dark:bg-gray-700 rounded-full">
                       <div 
                         className="h-full rounded-full transition-all duration-500" 
                         style={{ 
@@ -669,7 +677,7 @@ export default function AdminDashboard() {
                         }}
                       ></div>
                     </div>
-                    <span className={`text-sm font-medium min-w-[40px] transition-colors duration-200 ${
+                    <span className={`text-xs sm:text-sm font-medium min-w-[30px] sm:min-w-[40px] transition-colors duration-200 ${
                       selectedRegion === region.region 
                         ? 'text-blue-700 dark:text-blue-300' 
                         : 'text-gray-900 dark:text-white'
@@ -683,13 +691,13 @@ export default function AdminDashboard() {
           </div>
         </div>
 
-        {/* Top Services & Astrologers */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        {/* Top Services & Products */}
+        <div className="grid grid-cols-1 xl:grid-cols-2 gap-4 sm:gap-6">
           {/* Top Services */}
-          <div className="bg-white dark:bg-gray-800 rounded-lg p-6 shadow-sm">
-            <div className="flex items-center justify-between mb-6">
-              <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Top Services</h3>
-              <button className="text-sm text-blue-600 hover:text-blue-800">See All</button>
+          <div className="bg-white dark:bg-gray-800 rounded-lg p-4 sm:p-6 shadow-sm">
+            <div className="flex items-center justify-between mb-4 sm:mb-6">
+              <h3 className="text-base sm:text-lg font-semibold text-gray-900 dark:text-white">Top Services</h3>
+              <button className="text-xs sm:text-sm text-blue-600 hover:text-blue-800">See All</button>
             </div>
             
             <div className="overflow-x-auto">
@@ -697,16 +705,16 @@ export default function AdminDashboard() {
                 <thead>
                   <tr className="text-left">
                     <th className="text-xs font-medium text-gray-500 uppercase tracking-wider pb-3">No</th>
-                    <th className="text-xs font-medium text-gray-500 uppercase tracking-wider pb-3">Service Name</th>
-                    <th className="text-xs font-medium text-gray-500 uppercase tracking-wider pb-3">Review</th>
-                    <th className="text-xs font-medium text-gray-500 uppercase tracking-wider pb-3">Bookings</th>
+                    <th className="text-xs font-medium text-gray-500 uppercase tracking-wider pb-3">Name</th>
+                    <th className="text-xs font-medium text-gray-500 uppercase tracking-wider pb-3 hidden sm:table-cell">Review</th>
+                    <th className="text-xs font-medium text-gray-500 uppercase tracking-wider pb-3 hidden md:table-cell">Bookings</th>
                     <th className="text-xs font-medium text-gray-500 uppercase tracking-wider pb-3">Revenue</th>
                   </tr>
                 </thead>
                 <tbody className="space-y-3">
                   {dashboardData.topServices.map((service, index) => (
                     <tr key={service.id} className="border-b border-gray-100 dark:border-gray-700">
-                      <td className="py-3 text-sm text-gray-900 dark:text-white">{index + 1}</td>
+                      <td className="py-3 text-xs sm:text-sm text-gray-900 dark:text-white">{index + 1}</td>
                       <td className="py-3">
                         <div className="flex items-center">
                           <Image 
@@ -714,22 +722,28 @@ export default function AdminDashboard() {
                             alt={service.name}
                             width={32}
                             height={32}
-                            className="w-8 h-8 bg-gray-200 dark:bg-gray-600 rounded mr-3 object-cover"
+                            className="w-6 h-6 sm:w-8 sm:h-8 bg-gray-200 dark:bg-gray-600 rounded mr-2 sm:mr-3 object-cover flex-shrink-0"
                             onError={(e) => {
                               e.currentTarget.src = '/placeholder.jpg';
                             }}
                           />
-                          <span className="text-sm font-medium text-gray-900 dark:text-white">{service.name}</span>
+                          <div className="min-w-0">
+                            <span className="text-xs sm:text-sm font-medium text-gray-900 dark:text-white break-words whitespace-normal block">{service.name}</span>
+                            <div className="sm:hidden flex items-center mt-1">
+                              <Star className="w-3 h-3 text-yellow-400 mr-1" />
+                              <span className="text-xs text-gray-900 dark:text-white">{service.review}</span>
+                            </div>
+                          </div>
                         </div>
                       </td>
-                      <td className="py-3">
+                      <td className="py-3 hidden sm:table-cell">
                         <div className="flex items-center">
                           <Star className="w-4 h-4 text-yellow-400 mr-1" />
                           <span className="text-sm text-gray-900 dark:text-white">{service.review}</span>
                         </div>
                       </td>
-                      <td className="py-3 text-sm text-gray-900 dark:text-white">{service.bookings}</td>
-                      <td className="py-3 text-sm font-medium text-gray-900 dark:text-white">${service.revenue.toLocaleString()}</td>
+                      <td className="py-3 text-sm text-gray-900 dark:text-white hidden md:table-cell">{service.bookings}</td>
+                      <td className="py-3 text-xs sm:text-sm font-medium text-gray-900 dark:text-white">${service.revenue.toLocaleString()}</td>
                     </tr>
                   ))}
                 </tbody>
@@ -738,10 +752,10 @@ export default function AdminDashboard() {
           </div>
 
           {/* Top Products */}
-          <div className="bg-white dark:bg-gray-800 rounded-lg p-6 shadow-sm">
-            <div className="flex items-center justify-between mb-6">
-              <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Top Products</h3>
-              <button className="text-sm text-blue-600 hover:text-blue-800">See All</button>
+          <div className="bg-white dark:bg-gray-800 rounded-lg p-4 sm:p-6 shadow-sm">
+            <div className="flex items-center justify-between mb-4 sm:mb-6">
+              <h3 className="text-base sm:text-lg font-semibold text-gray-900 dark:text-white">Top Products</h3>
+              <button className="text-xs sm:text-sm text-blue-600 hover:text-blue-800">See All</button>
             </div>
             
             <div className="overflow-x-auto">
@@ -749,16 +763,16 @@ export default function AdminDashboard() {
                 <thead>
                   <tr className="text-left">
                     <th className="text-xs font-medium text-gray-500 uppercase tracking-wider pb-3">No</th>
-                    <th className="text-xs font-medium text-gray-500 uppercase tracking-wider pb-3">Product Name</th>
-                    <th className="text-xs font-medium text-gray-500 uppercase tracking-wider pb-3">Review</th>
-                    <th className="text-xs font-medium text-gray-500 uppercase tracking-wider pb-3">Sold</th>
+                    <th className="text-xs font-medium text-gray-500 uppercase tracking-wider pb-3">Name</th>
+                    <th className="text-xs font-medium text-gray-500 uppercase tracking-wider pb-3 hidden sm:table-cell">Review</th>
+                    <th className="text-xs font-medium text-gray-500 uppercase tracking-wider pb-3 hidden md:table-cell">Sold</th>
                     <th className="text-xs font-medium text-gray-500 uppercase tracking-wider pb-3">Profit</th>
                   </tr>
                 </thead>
                 <tbody className="space-y-3">
                   {dashboardData.topProducts.map((product, index) => (
                     <tr key={product.id} className="border-b border-gray-100 dark:border-gray-700">
-                      <td className="py-3 text-sm text-gray-900 dark:text-white">{index + 1}</td>
+                      <td className="py-3 text-xs sm:text-sm text-gray-900 dark:text-white">{index + 1}</td>
                       <td className="py-3">
                         <div className="flex items-center">
                           <Image 
@@ -766,22 +780,28 @@ export default function AdminDashboard() {
                             alt={product.name}
                             width={32}
                             height={32}
-                            className="w-8 h-8 bg-gray-200 dark:bg-gray-600 rounded mr-3 object-cover"
+                            className="w-6 h-6 sm:w-8 sm:h-8 bg-gray-200 dark:bg-gray-600 rounded mr-2 sm:mr-3 object-cover flex-shrink-0"
                             onError={(e) => {
                               e.currentTarget.src = '/placeholder.jpg';
                             }}
                           />
-                          <span className="text-sm font-medium text-gray-900 dark:text-white">{product.name}</span>
+                          <div className="min-w-0">
+                            <span className="text-xs sm:text-sm font-medium text-gray-900 dark:text-white truncate block">{product.name}</span>
+                            <div className="sm:hidden flex items-center mt-1">
+                              <Star className="w-3 h-3 text-yellow-400 mr-1" />
+                              <span className="text-xs text-gray-900 dark:text-white">{product.review}</span>
+                            </div>
+                          </div>
                         </div>
                       </td>
-                      <td className="py-3">
+                      <td className="py-3 hidden sm:table-cell">
                         <div className="flex items-center">
                           <Star className="w-4 h-4 text-yellow-400 mr-1" />
                           <span className="text-sm text-gray-900 dark:text-white">{product.review}</span>
                         </div>
                       </td>
-                      <td className="py-3 text-sm text-gray-900 dark:text-white">{product.sold}</td>
-                      <td className="py-3 text-sm font-medium text-gray-900 dark:text-white">${product.profit.toLocaleString()}</td>
+                      <td className="py-3 text-sm text-gray-900 dark:text-white hidden md:table-cell">{product.sold}</td>
+                      <td className="py-3 text-xs sm:text-sm font-medium text-gray-900 dark:text-white">${product.profit.toLocaleString()}</td>
                     </tr>
                   ))}
                 </tbody>

@@ -12,37 +12,37 @@ type SubcategoryModalProps = {
 const SubcategoryModal: React.FC<SubcategoryModalProps> = ({ parentCategory, onClose, onCreate, isSubmitting = false }) => {
   const [subName, setSubName] = useState("");
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-30">
-      <div className="bg-white dark:bg-gray-900 rounded-lg shadow-lg p-6 w-full max-w-sm">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-30 p-4">
+      <div className="bg-white dark:bg-gray-900 rounded-lg shadow-lg p-4 sm:p-6 w-full max-w-md">
         <h2 className="text-lg font-bold mb-4 text-gray-900 dark:text-gray-100">Add New Subcategory</h2>
         <div className="mb-4">
-          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Subcategory Name</label>
+          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Subcategory Name</label>
           <input
             type="text"
-            className="w-full border px-3 py-2 rounded text-sm bg-white dark:bg-gray-800 text-black dark:text-white"
+            className="w-full border border-gray-300 dark:border-gray-600 px-3 py-2.5 rounded-lg text-sm bg-white dark:bg-gray-800 text-black dark:text-white focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
             placeholder="Subcategory name"
             value={subName}
             onChange={e => setSubName(e.target.value)}
           />
         </div>
-        <div className="mb-4">
-          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Parent Category</label>
+        <div className="mb-6">
+          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Parent Category</label>
           <input
             type="text"
-            className="w-full border px-3 py-2 rounded text-sm bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400"
+            className="w-full border border-gray-300 dark:border-gray-600 px-3 py-2.5 rounded-lg text-sm bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400"
             value={parentCategory}
             disabled
           />
         </div>
-        <div className="flex justify-end gap-2 mt-6">
+        <div className="flex flex-col sm:flex-row justify-end gap-3 sm:gap-2">
           <button
-            className="px-4 py-2 rounded bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-200 font-semibold"
+            className="w-full sm:w-auto px-4 py-2.5 rounded-lg bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-200 font-semibold order-2 sm:order-1 hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors"
             onClick={onClose}
           >
             Cancel
           </button>
           <button
-            className={`px-4 py-2 rounded font-semibold transition-colors ${
+            className={`w-full sm:w-auto px-4 py-2.5 rounded-lg font-semibold transition-colors order-1 sm:order-2 ${
               isSubmitting || !subName.trim()
                 ? 'bg-gray-400 text-gray-200 cursor-not-allowed'
                 : 'bg-purple-600 hover:bg-purple-700 text-white'
@@ -53,7 +53,7 @@ const SubcategoryModal: React.FC<SubcategoryModalProps> = ({ parentCategory, onC
             disabled={isSubmitting || !subName.trim()}
           >
             {isSubmitting ? (
-              <div className="flex items-center">
+              <div className="flex items-center justify-center">
                 <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2"></div>
                 Creating...
               </div>
@@ -115,27 +115,27 @@ const SubcategoryList: React.FC<{
     <>
       {subcategories.map((sub) => (
         <React.Fragment key={sub.id}>
-          <div className="flex items-center gap-2 pl-8 py-2 border-l border-gray-200 dark:border-gray-700 bg-purple-50 dark:bg-purple-900">
-            <span className="font-bold text-gray-900 dark:text-gray-100">{sub.name}</span>
+          <div className="flex items-center gap-2 pl-6 md:pl-8 py-2 border-l border-gray-200 dark:border-gray-700 bg-purple-50 dark:bg-purple-900">
+            <span className="font-bold text-gray-900 dark:text-gray-100 text-sm md:text-base">{sub.name}</span>
             <button
               className="bg-purple-100 text-purple-700 px-2 py-1 rounded text-xs ml-2"
               onClick={() => setShowModal(true)}
             >
-              + Subcategory
+              + Sub
             </button>
             <button 
-              className="p-2 rounded hover:bg-gray-100 dark:hover:bg-gray-700 ml-2" 
+              className="p-1.5 md:p-2 rounded hover:bg-gray-100 dark:hover:bg-gray-700 ml-2" 
               title="Edit"
               onClick={() => onEditSubcategory(sub)}
             >
-              <Edit className="w-4 h-4 text-gray-600 dark:text-gray-300" />
+              <Edit className="w-3.5 h-3.5 md:w-4 md:h-4 text-gray-600 dark:text-gray-300" />
             </button>
             <button 
-              className="p-2 rounded hover:bg-gray-100 dark:hover:bg-gray-700" 
+              className="p-1.5 md:p-2 rounded hover:bg-gray-100 dark:hover:bg-gray-700" 
               title="Delete"
               onClick={() => onDeleteSubcategory(sub.id)}
             >
-              <Trash2 className="w-4 h-4 text-gray-600 dark:text-gray-300" />
+              <Trash2 className="w-3.5 h-3.5 md:w-4 md:h-4 text-gray-600 dark:text-gray-300" />
             </button>
           </div>
           {showModal && (
@@ -203,16 +203,16 @@ const CategoryModal: React.FC<{
 
   if (!open) return null;
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-30">
-      <div className="bg-white dark:bg-gray-900 rounded-lg shadow-lg p-6 w-full max-w-md">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-30 p-4">
+      <div className="bg-white dark:bg-gray-900 rounded-lg shadow-lg p-4 sm:p-6 w-full max-w-lg max-h-[90vh] overflow-y-auto">
         <h2 className="text-lg font-bold mb-4 text-gray-900 dark:text-gray-100">{isEdit ? 'Edit Category' : 'Add Category'}</h2>
         
         {/* Category Name */}
         <div className="mb-4">
-          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Category Name *</label>
+          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Category Name *</label>
           <input
             type="text"
-            className="w-full border px-3 py-2 rounded text-sm bg-white dark:bg-gray-800 text-black dark:text-white"
+            className="w-full border border-gray-300 dark:border-gray-600 px-3 py-2.5 rounded-lg text-sm bg-white dark:bg-gray-800 text-black dark:text-white focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
             value={name}
             onChange={e => setName(e.target.value)}
             placeholder="Enter category name"
@@ -221,9 +221,9 @@ const CategoryModal: React.FC<{
 
         {/* Category Description */}
         <div className="mb-4">
-          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Description</label>
+          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Description</label>
           <textarea
-            className="w-full border px-3 py-2 rounded text-sm bg-white dark:bg-gray-800 text-black dark:text-white resize-none"
+            className="w-full border border-gray-300 dark:border-gray-600 px-3 py-2.5 rounded-lg text-sm bg-white dark:bg-gray-800 text-black dark:text-white resize-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
             rows={3}
             value={description}
             onChange={e => setDescription(e.target.value)}
@@ -233,8 +233,8 @@ const CategoryModal: React.FC<{
 
         {/* Category Image */}
         <div className="mb-4">
-          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Category Image</label>
-          <div className="flex items-center space-x-4">
+          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">Category Image</label>
+          <div className="flex flex-col sm:flex-row items-center space-y-3 sm:space-y-0 sm:space-x-4">
             <div className="w-16 h-16 rounded-full bg-gray-200 dark:bg-gray-700 flex items-center justify-center overflow-hidden">
               {image ? (
                 <img
@@ -262,8 +262,8 @@ const CategoryModal: React.FC<{
 
         {/* Category Banner */}
         <div className="mb-6">
-          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Category Banner</label>
-          <div className="flex items-center space-x-4">
+          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">Category Banner</label>
+          <div className="flex flex-col sm:flex-row items-center space-y-3 sm:space-y-0 sm:space-x-4">
             <div className="w-24 h-12 rounded bg-gray-200 dark:bg-gray-700 flex items-center justify-center overflow-hidden">
               {banner ? (
                 <img
@@ -289,15 +289,15 @@ const CategoryModal: React.FC<{
           </div>
         </div>
 
-        <div className="flex justify-end gap-2 mt-6">
+        <div className="flex flex-col sm:flex-row justify-end gap-3 sm:gap-2 mt-6">
           <button
-            className="px-4 py-2 rounded bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-200 font-semibold"
+            className="w-full sm:w-auto px-4 py-2.5 rounded-lg bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-200 font-semibold order-2 sm:order-1 hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors"
             onClick={onClose}
           >
             Cancel
           </button>
           <button
-            className={`px-4 py-2 rounded font-semibold transition-colors ${
+            className={`w-full sm:w-auto px-4 py-2.5 rounded-lg font-semibold transition-colors order-1 sm:order-2 ${
               isSubmitting || !name.trim()
                 ? 'bg-gray-400 text-gray-200 cursor-not-allowed'
                 : 'bg-purple-600 hover:bg-purple-700 text-white'
@@ -306,7 +306,7 @@ const CategoryModal: React.FC<{
             disabled={isSubmitting || !name.trim()}
           >
             {isSubmitting ? (
-              <div className="flex items-center">
+              <div className="flex items-center justify-center">
                 <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2"></div>
                 {isEdit ? 'Saving...' : 'Creating...'}
               </div>
@@ -316,6 +316,181 @@ const CategoryModal: React.FC<{
           </button>
         </div>
       </div>
+    </div>
+  );
+};
+
+const CategoryCard: React.FC<{
+  category: CategoryTree;
+  onAddSubcategory: (categoryId: number, name: string) => void;
+  onEdit: (category: CategoryTree) => void;
+  onDelete: (categoryId: number) => void;
+  onEditSubcategory: (subcategory: Subcategory) => void;
+  onDeleteSubcategory: (subcategoryId: number) => void;
+  isSubmitting?: boolean;
+}> = ({ category, onAddSubcategory, onEdit, onDelete, onEditSubcategory, onDeleteSubcategory, isSubmitting = false }) => {
+  const [expanded, setExpanded] = useState(false);
+  const [showModal, setShowModal] = useState(false);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+
+  return (
+    <div className="bg-white dark:bg-gray-800 rounded-lg shadow border border-gray-200 dark:border-gray-700 overflow-hidden">
+      {/* Category Header */}
+      <div className="p-4">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center space-x-3 flex-1 min-w-0">
+            <div className="flex items-center space-x-2">
+              <div className="w-10 h-10 rounded-full bg-gray-200 dark:bg-gray-700 flex items-center justify-center overflow-hidden flex-shrink-0">
+                {category.image_url ? (
+                  <img
+                    src={category.image_url}
+                    alt={category.name}
+                    className="w-8 h-8 object-cover rounded-full"
+                  />
+                ) : (
+                  <span className="text-sm text-gray-400">📷</span>
+                )}
+              </div>
+              {category.banner_url && (
+                <div className="w-8 h-4 rounded bg-gray-200 dark:bg-gray-700 flex items-center justify-center overflow-hidden">
+                  <img
+                    src={category.banner_url}
+                    alt={`${category.name} banner`}
+                    className="w-full h-full object-cover"
+                  />
+                </div>
+              )}
+            </div>
+            <div className="flex-1 min-w-0">
+              <h3 className="font-medium text-gray-900 dark:text-gray-100 truncate">{category.name}</h3>
+              {category.description && (
+                <p className="text-sm text-gray-600 dark:text-gray-400 truncate">{category.description}</p>
+              )}
+            </div>
+          </div>
+          
+          {/* Action Buttons */}
+          <div className="flex items-center space-x-2">
+            {category.subcategories && category.subcategories.length > 0 && (
+              <button
+                className="p-2 rounded-lg bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
+                onClick={() => setExpanded(!expanded)}
+              >
+                {expanded ? <ChevronUp className="w-4 h-4 text-gray-600 dark:text-gray-300" /> : <ChevronDown className="w-4 h-4 text-gray-600 dark:text-gray-300" />}
+              </button>
+            )}
+            <button
+              className="p-2 rounded-lg bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
+              title="Edit"
+              onClick={() => onEdit(category)}
+            >
+              <Edit className="w-4 h-4 text-gray-600 dark:text-gray-300" />
+            </button>
+            <button
+              className="p-2 rounded-lg bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
+              title="Delete"
+              onClick={() => setShowDeleteModal(true)}
+            >
+              <Trash2 className="w-4 h-4 text-gray-600 dark:text-gray-300" />
+            </button>
+          </div>
+        </div>
+        
+        {/* Action Row */}
+        <div className="mt-3 flex flex-wrap gap-2">
+          <button
+            className="bg-purple-100 dark:bg-purple-900 text-purple-700 dark:text-purple-300 px-3 py-1.5 rounded-lg text-sm font-medium hover:bg-purple-200 dark:hover:bg-purple-800 transition-colors"
+            onClick={() => setShowModal(true)}
+          >
+            + Add Subcategory
+          </button>
+          {category.subcategories && category.subcategories.length > 0 && (
+            <span className="bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400 px-3 py-1.5 rounded-lg text-sm">
+              {category.subcategories.length} subcategories
+            </span>
+          )}
+        </div>
+      </div>
+
+      {/* Subcategories */}
+      {expanded && category.subcategories && category.subcategories.length > 0 && (
+        <div className="border-t border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900/50">
+          {category.subcategories.map((sub) => (
+            <div key={sub.id} className="p-3 border-b border-gray-200 dark:border-gray-700 last:border-b-0">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center space-x-3 flex-1 min-w-0">
+                  <div className="w-8 h-8 rounded-full bg-gray-200 dark:bg-gray-700 flex items-center justify-center overflow-hidden flex-shrink-0">
+                    {sub.image_url ? (
+                      <img
+                        src={sub.image_url}
+                        alt={sub.name}
+                        className="w-6 h-6 object-cover rounded-full"
+                      />
+                    ) : (
+                      <span className="text-xs text-gray-400">📷</span>
+                    )}
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <h4 className="font-medium text-gray-900 dark:text-gray-100 truncate text-sm">{sub.name}</h4>
+                    <p className="text-xs text-gray-500 dark:text-gray-400 font-mono truncate">{sub.slug}</p>
+                  </div>
+                </div>
+                <div className="flex items-center space-x-1">
+                  <button
+                    className="p-1.5 rounded bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors"
+                    title="Edit"
+                    onClick={() => onEditSubcategory(sub)}
+                  >
+                    <Edit className="w-3.5 h-3.5 text-gray-600 dark:text-gray-300" />
+                  </button>
+                  <button
+                    className="p-1.5 rounded bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors"
+                    title="Delete"
+                    onClick={() => onDeleteSubcategory(sub.id)}
+                  >
+                    <Trash2 className="w-3.5 h-3.5 text-gray-600 dark:text-gray-300" />
+                  </button>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {/* Modals */}
+      {showModal && (
+        <SubcategoryModal
+          parentCategory={category.name}
+          onClose={() => setShowModal(false)}
+          onCreate={subName => {
+            onAddSubcategory(category.id, subName);
+            setShowModal(false);
+          }}
+          isSubmitting={isSubmitting}
+        />
+      )}
+      {showDeleteModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-30 p-4">
+          <div className="bg-white dark:bg-gray-900 rounded-lg shadow-lg p-4 sm:p-6 w-full max-w-sm">
+            <h2 className="text-lg font-bold mb-4 text-gray-900 dark:text-gray-100">Delete Category</h2>
+            <p className="mb-6 text-gray-700 dark:text-gray-300">Are you sure you want to delete this category?</p>
+            <div className="flex flex-col sm:flex-row justify-end gap-3 sm:gap-2">
+              <button
+                className="w-full sm:w-auto px-4 py-2 rounded bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-200 font-semibold order-2 sm:order-1"
+                onClick={() => setShowDeleteModal(false)}
+              >
+                Cancel
+              </button>
+              <button
+                className="w-full sm:w-auto px-4 py-2 rounded bg-red-600 hover:bg-red-700 text-white font-semibold order-1 sm:order-2"
+                onClick={() => { setShowDeleteModal(false); onDelete(category.id); }}
+              >
+                Confirm Delete
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
@@ -336,32 +511,32 @@ const CategoryRow: React.FC<{
   return (
     <>
       <tr className="border-b border-gray-200 dark:border-gray-700 hover:bg-purple-50 dark:hover:bg-purple-900 transition-colors align-middle h-14">
-        <td className="align-middle px-6 py-4">
-          <div className="flex items-center gap-3">
+        <td className="align-middle px-4 md:px-6 py-4">
+          <div className="flex items-center gap-2 md:gap-3">
             <button
-              className="p-2 rounded hover:bg-gray-100 dark:hover:bg-gray-700"
+              className="p-1.5 md:p-2 rounded hover:bg-gray-100 dark:hover:bg-gray-700"
               aria-label="Expand"
               onClick={() => setExpanded(e => !e)}
               disabled={!category.subcategories || category.subcategories.length === 0}
             >
               {category.subcategories && category.subcategories.length > 0 ? (
-                expanded ? <ChevronUp className="w-4 h-4 text-gray-600 dark:text-gray-300" /> : <ChevronDown className="w-4 h-4 text-gray-600 dark:text-gray-300" />
-              ) : <span className="w-4" />}
+                expanded ? <ChevronUp className="w-3.5 h-3.5 md:w-4 md:h-4 text-gray-600 dark:text-gray-300" /> : <ChevronDown className="w-3.5 h-3.5 md:w-4 md:h-4 text-gray-600 dark:text-gray-300" />
+              ) : <span className="w-3.5 md:w-4" />}
             </button>
             <div className="flex items-center space-x-2">
-              <div className="w-8 h-8 rounded-full bg-gray-200 dark:bg-gray-700 flex items-center justify-center overflow-hidden">
+              <div className="w-6 h-6 md:w-8 md:h-8 rounded-full bg-gray-200 dark:bg-gray-700 flex items-center justify-center overflow-hidden">
                 {category.image_url ? (
                   <img
                     src={category.image_url}
                     alt={category.name}
-                    className="w-6 h-6 object-cover rounded-full"
+                    className="w-4 h-4 md:w-6 md:h-6 object-cover rounded-full"
                   />
                 ) : (
-                  <span className="text-sm text-gray-400">📷</span>
+                  <span className="text-xs md:text-sm text-gray-400">📷</span>
                 )}
               </div>
               {category.banner_url && (
-                <div className="w-6 h-3 rounded bg-gray-200 dark:bg-gray-700 flex items-center justify-center overflow-hidden">
+                <div className="w-4 h-2 md:w-6 md:h-3 rounded bg-gray-200 dark:bg-gray-700 flex items-center justify-center overflow-hidden">
                   <img
                     src={category.banner_url}
                     alt={`${category.name} banner`}
@@ -370,22 +545,22 @@ const CategoryRow: React.FC<{
                 </div>
               )}
             </div>
-            <span className="font-medium text-gray-900 dark:text-gray-100">{category.name}</span>
+            <span className="font-medium text-gray-900 dark:text-gray-100 text-sm md:text-base">{category.name}</span>
             <button
-              className="bg-purple-100 text-purple-700 px-2 py-1 rounded text-xs ml-3"
+              className="bg-purple-100 text-purple-700 px-2 py-1 rounded text-xs ml-2 md:ml-3 hover:bg-purple-200 transition-colors"
               onClick={() => setShowModal(true)}
             >
-              + Subcategory
+              + Sub
             </button>
           </div>
         </td>
-        <td className="align-middle px-6 py-4 text-center">
-          <div className="flex gap-2 justify-center items-center">
-            <button className="p-2 rounded hover:bg-gray-100 dark:hover:bg-gray-700" title="Edit" onClick={() => onEdit(category)}>
-              <Edit className="w-4 h-4 text-gray-600 dark:text-gray-300" />
+        <td className="align-middle px-4 md:px-6 py-4 text-center">
+          <div className="flex gap-1 md:gap-2 justify-center items-center">
+            <button className="p-1.5 md:p-2 rounded hover:bg-gray-100 dark:hover:bg-gray-700" title="Edit" onClick={() => onEdit(category)}>
+              <Edit className="w-3.5 h-3.5 md:w-4 md:h-4 text-gray-600 dark:text-gray-300" />
             </button>
-            <button className="p-2 rounded hover:bg-gray-100 dark:hover:bg-gray-700" title="Delete" onClick={() => setShowDeleteModal(true)}>
-              <Trash2 className="w-4 h-4 text-gray-600 dark:text-gray-300" />
+            <button className="p-1.5 md:p-2 rounded hover:bg-gray-100 dark:hover:bg-gray-700" title="Delete" onClick={() => setShowDeleteModal(true)}>
+              <Trash2 className="w-3.5 h-3.5 md:w-4 md:h-4 text-gray-600 dark:text-gray-300" />
             </button>
           </div>
         </td>
@@ -687,22 +862,54 @@ const CategoriesPage: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-white dark:bg-gray-900 p-6">
-      <div className="flex justify-between items-center mb-8">
-        <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">Categories</h1>
+    <div className="min-h-screen bg-white dark:bg-gray-900 p-3 sm:p-6">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6 sm:mb-8">
+        <h1 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-gray-100">Categories</h1>
         <button
-          className="bg-purple-600 hover:bg-purple-700 text-white font-semibold px-5 py-2 rounded-lg shadow transition-colors"
+          className="w-full sm:w-auto bg-purple-600 hover:bg-purple-700 text-white font-semibold px-4 sm:px-5 py-2.5 sm:py-2 rounded-lg shadow transition-colors flex items-center justify-center"
           onClick={() => setShowAddModal(true)}
         >
-          + Add Category
+          <span className="text-sm sm:text-base">+ Add Category</span>
         </button>
       </div>
-      <div className="bg-white dark:bg-gray-800 rounded-lg shadow border border-gray-200 dark:border-gray-700">
+      
+      {/* Mobile Card Layout */}
+      <div className="md:hidden space-y-4">
+        {loading ? (
+          <div className="flex items-center justify-center py-12">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-purple-600"></div>
+            <span className="ml-3 text-gray-600">Loading categories...</span>
+          </div>
+        ) : categories.length === 0 ? (
+          <div className="text-center py-12">
+            <p className="text-gray-500">No categories found. Create your first category!</p>
+          </div>
+        ) : (
+          categories.map((cat) => (
+            <CategoryCard
+              key={cat.id}
+              category={cat}
+              onAddSubcategory={handleAddSubcategory}
+              onEdit={handleEditCategory}
+              onDelete={(categoryId) => {
+                setDeleteCategoryId(categoryId);
+                setShowDeleteModal(true);
+              }}
+              onEditSubcategory={handleEditSubcategory}
+              onDeleteSubcategory={handleDeleteSubcategory}
+              isSubmitting={isSubmitting}
+            />
+          ))
+        )}
+      </div>
+
+      {/* Tablet and Desktop Table Layout */}
+      <div className="hidden md:block bg-white dark:bg-gray-800 rounded-lg shadow border border-gray-200 dark:border-gray-700 overflow-x-auto">
         <table className="w-full text-left">
           <thead>
             <tr className="border-b border-gray-200 dark:border-gray-700 align-middle h-14">
-              <th className="px-6 py-4 font-semibold text-gray-700 dark:text-gray-200 align-middle">NAME</th>
-              <th className="px-6 py-4 font-semibold text-gray-700 dark:text-gray-200 align-middle text-center">ACTIONS</th>
+              <th className="px-4 md:px-6 py-4 font-semibold text-gray-700 dark:text-gray-200 align-middle text-sm md:text-base">NAME</th>
+              <th className="px-4 md:px-6 py-4 font-semibold text-gray-700 dark:text-gray-200 align-middle text-center text-sm md:text-base">ACTIONS</th>
             </tr>
           </thead>
           <tbody>
@@ -723,11 +930,11 @@ const CategoriesPage: React.FC = () => {
               </tr>
             ) : (
               categories.map((cat) => (
-              <CategoryRow
+                <CategoryRow
                   key={cat.id}
-                category={cat}
-                onAddSubcategory={handleAddSubcategory}
-                onEdit={handleEditCategory}
+                  category={cat}
+                  onAddSubcategory={handleAddSubcategory}
+                  onEdit={handleEditCategory}
                   onDelete={(categoryId) => {
                     setDeleteCategoryId(categoryId);
                     setShowDeleteModal(true);
@@ -741,6 +948,7 @@ const CategoriesPage: React.FC = () => {
           </tbody>
         </table>
       </div>
+      
       {/* Add Category Modal */}
       <CategoryModal
         open={showAddModal}
@@ -762,19 +970,19 @@ const CategoriesPage: React.FC = () => {
       />
       {/* Delete Category Modal */}
       {showDeleteModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-30">
-          <div className="bg-white dark:bg-gray-900 rounded-lg shadow-lg p-6 w-full max-w-sm">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-30 p-4">
+          <div className="bg-white dark:bg-gray-900 rounded-lg shadow-lg p-4 sm:p-6 w-full max-w-sm">
             <h2 className="text-lg font-bold mb-4 text-gray-900 dark:text-gray-100">Delete Category</h2>
             <p className="mb-6 text-gray-700 dark:text-gray-300">Are you sure you want to delete this category?</p>
-            <div className="flex justify-end gap-2 mt-6">
+            <div className="flex flex-col sm:flex-row justify-end gap-3 sm:gap-2">
               <button
-                className="px-4 py-2 rounded bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-200 font-semibold"
+                className="w-full sm:w-auto px-4 py-2.5 rounded-lg bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-200 font-semibold order-2 sm:order-1 hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors"
                 onClick={() => setShowDeleteModal(false)}
               >
                 Cancel
               </button>
               <button
-                className="px-4 py-2 rounded bg-red-600 hover:bg-red-700 text-white font-semibold"
+                className="w-full sm:w-auto px-4 py-2.5 rounded-lg bg-red-600 hover:bg-red-700 text-white font-semibold order-1 sm:order-2 transition-colors"
                 onClick={() => deleteCategoryId && handleDeleteCategory(deleteCategoryId)}
               >
                 Confirm Delete

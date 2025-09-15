@@ -1,33 +1,33 @@
 'use client';
 
-import { Search, Filter, MoreVertical } from 'lucide-react';
+import { Search, Filter, MoreVertical, Phone, Mail, Calendar } from 'lucide-react';
 
 export default function ClientsPage() {
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 md:space-y-6 p-4 md:p-6">
       {/* Header */}
       <div className="flex justify-between items-center">
-        <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Clients</h2>
+        <h2 className="text-xl md:text-2xl font-bold text-gray-900 dark:text-white">Clients</h2>
       </div>
 
       {/* Search and Filter */}
-      <div className="flex gap-4">
+      <div className="flex flex-col sm:flex-row gap-3 md:gap-4">
         <div className="flex-1 relative">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 dark:text-gray-500 w-5 h-5" />
+          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 dark:text-gray-500 w-4 h-4 md:w-5 md:h-5" />
           <input
             type="text"
             placeholder="Search clients..."
-            className="w-full pl-10 pr-4 py-2 border border-gray-300 dark:border-[#334155] rounded-lg bg-white dark:bg-[#0B1120] text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-purple-500"
+            className="w-full pl-9 md:pl-10 pr-4 py-2 md:py-2 text-sm md:text-base border border-gray-300 dark:border-[#334155] rounded-lg bg-white dark:bg-[#0B1120] text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-purple-500"
           />
         </div>
-        <button className="flex items-center gap-2 px-4 py-2 border border-gray-300 dark:border-[#334155] rounded-lg hover:bg-gray-50 dark:hover:bg-[#1e293b] text-gray-800 dark:text-gray-100">
-          <Filter className="w-5 h-5" />
-          Filter
+        <button className="flex items-center justify-center gap-2 px-3 md:px-4 py-2 border border-gray-300 dark:border-[#334155] rounded-lg hover:bg-gray-50 dark:hover:bg-[#1e293b] text-gray-800 dark:text-gray-100 text-sm md:text-base whitespace-nowrap">
+          <Filter className="w-4 h-4 md:w-5 md:h-5" />
+          <span className="hidden sm:inline">Filter</span>
         </button>
       </div>
 
-      {/* Clients Table */}
-      <div className="bg-white dark:bg-[#0B1120] rounded-lg shadow-sm overflow-hidden border border-gray-200 dark:border-[#1f2937]">
+      {/* Clients Table - Desktop */}
+      <div className="hidden lg:block bg-white dark:bg-[#0B1120] rounded-lg shadow-sm overflow-hidden border border-gray-200 dark:border-[#1f2937]">
         <table className="w-full">
           <thead className="bg-gray-50 dark:bg-[#1e293b]">
             <tr>
@@ -110,6 +110,76 @@ export default function ClientsPage() {
             ))}
           </tbody>
         </table>
+      </div>
+
+      {/* Clients Cards - Mobile and Tablet */}
+      <div className="lg:hidden space-y-3">
+        {[
+          {
+            name: 'Rahul Sharma',
+            email: 'rahul@example.com',
+            phone: '+91 98765 43210',
+            status: 'Active',
+            joined: 'Jan 15, 2024',
+          },
+          {
+            name: 'Priya Patel',
+            email: 'priya@example.com',
+            phone: '+91 98765 43211',
+            status: 'Active',
+            joined: 'Jan 20, 2024',
+          },
+          {
+            name: 'Amit Kumar',
+            email: 'amit@example.com',
+            phone: '+91 98765 43212',
+            status: 'Inactive',
+            joined: 'Feb 1, 2024',
+          },
+        ].map((client, index) => (
+          <div key={index} className="bg-white dark:bg-[#0B1120] rounded-lg shadow-sm border border-gray-200 dark:border-[#1f2937] p-4">
+            <div className="flex items-start justify-between mb-3">
+              <div className="flex items-center space-x-3">
+                <div className="h-12 w-12 rounded-full bg-gray-200 dark:bg-gray-700 flex items-center justify-center">
+                  <span className="text-gray-600 dark:text-gray-300 font-medium text-lg">
+                    {client.name.charAt(0)}
+                  </span>
+                </div>
+                <div>
+                  <h3 className="text-base font-semibold text-gray-900 dark:text-white">{client.name}</h3>
+                  <span
+                    className={`px-2 py-1 text-xs font-medium rounded-full 
+                    ${
+                      client.status === 'Active'
+                        ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300'
+                        : 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300'
+                    }`}
+                  >
+                    {client.status}
+                  </span>
+                </div>
+              </div>
+              <button className="text-purple-600 dark:text-purple-400 hover:text-purple-900 dark:hover:text-purple-300 p-1">
+                <MoreVertical className="w-5 h-5" />
+              </button>
+            </div>
+            
+            <div className="space-y-2">
+              <div className="flex items-center text-sm text-gray-600 dark:text-gray-400">
+                <Mail className="w-4 h-4 mr-2 flex-shrink-0" />
+                <span className="truncate">{client.email}</span>
+              </div>
+              <div className="flex items-center text-sm text-gray-600 dark:text-gray-400">
+                <Phone className="w-4 h-4 mr-2 flex-shrink-0" />
+                <span>{client.phone}</span>
+              </div>
+              <div className="flex items-center text-sm text-gray-600 dark:text-gray-400">
+                <Calendar className="w-4 h-4 mr-2 flex-shrink-0" />
+                <span>Joined {client.joined}</span>
+              </div>
+            </div>
+          </div>
+        ))}
       </div>
     </div>
   );

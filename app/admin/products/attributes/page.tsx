@@ -106,34 +106,35 @@ export default function ProductAttributesPage() {
   };
 
   const tabs = [
-    { id: 'attributes', label: 'Global Attributes', icon: '📋' },
-    { id: 'values', label: 'Attribute Values', icon: '🔢' },
-    { id: 'categories', label: 'Category Assignments', icon: '📂' },
-    { id: 'zodiac', label: 'Zodiac Assignments', icon: '⭐' },
-    { id: 'bulk', label: 'Bulk Operations', icon: '⚡' }
+    { id: 'attributes', label: 'Global Attributes', shortLabel: 'Attributes', icon: '📋' },
+    { id: 'values', label: 'Attribute Values', shortLabel: 'Values', icon: '🔢' },
+    { id: 'categories', label: 'Category Assignments', shortLabel: 'Categories', icon: '📂' },
+    { id: 'zodiac', label: 'Zodiac Assignments', shortLabel: 'Zodiac', icon: '⭐' },
+    { id: 'bulk', label: 'Bulk Operations', shortLabel: 'Bulk', icon: '⚡' }
   ];
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <div className="max-w-7xl mx-auto px-3 sm:px-4 md:px-6 lg:px-8 py-4 sm:py-6 md:py-8">
         {/* Header */}
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
+        <div className="mb-6 sm:mb-8">
+          <h1 className="text-xl sm:text-2xl md:text-3xl font-bold text-gray-900 dark:text-white">
             Product Attributes Management
           </h1>
-          <p className="mt-2 text-gray-600 dark:text-gray-400">
+          <p className="mt-2 text-sm sm:text-base text-gray-600 dark:text-gray-400">
             Manage product attributes, values, and assignments across categories and zodiac signs
           </p>
         </div>
 
         {/* Tabs */}
-        <div className="border-b border-gray-200 dark:border-gray-700 mb-8">
-          <nav className="-mb-px flex space-x-8">
+        <div className="border-b border-gray-200 dark:border-gray-700 mb-6 sm:mb-8">
+          {/* Desktop Tab Navigation */}
+          <nav className="hidden lg:flex -mb-px space-x-8">
             {tabs.map((tab) => (
               <button
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id as TabType)}
-                className={`py-2 px-1 border-b-2 font-medium text-sm ${
+                className={`py-2 px-1 border-b-2 font-medium text-sm whitespace-nowrap ${
                   activeTab === tab.id
                     ? 'border-purple-500 text-purple-600 dark:text-purple-400'
                     : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-400 dark:hover:text-gray-300'
@@ -144,19 +145,56 @@ export default function ProductAttributesPage() {
               </button>
             ))}
           </nav>
+
+          {/* Tablet Tab Navigation - Horizontal Scroll */}
+          <nav className="hidden md:flex lg:hidden -mb-px overflow-x-auto pb-2">
+            <div className="flex space-x-6 min-w-max px-1">
+              {tabs.map((tab) => (
+                <button
+                  key={tab.id}
+                  onClick={() => setActiveTab(tab.id as TabType)}
+                  className={`py-2 px-2 border-b-2 font-medium text-sm whitespace-nowrap ${
+                    activeTab === tab.id
+                      ? 'border-purple-500 text-purple-600 dark:text-purple-400'
+                      : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-400 dark:hover:text-gray-300'
+                  }`}
+                >
+                  <span className="mr-2">{tab.icon}</span>
+                  {tab.shortLabel}
+                </button>
+              ))}
+            </div>
+          </nav>
+
+          {/* Mobile Tab Navigation - Dropdown */}
+          <div className="md:hidden">
+            <div className="relative">
+              <select
+                value={activeTab}
+                onChange={(e) => setActiveTab(e.target.value as TabType)}
+                className="w-full bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2.5 text-sm font-medium text-gray-900 dark:text-white focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
+              >
+                {tabs.map((tab) => (
+                  <option key={tab.id} value={tab.id}>
+                    {tab.icon} {tab.shortLabel}
+                  </option>
+                ))}
+              </select>
+            </div>
+          </div>
         </div>
 
         {/* Content */}
-        <div className="bg-white dark:bg-gray-800 rounded-lg shadow">
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow overflow-hidden">
           {activeTab === 'attributes' && (
-            <div className="p-6">
-              <div className="flex justify-between items-center mb-6">
-                <h2 className="text-xl font-semibold text-gray-900 dark:text-white">
+            <div className="p-3 sm:p-4 md:p-6">
+              <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
+                <h2 className="text-lg sm:text-xl font-semibold text-gray-900 dark:text-white">
                   Global Attributes
                 </h2>
                 <button
                   onClick={() => setShowAttributeForm(true)}
-                  className="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-md font-medium transition-colors"
+                  className="w-full sm:w-auto bg-purple-600 hover:bg-purple-700 text-white px-4 py-2.5 sm:py-2 rounded-md font-medium transition-colors text-sm sm:text-base"
                 >
                   Add New Attribute
                 </button>
@@ -180,7 +218,7 @@ export default function ProductAttributesPage() {
           )}
 
           {activeTab === 'values' && (
-            <div className="p-6">
+            <div className="p-3 sm:p-4 md:p-6">
               <AttributeValues
                 attributes={attributes}
                 attributeValues={attributeValues}
@@ -191,7 +229,7 @@ export default function ProductAttributesPage() {
           )}
 
           {activeTab === 'categories' && (
-            <div className="p-6">
+            <div className="p-3 sm:p-4 md:p-6">
               <CategoryAssignments
                 attributes={attributes}
                 categories={categories}
@@ -201,7 +239,7 @@ export default function ProductAttributesPage() {
           )}
 
           {activeTab === 'zodiac' && (
-            <div className="p-6">
+            <div className="p-3 sm:p-4 md:p-6">
               <ZodiacAssignments
                 attributes={attributes}
                 zodiacSigns={zodiacSigns}
@@ -211,7 +249,7 @@ export default function ProductAttributesPage() {
           )}
 
           {activeTab === 'bulk' && (
-            <div className="p-6">
+            <div className="p-3 sm:p-4 md:p-6">
               <BulkOperations
                 attributes={attributes}
                 categories={categories}

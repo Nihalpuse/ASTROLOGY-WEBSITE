@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect, useMemo, useCallback, memo } from 'react';
+import React, { useState, useEffect, useMemo, useCallback, memo, useRef } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useRoutePrefetch } from '../../hooks/useRoutePrefetch';
@@ -19,12 +19,13 @@ import {
   Moon,
   Sun,
   Bell,
-  Grid,
   UserCircle2,
   Orbit,
   ChevronDown,
   ChevronUp,
-  LucideIcon
+  X,
+  LucideIcon,
+  Menu
 } from 'lucide-react';
 
 // Type definitions
@@ -44,11 +45,12 @@ interface NavItem {
 }
 
 // Memoized Navigation Link Component
-const NavigationLink = memo(({ item }: { item: NavItem }) => (
+const NavigationLink = memo(({ item, onClick }: { item: NavItem; onClick?: () => void }) => (
   <Link 
     href={item.href!}
     prefetch={true} // Enable prefetching for better performance
-    className={`
+  onClick={onClick}
+  className={`
       flex items-center space-x-3 p-2 rounded-lg transition-colors
       ${item.active 
         ? 'bg-purple-100 dark:bg-purple-900 text-purple-700 dark:text-purple-200' 
@@ -67,11 +69,13 @@ NavigationLink.displayName = 'NavigationLink';
 const ProductsDropdown = memo(({ 
   item, 
   isOpen, 
-  onToggle 
+  onToggle,
+  childOnClick,
 }: { 
   item: NavItem; 
   isOpen: boolean; 
   onToggle: () => void; 
+  childOnClick?: () => void;
 }) => {
   const isAnyChildActive = item.children?.some((child: NavChild) => child.active);
   
@@ -103,6 +107,7 @@ const ProductsDropdown = memo(({
               key={child.href}
               href={child.href}
               prefetch={true} // Enable prefetching
+              onClick={childOnClick}
               className={`flex items-center space-x-2 p-2 rounded-lg transition-colors
                 ${child.active
                   ? 'bg-purple-100 dark:bg-purple-900 text-purple-700 dark:text-purple-200'
@@ -122,6 +127,10 @@ ProductsDropdown.displayName = 'ProductsDropdown';
 
 const AdminLayout = ({ children }: { children: React.ReactNode }) => {
   const [productsDropdownOpen, setProductsDropdownOpen] = useState(false);
+  const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
+  // When true, sidebar opens and focuses the search input
+  const [mobileSearchFocusRequested, setMobileSearchFocusRequested] = useState(false);
+  const searchInputRef = useRef<HTMLInputElement | null>(null);
   const pathname = usePathname();
   const router = useRouter();
   const [isDarkMode, setIsDarkMode] = useState(false);
@@ -167,6 +176,19 @@ const AdminLayout = ({ children }: { children: React.ReactNode }) => {
       }
     });
   }, [isDarkMode]);
+
+  const closeMobileSidebar = useCallback(() => setMobileSidebarOpen(false), []);
+  const toggleMobileSidebar = useCallback(() => setMobileSidebarOpen(v => !v), []);
+
+  // Focus search input when sidebar opens due to search button
+  useEffect(() => {
+    if (mobileSidebarOpen && mobileSearchFocusRequested) {
+      requestAnimationFrame(() => {
+        searchInputRef.current?.focus();
+      });
+      setMobileSearchFocusRequested(false);
+    }
+  }, [mobileSidebarOpen, mobileSearchFocusRequested]);
 
   // Logout function with performance optimization
   const handleLogout = useCallback(async () => {
@@ -303,7 +325,8 @@ const AdminLayout = ({ children }: { children: React.ReactNode }) => {
       <RouteLoadingIndicator />
       <div className="flex h-screen bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100">
         {/* Sidebar */}
-        <div className="w-64 flex-shrink-0 bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 shadow-sm">
+        {/* Desktop sidebar */}
+        <div className="hidden lg:block w-64 flex-shrink-0 bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 shadow-sm">
         <div className="p-6 border-b border-gray-200 dark:border-gray-700">
           <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100">Nakshatra Gyaan</h2>
           <p className="text-sm text-gray-500 dark:text-gray-400">Admin Portal</p>
@@ -343,22 +366,109 @@ const AdminLayout = ({ children }: { children: React.ReactNode }) => {
         </nav>
         </div>
 
+        {/* Mobile sidebar - overlay + slide-in panel */}
+        <div aria-hidden={!mobileSidebarOpen} className={`lg:hidden`}> 
+          {/* Overlay */}
+          <div
+            onClick={closeMobileSidebar}
+            className={`fixed inset-0 bg-black bg-opacity-40 transition-opacity ${mobileSidebarOpen ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'} z-40`}
+          />
+
+          {/* Panel */}
+          <aside className={`fixed top-0 left-0 h-full w-64 bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 shadow-lg transform transition-transform ${mobileSidebarOpen ? 'translate-x-0' : '-translate-x-full'} z-50`}>
+            <div className="p-4 border-b border-gray-200 dark:border-gray-700">
+              <div className="flex items-center justify-between mb-3">
+                <div>
+                  <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100">Nakshatra Gyaan</h2>
+                  <p className="text-sm text-gray-500 dark:text-gray-400">Admin Portal</p>
+                </div>
+                <button onClick={closeMobileSidebar} className="p-2 rounded-md hover:bg-gray-100 dark:hover:bg-gray-700" aria-label="Close sidebar">
+                  <X className="text-gray-600 dark:text-gray-300" size={18} />
+                </button>
+              </div>
+
+              {/* Mobile search inside sidebar */}
+              <div className="flex items-center space-x-2 px-1">
+                <Search className="text-gray-400 dark:text-gray-500" size={18} />
+                <input
+                  ref={searchInputRef}
+                  type="text"
+                  placeholder="Search..."
+                  className="w-full text-sm focus:outline-none bg-transparent text-gray-900 dark:text-gray-100"
+                  onKeyDown={(e) => {
+                    if (e.key === 'Escape') {
+                      setMobileSidebarOpen(false);
+                    }
+                  }}
+                />
+              </div>
+            </div>
+
+            <nav className="p-4 space-y-2 overflow-y-auto h-[calc(100vh-80px)]">
+              {navItems.map((item) => {
+                // Products dropdown for mobile with childOnClick to close panel
+                if (item.label === 'Products' && item.children) {
+                  const isOpen = productsDropdownOpen || item.expanded;
+                  return (
+                    <ProductsDropdown
+                      key="products-dropdown-mobile"
+                      item={item}
+                      isOpen={isOpen}
+                      onToggle={toggleProductsDropdown}
+                      childOnClick={closeMobileSidebar}
+                    />
+                  );
+                }
+
+                return item.href ? (
+                  <NavigationLink key={item.href} item={item} onClick={closeMobileSidebar} />
+                ) : (
+                  <div
+                    key={item.label}
+                    className={`flex items-center space-x-3 p-2 rounded-lg transition-colors cursor-default
+                      ${item.active
+                        ? 'bg-purple-100 dark:bg-purple-900 text-purple-700 dark:text-purple-200'
+                        : 'hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300'}
+                    `}
+                  >
+                    <item.icon className="w-5 h-5" />
+                    <span className="text-sm font-medium">{item.label}</span>
+                  </div>
+                );
+              })}
+            </nav>
+          </aside>
+        </div>
+
         {/* Main Content Area */}
         <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
-        {/* Bagisto-style Header */}
-        <header className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 px-4 py-3 flex justify-between items-center">
+  {/* Bagisto-style Header */}
+  <header className="relative bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 px-3 py-2 flex items-center justify-between">
           {/* Left side - Mega Search */}
-          <div className="flex items-center w-1/3">
-            <Search className="text-gray-400 dark:text-gray-500 mr-2" size={20} />
-            <input 
-              type="text" 
-              placeholder="Mega Search" 
-              className="w-full text-sm focus:outline-none bg-transparent text-gray-900 dark:text-gray-100"
-            />
+    <div className="flex items-center gap-2 flex-1 lg:w-1/3">
+            {/* Mobile menu toggle - visible on small screens */}
+            <button
+        onClick={toggleMobileSidebar}
+        className="lg:hidden mr-2 p-2 rounded-md hover:bg-gray-100 dark:hover:bg-gray-700"
+              aria-label="Toggle sidebar"
+            >
+              <Menu className="text-gray-600 dark:text-gray-300" size={20} />
+            </button>
+                  {/* Search: show icon on mobile (toggles overlay), full input on lg+ */}
+                  {/* mobile search icon removed — search now lives inside the sidebar */}
+
+                  <Search className="hidden lg:inline-block text-gray-400 dark:text-gray-500 mr-2" size={20} />
+                  <input 
+                    type="text" 
+                    placeholder="Mega Search" 
+                    className="hidden lg:block lg:max-w-xs w-full text-sm focus:outline-none bg-transparent text-gray-900 dark:text-gray-100"
+                  />
+
+                  {/* Mobile search now lives inside the sidebar (opens sidebar and focuses input) */}
           </div>
 
           {/* Right side - Icons and User */}
-          <div className="flex items-center space-x-4">
+          <div className="flex items-center space-x-2 lg:space-x-4">
             {/* Dark Mode Toggle */}
             <button 
               onClick={toggleDarkMode}
@@ -380,33 +490,31 @@ const AdminLayout = ({ children }: { children: React.ReactNode }) => {
             </button>
 
             {/* Grid/Apps */}
-            <button className="hover:bg-gray-100 dark:hover:bg-gray-700 p-2 rounded-full">
-              <Grid className="text-gray-600 dark:text-gray-300" size={20} />
-            </button>
+            {/* Grid/Apps button removed (no behavior implemented) */}
 
             {/* User Profile and Logout */}
             <div className="flex items-center space-x-2">
               <UserCircle2 className="text-gray-600 dark:text-gray-300" size={30} />
-              <div className="mr-2">
+              <div className="mr-1 lg:mr-2">
                 <p className="text-sm font-medium">Hi | Example</p>
                 <p className="text-xs text-gray-500 dark:text-gray-400">Admin</p>
               </div>
               
               {/* Updated Logout Button */}
-              <button 
+              <button
                 onClick={handleLogout}
-                className="bg-red-50 dark:bg-red-900 text-red-600 dark:text-red-300 p-2 rounded-lg 
-                hover:bg-red-100 dark:hover:bg-red-800 transition-colors flex items-center justify-center"
+                aria-label="Logout"
+                className="bg-red-50 dark:bg-red-900 text-red-600 dark:text-red-300 p-2 rounded-lg hover:bg-red-100 dark:hover:bg-red-800 transition-colors flex items-center justify-center"
               >
-                <LogOut className="mr-1 w-4 h-4" />
-                Logout
+                <LogOut className="w-4 h-4 lg:mr-1" />
+                <span className="hidden lg:inline">Logout</span>
               </button>
             </div>
           </div>
         </header>
 
         {/* Page Content */}
-        <main className="flex-1 overflow-y-auto bg-gray-50 dark:bg-gray-900 p-6">
+  <main className="flex-1 overflow-y-auto bg-gray-50 dark:bg-gray-900 p-6">
           {children}
         </main>
         </div>
