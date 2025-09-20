@@ -53,6 +53,10 @@ const SpiritualJourneyBanner = dynamic(
   () => import("./components/SpiritualJourneyBanner"),
   { loading: () => <AstrologyPreloader size="sm" message="Loading cosmic wisdom..." />, ssr: false }
 );
+const CalculatorGrid = dynamic(
+  () => import("./components/CalculatorGrid").then((mod) => mod.CalculatorGrid),
+  { loading: () => <AstrologyPreloader size="sm" message="Loading cosmic wisdom..." />, ssr: false }
+);
 
 export default function HomePage() {
   return (
@@ -65,6 +69,10 @@ export default function HomePage() {
 
         <ScrollAnimation>
           <DailyHoroscope />
+        </ScrollAnimation>
+
+        <ScrollAnimation>
+          <CalculatorGrid />
         </ScrollAnimation>
 
         <ScrollAnimation>

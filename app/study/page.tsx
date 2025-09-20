@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { BookOpen, Star, Moon, Sun, HelpCircle, Users, Target, Award, Globe, Heart, Shield, Sparkles, Zap, Compass, Gem, Activity, TrendingUp, ArrowUpRight } from 'lucide-react';
 import { CTASection } from '../components/CTASection';
-import { DrNarendraProfile } from '../components/DrNarendraProfile';
+import { AstrologerProfile } from '../components/AstrologerProfile';
 import { ContactForm } from '../components/ContactForm';
 import { useLanguage } from '../contexts/useLanguage';
 
@@ -143,7 +143,7 @@ export default function StudyPage() {
   ];
 
   return (
-    <div className="relative min-h-screen overflow-hidden bg-gradient-to-b from-white via-indigo-50 to-white font-sans">
+  <div className="relative min-h-screen overflow-hidden bg-gradient-to-br from-slate-50 via-purple-50/30 to-orange-50/20 font-sans">
       <div className="container mx-auto pt-8 px-4 pb-16 relative z-10">
         {/* Banner Heading */}
         <motion.div 
@@ -352,15 +352,11 @@ export default function StudyPage() {
           </div>
         </div>
 
-        {/* Additional Components */}
-        <div className="mt-20 space-y-20">
-          <DrNarendraProfile />
-        </div>
-
-        <div className="mt-20">
-          <ContactForm />
-        </div>
       </div>
+        
+          <AstrologerProfile />
+          <ContactForm />
+        
     </div>
   );
 }

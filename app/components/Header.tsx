@@ -40,6 +40,9 @@ export function Header() {
   const [isMobile, setIsMobile] = useState(false);
   // Add state for mobile menu Study dropdown
   const [isStudyOpen, setIsStudyOpen] = useState(false);
+  // Add missing state variables
+  const [isServicesOpen, setIsServicesOpen] = useState(false);
+  const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
 
   const servicesMenuRef = useRef<HTMLDivElement>(null);
   const mobileMenuRef = useRef<HTMLDivElement>(null);
@@ -508,8 +511,6 @@ export function Header() {
           {/* Study Dropdown (Desktop) */}
           <div
             className="relative"
-            onMouseEnter={() => setIsStudyDropdownOpen(true)}
-            onMouseLeave={() => setTimeout(() => setIsStudyDropdownOpen(false), 120)}
           >
             <button
               onClick={() => setIsStudyDropdownOpen((prev) => !prev)}
@@ -536,7 +537,7 @@ export function Header() {
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, y: 16 }}
                   transition={{ duration: 0.3, ease: 'easeOut' }}
-                  className="absolute left-1/2 -translate-x-1/2 mt-2 w-[260px] max-w-[96vw] rounded-2xl shadow-2xl border border-[#e6c77e] z-50 px-4 py-4 flex flex-col gap-2 card-floating"
+                  className="absolute left-0 mt-2 w-[260px] max-w-[96vw] rounded-2xl shadow-2xl border border-[#e6c77e] z-50 px-4 py-4 flex flex-col gap-2 card-floating"
                   tabIndex={-1}
                   onKeyDown={e => { if (e.key === 'Escape') setIsStudyDropdownOpen(false); }}
                   style={{ pointerEvents: isStudyDropdownOpen ? 'auto' : 'none', borderWidth: 1.5, background: '#FEFBF2' }}
@@ -847,13 +848,13 @@ export function Header() {
                 </AnimatePresence>
               </div>
               {/* Auth/Cart/Join buttons */}
-              <div className="flex gap-3 mt-6">
-                {/* <Link href="/cart" onClick={() => setIsMobileMenuOpen(false)} className="flex-1 py-2 rounded-full bg-[#f7f7fa] text-black font-semibold text-center" style={{ fontFamily: 'Playfair Display, serif' }}>{t('header.cart')}</Link> */}
-                {/* Mobile Join Us button */}
-                <a href="/astrologer/auth/" onClick={() => setIsMobileMenuOpen(false)} className="flex-1 py-2 rounded-full font-semibold text-center transition-all duration-300 hover:translate-x-1" style={{ background: 'rgb(22 101 52)', color: 'white', border: 'none', fontFamily: 'Playfair Display, serif' }}>{t('header.nav.join_us') || t('header.nav.join_us') || 'Join Us'}</a>
+              <div className="flex flex-col gap-3 mt-6">
+                {/* Mobile Join Us button - for becoming an astrologer (always visible) */}
+                <a href="/astrologer/auth/" onClick={() => setIsMobileMenuOpen(false)} className="w-full py-2 rounded-full font-semibold text-center transition-all duration-300 hover:translate-x-1" style={{ background: 'rgb(22 101 52)', color: 'white', border: 'none', fontFamily: 'Playfair Display, serif' }}>{t('header.nav.join_us') || 'Join as Astrologer'}</a>
+                
                 {/* Mobile User Menu or Sign In button */}
                 {session?.user ? (
-                  <div className="flex-1 flex flex-col gap-2">
+                  <div className="w-full flex flex-col gap-2">
                     <div className="flex items-center gap-2 py-2 px-3 rounded-full bg-green-800 text-white">
                       <Avatar className="h-6 w-6">
                         <AvatarFallback className="text-xs font-bold bg-white/20 text-white">
@@ -875,7 +876,7 @@ export function Header() {
                     </div>
                   </div>
                 ) : (
-                  <button onClick={() => { signIn(); setIsMobileMenuOpen(false); }} className="flex-1 py-2 rounded-full font-semibold text-center transition-all duration-300 hover:translate-x-1" style={{ background: 'rgb(22 101 52)', color: 'white', border: 'none', fontFamily: 'Playfair Display, serif' }}>{t('header.auth.signin') || 'Sign In'}</button>
+                  <button onClick={() => { signIn(); setIsMobileMenuOpen(false); }} className="w-full py-2 rounded-full font-semibold text-center transition-all duration-300 hover:translate-x-1" style={{ background: 'rgb(22 101 52)', color: 'white', border: 'none', fontFamily: 'Playfair Display, serif' }}>{t('header.auth.signin') || 'Sign In'}</button>
                 )}
               </div>
             </nav>

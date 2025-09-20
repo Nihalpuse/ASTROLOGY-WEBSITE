@@ -144,7 +144,7 @@ export const FAQSection: FC<FAQSectionProps> = ({ faqs }) => {
                         transition={{ duration: 0.2, delay: 0.1 }}
                         className="px-8 pb-6"
                       >
-                        <div className="flex border-l-2 md:border-l-4 border-[#fe7b57]/10">
+                        <div className="flex">
                           <div className="w-6 md:w-12 flex-shrink-0" />
                           <div className="pl-2 md:pl-4 pr-1">
                             <p className="py-4 text-gray-700 leading-relaxed text-sm md:text-base">
