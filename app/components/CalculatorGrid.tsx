@@ -16,19 +16,19 @@ const calculators = [
     title: "Free Nakshatra",
     description: "With Horoscope, Kundali, And Predictions",
     icon: <Image src="/images/FreeCalculators/nakshatra.svg" alt="Nakshatra" width={200} height={200} className="w-40 h-40 md:w-52 md:h-52" style={{ filter: 'hue-rotate(20deg) saturate(150%) brightness(120%) contrast(110%)' }} />,
-    link: null,
+    link: "/freecalculators/nakshatra-calculator",
   },
   {
     title: "Free Kundali Matching",
     description: "With Horoscope, Kundali, And Predictions",
     icon: <Image src="/images/FreeCalculators/kundalimaching.svg" alt="Kundali Matching" width={200} height={200} className="w-40 h-40 md:w-52 md:h-52" style={{ filter: 'hue-rotate(20deg) saturate(150%) brightness(120%) contrast(110%)' }} />,
-    link: null,
+    link: "/freecalculators/kundli-matching",
   },
   {
     title: "Free Moon Sign",
     description: "With Horoscope, Kundali, And Predictions",
     icon: <Image src="/images/FreeCalculators/moonsign.svg" alt="Moon Sign" width={200} height={200} className="w-40 h-40 md:w-52 md:h-52" style={{ filter: 'hue-rotate(20deg) saturate(150%) brightness(120%) contrast(110%)' }} />,
-    link: null,
+    link: "/freecalculators/moonsign-calculator",
   },
 ];
 
