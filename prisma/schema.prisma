@@ -707,3 +707,23 @@ model panchang_karanas {
 
   @@index([panchang_id])
 }
+
+/// Cache for D27 (Nakshatra) chart SVG responses based on full input parameters
+model d27_chart_cache {
+  id                Int       @id @default(autoincrement())
+  cache_key         String    @unique @db.VarChar(300)
+  year              Int
+  month             Int
+  date              Int
+  hours             Int
+  minutes           Int
+  seconds           Int
+  latitude          Decimal   @db.Decimal(10, 6)
+  longitude         Decimal   @db.Decimal(10, 6)
+  timezone          Decimal   @db.Decimal(4, 2)
+  observation_point String    @db.VarChar(20) // "topocentric" or "geocentric"
+  language          String    @db.VarChar(5)  // "en" or "te"
+  svg_code          String    @db.LongText
+  created_at        DateTime  @default(now()) @db.Timestamp(0)
+  updated_at        DateTime  @default(now()) @db.Timestamp(0)
+}
