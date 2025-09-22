@@ -86,6 +86,24 @@ interface RevenueBreakdownData {
   }[];
 }
 
+interface VisitorsOverview {
+  totalVisitors: number;
+  newVisitors: number;
+  returningVisitors: number;
+  totalPageViews: number;
+  todayPageViews: number;
+}
+
+interface PopularPageItem {
+  path: string;
+  views: number;
+}
+
+interface VisitsTrendPoint {
+  date: string;
+  views: number;
+}
+
 // Currency formatting
 const formatCurrency = (value: string | number) => {
   const numValue = typeof value === 'string' ? parseFloat(value) : Number(value);
@@ -141,6 +159,16 @@ const initialDashboardData = {
     breakdownShare: 0,
     contributors: [] as { name: string; image: string; type: string; revenue: number; }[]
   },
+  // Visitors analytics
+  visitorsOverview: {
+    totalVisitors: 0,
+    newVisitors: 0,
+    returningVisitors: 0,
+    totalPageViews: 0,
+    todayPageViews: 0
+  } as VisitorsOverview,
+  popularPages: [] as PopularPageItem[],
+  visitsTrend: [] as VisitsTrendPoint[],
   
   // User Statistics
   userStats: {
@@ -249,6 +277,51 @@ export default function AdminDashboard() {
       }
     } catch (err) {
       console.error('Error fetching revenue growth:', err);
+    }
+  };
+
+  // Fetch visitors overview
+  const fetchVisitorsOverview = async () => {
+    try {
+      const response = await fetch('/api/dashboard?metric=visitors-overview');
+      if (response.ok) {
+        const result: { success: boolean; visitorsOverview?: VisitorsOverview } = await response.json();
+        if (result.success && result.visitorsOverview) {
+          setDashboardData(prev => ({ ...prev, visitorsOverview: result.visitorsOverview || prev.visitorsOverview }));
+        }
+      }
+    } catch (err) {
+      console.error('Error fetching visitors overview:', err);
+    }
+  };
+
+  // Fetch popular pages
+  const fetchPopularPages = async () => {
+    try {
+      const response = await fetch('/api/dashboard?metric=popular-pages&limit=5');
+      if (response.ok) {
+        const result: { success: boolean; popularPages?: PopularPageItem[] } = await response.json();
+        if (result.success && result.popularPages) {
+          setDashboardData(prev => ({ ...prev, popularPages: result.popularPages || prev.popularPages }));
+        }
+      }
+    } catch (err) {
+      console.error('Error fetching popular pages:', err);
+    }
+  };
+
+  // Fetch visits trend
+  const fetchVisitsTrend = async (days: number = 14) => {
+    try {
+      const response = await fetch(`/api/dashboard?metric=visits-trend&days=${days}`);
+      if (response.ok) {
+        const result: { success: boolean; visitsTrend?: VisitsTrendPoint[] } = await response.json();
+        if (result.success && result.visitsTrend) {
+          setDashboardData(prev => ({ ...prev, visitsTrend: result.visitsTrend! }));
+        }
+      }
+    } catch (err) {
+      console.error('Error fetching visits trend:', err);
     }
   };
 
@@ -373,6 +446,9 @@ export default function AdminDashboard() {
     fetchTopProducts();
     fetchTopAstrologers();
     fetchRevenueBreakdown();
+    fetchVisitorsOverview();
+    fetchPopularPages();
+    fetchVisitsTrend(14);
   }, []);
 
   const getMonthlySlice = (months: number) => {
@@ -870,71 +946,52 @@ export default function AdminDashboard() {
             </div>
           </div>
 
-          {/* Distribution Maps */}
+          {/* Visitors Analytics */}
           <div className="bg-white dark:bg-gray-800 rounded-lg p-4 sm:p-6 shadow-sm">
             <div className="flex items-center justify-between mb-4 sm:mb-6">
-              <h3 className="text-base sm:text-lg font-semibold text-gray-900 dark:text-white">Geographic Distribution</h3>
-              <div className="flex items-center space-x-2">
-                <span className="text-xs text-gray-500 hidden sm:block">
-                  {selectedRegion ? `Selected: ${selectedRegion}` : 'Click regions for details'}
-                </span>
+              <h3 className="text-base sm:text-lg font-semibold text-gray-900 dark:text-white">Visitors Analytics</h3>
+              <div className="text-xs text-gray-500">Last 14 days</div>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4 mb-4">
+              <div className="p-2 sm:p-3 bg-gray-50 dark:bg-gray-700 rounded">
+                <div className="text-xs text-gray-500">Total Visitors</div>
+                <div className="text-sm sm:text-lg font-semibold text-gray-900 dark:text-white">{dashboardData.visitorsOverview.totalVisitors.toLocaleString()}</div>
+              </div>
+              <div className="p-2 sm:p-3 bg-gray-50 dark:bg-gray-700 rounded">
+                <div className="text-xs text-gray-500">Returning Visitors</div>
+                <div className="text-sm sm:text-lg font-semibold text-gray-900 dark:text-white">{dashboardData.visitorsOverview.returningVisitors.toLocaleString()}</div>
+              </div>
+              <div className="p-2 sm:p-3 bg-gray-50 dark:bg-gray-700 rounded">
+                <div className="text-xs text-gray-500">Today Page Views</div>
+                <div className="text-sm sm:text-lg font-semibold text-gray-900 dark:text-white">{dashboardData.visitorsOverview.todayPageViews.toLocaleString()}</div>
               </div>
             </div>
-            
-            {/* Interactive Geographic Distribution */}
-            <div className="space-y-3 sm:space-y-4">
-              {dashboardData.geographicData.map((region, index) => (
-                <div 
-                  key={index} 
-                  className={`flex items-center justify-between p-2 sm:p-3 rounded-lg cursor-pointer transition-all duration-200 ${
-                    selectedRegion === region.region 
-                      ? 'bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-700' 
-                      : 'hover:bg-gray-50 dark:hover:bg-gray-700'
-                  }`}
-                  onClick={() => setSelectedRegion(
-                    selectedRegion === region.region ? null : region.region
-                  )}
-                >
-                  <div className="flex items-center min-w-0 flex-1">
-                    <div 
-                      className="w-3 h-3 sm:w-4 sm:h-4 rounded-full mr-2 sm:mr-3 transition-transform duration-200 flex-shrink-0" 
-                      style={{ backgroundColor: region.color }}
-                    ></div>
-                    <div className="min-w-0 flex-1">
-                      <span className={`text-xs sm:text-sm font-medium transition-colors duration-200 block truncate ${
-                        selectedRegion === region.region 
-                          ? 'text-blue-700 dark:text-blue-300' 
-                          : 'text-gray-900 dark:text-white'
-                      }`}>
-                        {region.region}
-                      </span>
-                      {selectedRegion === region.region && (
-                        <div className="text-xs text-gray-600 dark:text-gray-400 mt-1">
-                          {region.users} users • {region.percentage}% of total traffic
-                        </div>
-                      )}
+
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+              <div className="h-40">
+                <ResponsiveContainer width="100%" height="100%">
+                  <LineChart data={dashboardData.visitsTrend}>
+                    <CartesianGrid stroke="#f1f5f9" />
+                    <XAxis dataKey="date" stroke="#6b7280" hide={true} />
+                    <YAxis stroke="#6b7280" />
+                    <Tooltip formatter={(value: number) => [String(value), 'Views']} />
+                    <Line type="monotone" dataKey="views" stroke="#10b981" strokeWidth={2} dot={false} />
+                  </LineChart>
+                </ResponsiveContainer>
+              </div>
+
+              <div>
+                <div className="text-xs sm:text-sm font-medium text-gray-900 dark:text-white mb-2">Popular Pages</div>
+                <div className="space-y-2">
+                  {dashboardData.popularPages.map((p) => (
+                    <div key={p.path} className="flex items-center justify-between p-2 rounded hover:bg-gray-50 dark:hover:bg-gray-700">
+                      <div className="text-xs sm:text-sm text-gray-900 dark:text-white truncate max-w-[70%]">{p.path}</div>
+                      <div className="text-xs sm:text-sm font-semibold text-gray-900 dark:text-white">{p.views.toLocaleString()}</div>
                     </div>
-                  </div>
-                  <div className="flex items-center space-x-2 sm:space-x-3 flex-shrink-0">
-                    <div className="w-16 sm:w-20 h-2 sm:h-3 bg-gray-200 dark:bg-gray-700 rounded-full">
-                      <div 
-                        className="h-full rounded-full transition-all duration-500" 
-                        style={{ 
-                          width: `${region.percentage}%`, 
-                          backgroundColor: region.color 
-                        }}
-                      ></div>
-                    </div>
-                    <span className={`text-xs sm:text-sm font-medium min-w-[30px] sm:min-w-[40px] transition-colors duration-200 ${
-                      selectedRegion === region.region 
-                        ? 'text-blue-700 dark:text-blue-300' 
-                        : 'text-gray-900 dark:text-white'
-                    }`}>
-                      {region.percentage}%
-                    </span>
-                  </div>
+                  ))}
                 </div>
-              ))}
+              </div>
             </div>
           </div>
         </div>

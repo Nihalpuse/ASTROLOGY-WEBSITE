@@ -624,6 +624,101 @@ export async function GET(request: Request) {
       })
     }
 
+    // Visitors overview (from visitors and page_visits)
+    if (metric === 'visitors-overview') {
+      const now = new Date()
+      const thirtyDaysAgo = new Date(now)
+      thirtyDaysAgo.setDate(now.getDate() - 30)
+
+      const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate())
+
+      const [totalVisitors, newVisitors, returningVisitors, totalPageViews, todayPageViews] = await Promise.all([
+        prisma.visitors.count(),
+        prisma.visitors.count({
+          where: {
+            OR: [
+              { first_visit: { gte: thirtyDaysAgo } },
+              { last_visit: { gte: thirtyDaysAgo } }
+            ]
+          }
+        }),
+        prisma.visitors.count({
+          where: {
+            visit_count: {
+              gt: 1
+            }
+          }
+        }),
+        prisma.page_visits.count(),
+        prisma.page_visits.count({
+          where: {
+            timestamp: {
+              gte: startOfToday
+            }
+          }
+        })
+      ])
+
+      return NextResponse.json({
+        success: true,
+        visitorsOverview: {
+          totalVisitors,
+          newVisitors,
+          returningVisitors,
+          totalPageViews,
+          todayPageViews
+        }
+      })
+    }
+
+    // Popular pages (top paths by views)
+    if (metric === 'popular-pages') {
+      const limit = parseInt(searchParams.get('limit') || '5')
+
+      const grouped = await prisma.page_visits.groupBy({
+        by: ['path'],
+        _count: { id: true },
+        orderBy: {
+          _count: { id: 'desc' }
+        },
+        take: limit
+      })
+
+      const popularPages = grouped.map(g => ({ path: g.path, views: g._count.id }))
+
+      return NextResponse.json({ success: true, popularPages })
+    }
+
+    // Visits trend (last N days)
+    if (metric === 'visits-trend') {
+      const days = parseInt(searchParams.get('days') || '14')
+      const endDate = new Date()
+      const startDate = new Date()
+      startDate.setDate(endDate.getDate() - (days - 1))
+
+      // Use SQL aggregation by DATE() for MySQL
+      const rows = await prisma.$queryRaw<{ date: Date; count: bigint }[]>`\
+        SELECT DATE(timestamp) AS date, COUNT(*) AS count\
+        FROM page_visits\
+        WHERE timestamp BETWEEN ${startDate} AND ${endDate}\
+        GROUP BY DATE(timestamp)\
+        ORDER BY date ASC;
+      `
+
+      // Fill missing dates with zero
+      const trend: { date: string; views: number }[] = []
+      for (let i = 0; i < days; i++) {
+        const d = new Date(startDate)
+        d.setDate(startDate.getDate() + i)
+        const key = d.toISOString().substring(0, 10)
+        const match = rows.find(r => new Date(r.date).toISOString().substring(0, 10) === key)
+        const views = match ? Number(match.count) : 0
+        trend.push({ date: key, views })
+      }
+
+      return NextResponse.json({ success: true, visitsTrend: trend })
+    }
+
     // Get all basic metrics
     const [totalUsers, totalOrders, revenueResult, totalProducts, totalServices, totalAstrologers] = await Promise.all([
       prisma.users.count(),
