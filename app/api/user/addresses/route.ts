@@ -51,7 +51,7 @@ export async function GET(request: Request) {
       return NextResponse.json({ error: 'userId must be a number' }, { status: 400 })
     }
 
-    // @ts-expect-error Prisma client may be awaiting generation for new models
+    
     const addresses = await prisma.user_addresses.findMany({
       where: { user_id: userId, is_active: true },
       orderBy: [
@@ -93,14 +93,14 @@ export async function POST(request: Request) {
 
     const created = await prisma.$transaction(async (tx) => {
       if (setDefault) {
-        // @ts-expect-error Prisma client may be awaiting generation for new models
+ 
         await tx.user_addresses.updateMany({
           where: { user_id: userId, is_active: true, is_default: true },
           data: { is_default: false },
         })
       }
 
-      // @ts-expect-error Prisma client may be awaiting generation for new models
+   
       const createdAddress = await tx.user_addresses.create({
         data: {
           user_id: userId,
@@ -139,13 +139,13 @@ export async function DELETE(request: Request) {
       return NextResponse.json({ error: 'userId and addressId are required' }, { status: 400 })
     }
 
-    // @ts-expect-error Prisma client may be awaiting generation for new models
+   
     const address = await prisma.user_addresses.findFirst({ where: { id: addressId, user_id: userId } })
     if (!address) {
       return NextResponse.json({ error: 'Address not found' }, { status: 404 })
     }
 
-    // @ts-expect-error Prisma client may be awaiting generation for new models
+   
     await prisma.user_addresses.update({
       where: { id: addressId },
       data: { is_active: false, is_default: false },
