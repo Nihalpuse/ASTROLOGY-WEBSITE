@@ -14,6 +14,22 @@ const NakshatraCalculatorPage = () => {
     timeOfBirth: '',
     placeOfBirth: ''
   });
+  const [advancedOpen, setAdvancedOpen] = useState(false);
+  const [advanced, setAdvanced] = useState({
+    latitude: 17.38333,
+    longitude: 78.4666,
+    timezone: 5.5,
+    observation_point: 'topocentric' as 'topocentric' | 'geocentric',
+    ayanamsha: 'lahiri' as 'lahiri' | 'raman' | 'fagan-bradley' | string
+  });
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [svg, setSvg] = useState<string | null>(null);
+  const [suggestions, setSuggestions] = useState<Array<{ label: string; lat: number; lon: number }>>([]);
+  const [showSuggestions, setShowSuggestions] = useState(false);
+  const [suggestionsLoading, setSuggestionsLoading] = useState(false);
+  // Client no longer needs the key; we call our own backend to protect it
+  const geoapifyKey = 'backend-proxy';
 
   const toggleFAQ = (index: number) => {
     setOpenFAQ(openFAQ === index ? null : index);
@@ -26,10 +42,110 @@ const NakshatraCalculatorPage = () => {
     });
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // Handle form submission logic here
-    console.log('Form submitted:', formData);
+    setError(null);
+    setSvg(null);
+    setLoading(true);
+    try {
+      if (!formData.dateOfBirth || !formData.timeOfBirth) {
+        setError('Please provide both Date of Birth and Time of Birth.');
+        setLoading(false);
+        return;
+      }
+      const dob = new Date(`${formData.dateOfBirth}T${formData.timeOfBirth}:00`);
+      const body = {
+        year: dob.getFullYear(),
+        month: dob.getMonth() + 1,
+        date: dob.getDate(),
+        hours: dob.getHours(),
+        minutes: dob.getMinutes(),
+        seconds: dob.getSeconds() || 0,
+        latitude: Number(advanced.latitude),
+        longitude: Number(advanced.longitude),
+        timezone: Number(advanced.timezone),
+        observation_point: advanced.observation_point,
+        ayanamsha: advanced.ayanamsha,
+      };
+      const res = await fetch('/api/nakshatra/d27-chart', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body)
+      });
+      // Debug: log response status and body text
+      console.groupCollapsed('D27 API Debug');
+      console.log('Request → /api/nakshatra/d27-chart');
+      console.log('Payload:', body);
+      console.log('Response status:', res.status);
+      const debugText = await res.clone().text();
+      console.log('Response body:', debugText);
+      console.groupEnd();
+      if (!res.ok) {
+        const msg = await res.text();
+        throw new Error(msg || 'Failed to fetch D27 chart');
+      }
+      const data = await res.json();
+      if (!data?.svg) {
+        throw new Error('No SVG returned from server');
+      }
+      setSvg(data.svg as string);
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : 'Unexpected error';
+      setError(message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Autocomplete: Fetch suggestions for place of birth (debounced)
+  React.useEffect(() => {
+    const controller = new AbortController();
+    const q = formData.placeOfBirth?.trim();
+    if (!geoapifyKey || !q || q.length < 3) {
+      setSuggestions([]);
+      setShowSuggestions(false);
+      return;
+    }
+    const t = setTimeout(async () => {
+      try {
+        setSuggestionsLoading(true);
+        const url = `/api/geoapify/autocomplete?text=${encodeURIComponent(q)}&limit=5`;
+        const res = await fetch(url, { signal: controller.signal });
+        if (!res.ok) return;
+        const data: { results?: Array<{ label: string; lat: number; lon: number }> } = await res.json();
+        const list = data.results || [];
+        setSuggestions(list);
+        setShowSuggestions(true);
+      } catch {
+        // ignore
+      } finally {
+        setSuggestionsLoading(false);
+      }
+    }, 300);
+    return () => {
+      controller.abort();
+      clearTimeout(t);
+    };
+  }, [formData.placeOfBirth, geoapifyKey]);
+
+  const handlePlaceSelect = async (s: { label: string; lat: number; lon: number }) => {
+    setFormData(prev => ({ ...prev, placeOfBirth: s.label }));
+    setSuggestions([]);
+    setShowSuggestions(false);
+    setAdvanced(prev => ({ ...prev, latitude: s.lat, longitude: s.lon }));
+    // Fetch timezone from Geoapify Timezone API
+    try {
+      const tzRes = await fetch(`/api/geoapify/timezone?lat=${s.lat}&lon=${s.lon}`);
+      if (tzRes.ok) {
+        const tzData: { offset_hours: number | null } = await tzRes.json();
+        if (typeof tzData.offset_hours === 'number') {
+          const hoursOffset = tzData.offset_hours;
+          setAdvanced(prev => ({ ...prev, timezone: Number(hoursOffset.toFixed(2)) }));
+        }
+      }
+    } catch {
+      // ignore failures, user can set timezone manually
+    }
   };
 
   const faqData = [
@@ -178,7 +294,7 @@ const NakshatraCalculatorPage = () => {
               </h3>
               <div className="w-16 h-1 bg-gradient-to-r from-green-700 via-emerald-500 to-green-700 mx-auto mb-8"></div>
               
-              <form onSubmit={handleSubmit} className="space-y-6">
+            <form onSubmit={handleSubmit} className="space-y-6">
                 <div>
                   <label className="block text-sm font-semibold text-[#23244a] mb-2">Name *</label>
                   <input
@@ -243,24 +359,137 @@ const NakshatraCalculatorPage = () => {
 
                 <div>
                   <label className="block text-sm font-semibold text-[#23244a] mb-2">Place of Birth *</label>
-                  <input
-                    type="text"
-                    name="placeOfBirth"
-                    value={formData.placeOfBirth}
-                    onChange={handleInputChange}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent transition-colors"
-                    placeholder="City, State, Country"
-                    required
-                  />
+                  <div className="relative">
+                    <input
+                      type="text"
+                      name="placeOfBirth"
+                      value={formData.placeOfBirth}
+                      onChange={handleInputChange}
+                      onFocus={() => suggestions.length > 0 && setShowSuggestions(true)}
+                      onBlur={() => setTimeout(() => setShowSuggestions(false), 200)}
+                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent transition-colors"
+                      placeholder="City, State, Country"
+                      required
+                    />
+                    {(showSuggestions || suggestionsLoading) && (
+                      <div className="absolute z-50 mt-1 w-full bg-white border border-gray-300 rounded-md shadow-xl max-h-64 overflow-auto">
+                        {suggestionsLoading && (
+                          <div className="px-3 py-2 text-sm text-gray-700">Searching…</div>
+                        )}
+                        {!suggestionsLoading && suggestions.length === 0 && (
+                          <div className="px-3 py-2 text-sm text-gray-700">
+                            {geoapifyKey ? 'No results' : 'Geoapify key missing'}
+                          </div>
+                        )}
+                        {!suggestionsLoading && suggestions.length > 0 && suggestions.map((s, idx) => (
+                          <button
+                            type="button"
+                            key={`${s.label}-${idx}`}
+                            onClick={() => handlePlaceSelect(s)}
+                            className="w-full text-left px-3 py-2 text-gray-900 hover:bg-gray-100 text-sm border-b last:border-b-0 border-gray-200"
+                          >
+                            {s.label}
+                          </button>
+                        ))}
+                      </div>
+                    )}
+                  </div>
                 </div>
 
+              {/* Advanced Options */}
+              <div className="bg-gradient-to-br from-emerald-50 to-green-50 border border-emerald-200 rounded-lg">
                 <button
-                  type="submit"
-                  className="w-full bg-gradient-to-r from-green-700 via-emerald-500 to-green-700 text-white py-3 px-6 rounded-lg hover:from-green-800 hover:via-emerald-600 hover:to-green-800 transition-all duration-300 transform hover:scale-105 shadow-lg font-semibold"
+                  type="button"
+                  onClick={() => setAdvancedOpen(!advancedOpen)}
+                  className="w-full flex items-center justify-between px-4 py-3"
                 >
-                  Calculate My Nakshatra →
+                  <span className="text-sm font-semibold text-[#23244a]">Advanced Options (Location & Preferences)</span>
+                  {advancedOpen ? <ChevronUp className="w-5 h-5 text-gray-600"/> : <ChevronDown className="w-5 h-5 text-gray-600"/>}
                 </button>
+                {advancedOpen && (
+                  <div className="px-4 pb-4 grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-sm font-medium text-[#23244a] mb-1">Latitude</label>
+                      <input
+                        type="number"
+                        step="0.000001"
+                        value={advanced.latitude}
+                        onChange={(e) => setAdvanced({ ...advanced, latitude: Number(e.target.value) })}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-[#23244a] mb-1">Longitude</label>
+                      <input
+                        type="number"
+                        step="0.000001"
+                        value={advanced.longitude}
+                        onChange={(e) => setAdvanced({ ...advanced, longitude: Number(e.target.value) })}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-[#23244a] mb-1">Timezone</label>
+                      <input
+                        type="number"
+                        step="0.25"
+                        value={advanced.timezone}
+                        onChange={(e) => setAdvanced({ ...advanced, timezone: Number(e.target.value) })}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-[#23244a] mb-1">Observation Point</label>
+                      <select
+                        value={advanced.observation_point}
+                        onChange={(e) => setAdvanced({ ...advanced, observation_point: e.target.value as 'topocentric' | 'geocentric' })}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                      >
+                        <option value="topocentric">Topocentric</option>
+                        <option value="geocentric">Geocentric</option>
+                      </select>
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-[#23244a] mb-1">Ayanamsha</label>
+                      <select
+                        value={advanced.ayanamsha}
+                        onChange={(e) => setAdvanced({ ...advanced, ayanamsha: e.target.value })}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                      >
+                        <option value="lahiri">Lahiri</option>
+                        <option value="raman">Raman</option>
+                        <option value="fagan-bradley">Fagan-Bradley</option>
+                      </select>
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {error && (
+                <div className="bg-red-50 border border-red-200 text-red-700 text-sm rounded-md px-4 py-2">
+                  {error}
+                </div>
+              )}
+
+              <button
+                type="submit"
+                disabled={loading}
+                className="w-full bg-gradient-to-r from-green-700 via-emerald-500 to-green-700 text-white py-3 px-6 rounded-lg hover:from-green-800 hover:via-emerald-600 hover:to-green-800 transition-all duration-300 transform hover:scale-105 shadow-lg font-semibold disabled:opacity-60 disabled:cursor-not-allowed"
+              >
+                {loading ? 'Calculating…' : 'Calculate My Nakshatra →'}
+              </button>
               </form>
+
+            {/* Output SVG */}
+            {svg && (
+              <div className="mt-8">
+                <h4 className="text-xl font-semibold text-[#23244a] mb-3 text-center">D27 Chart</h4>
+                <div
+                  className="bg-white border border-gray-200 rounded-lg p-4 overflow-auto"
+                  dangerouslySetInnerHTML={{ __html: svg }}
+                />
+              </div>
+            )}
             </div>
           </motion.div>
         </div>

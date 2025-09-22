@@ -634,3 +634,96 @@ model order_items {
   @@index([service_id])
   @@index([cart_item_id])
 }
+
+model panchang_data {
+  id                    Int       @id @default(autoincrement())
+  date                  DateTime  @db.Date
+  latitude              Decimal   @db.Decimal(10, 6)
+  longitude             Decimal   @db.Decimal(10, 6)
+  timezone              Decimal   @db.Decimal(4, 2)
+  sun_rise              String    @db.VarChar(10)
+  sun_set               String    @db.VarChar(10)
+  weekday_number        Int
+  weekday_name          String    @db.VarChar(20)
+  vedic_weekday_number  Int
+  vedic_weekday_name    String    @db.VarChar(20)
+  lunar_month_number    Int
+  lunar_month_name      String    @db.VarChar(50)
+  lunar_month_full_name String    @db.VarChar(100)
+  adhika                Int       @default(0)
+  nija                  Int       @default(0)
+  kshaya                Int       @default(0)
+  ritu_number           Int
+  ritu_name             String    @db.VarChar(50)
+  aayanam               String    @db.VarChar(50)
+  tithi_number          Int
+  tithi_name            String    @db.VarChar(50)
+  paksha                String    @db.VarChar(20)
+  tithi_completes_at    DateTime?
+  tithi_left_percentage Decimal?  @db.Decimal(5, 2)
+  nakshatra_number      Int
+  nakshatra_name        String    @db.VarChar(50)
+  nakshatra_starts_at   DateTime?
+  nakshatra_ends_at     DateTime?
+  nakshatra_left_percentage Decimal? @db.Decimal(5, 2)
+  saka_salivahana_number Int
+  saka_salivahana_name_number Int
+  saka_salivahana_year_name String @db.VarChar(50)
+  vikram_chaitradi_number Int
+  vikram_chaitradi_name_number Int
+  vikram_chaitradi_year_name String @db.VarChar(50)
+  created_at            DateTime  @default(now()) @db.Timestamp(0)
+  updated_at            DateTime  @default(now()) @db.Timestamp(0)
+  panchang_yogas        panchang_yogas[]
+  panchang_karanas      panchang_karanas[]
+
+  @@unique([date, latitude, longitude])
+  @@index([date])
+  @@index([latitude, longitude])
+}
+
+model panchang_yogas {
+  id                    Int       @id @default(autoincrement())
+  panchang_id           Int
+  yoga_number           Int
+  yoga_name             String    @db.VarChar(50)
+  completion            DateTime?
+  yoga_left_percentage  Decimal?  @db.Decimal(5, 2)
+  created_at            DateTime  @default(now()) @db.Timestamp(0)
+  panchang_data         panchang_data @relation(fields: [panchang_id], references: [id], onDelete: Cascade)
+
+  @@index([panchang_id])
+}
+
+model panchang_karanas {
+  id                    Int       @id @default(autoincrement())
+  panchang_id           Int
+  karana_number         Int
+  karana_name           String    @db.VarChar(50)
+  completion            DateTime?
+  karana_left_percentage Decimal? @db.Decimal(5, 2)
+  created_at            DateTime  @default(now()) @db.Timestamp(0)
+  panchang_data         panchang_data @relation(fields: [panchang_id], references: [id], onDelete: Cascade)
+
+  @@index([panchang_id])
+}
+
+/// Cache for D27 (Nakshatra) chart SVG responses based on full input parameters
+model d27_chart_cache {
+  id                Int       @id @default(autoincrement())
+  cache_key         String    @unique @db.VarChar(300)
+  year              Int
+  month             Int
+  date              Int
+  hours             Int
+  minutes           Int
+  seconds           Int
+  latitude          Decimal   @db.Decimal(10, 6)
+  longitude         Decimal   @db.Decimal(10, 6)
+  timezone          Decimal   @db.Decimal(4, 2)
+  observation_point String    @db.VarChar(20) // "topocentric" or "geocentric"
+  language          String    @db.VarChar(5)  // "en" or "te"
+  svg_code          String    @db.LongText
+  created_at        DateTime  @default(now()) @db.Timestamp(0)
+  updated_at        DateTime  @default(now()) @db.Timestamp(0)
+}

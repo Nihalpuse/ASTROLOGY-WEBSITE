@@ -2,9 +2,10 @@
 
 import React, { useState, useEffect } from "react";
 import { motion } from 'framer-motion';
-import { Calendar, Clock, Star, Sun, Moon, Zap, Shield, BookOpen, Compass, Sunrise, Sunset, Clock3, CalendarDays, TrendingUp, Target, Lightbulb, Heart, Users, Globe, BookMarked, Award } from 'lucide-react';
+import { Calendar, Clock, Star, Sun, Moon, Zap, Shield, BookOpen, Compass, Sunrise, Sunset, Clock3, CalendarDays, TrendingUp, Target, Lightbulb, Heart, Users, Globe, BookMarked, Award, MapPin, RefreshCw } from 'lucide-react';
 import { DrNarendraProfile } from "../components/DrNarendraProfile";
 import { ContactForm } from "../components/ContactForm";
+import { usePanchang, useCurrentLocation } from "../../hooks/usePanchang";
 
 const tabs = ['Overview', 'Benefits', 'FAQs'];
 
@@ -111,10 +112,30 @@ const faqs = [
 
 export default function PanchangPage() {
   const [activeTab, setActiveTab] = useState('Overview');
+  const [selectedDate, setSelectedDate] = useState(new Date());
+  const [customLocation, setCustomLocation] = useState<{ latitude: number; longitude: number } | null>(null);
+  const [isLocationEnabled, setIsLocationEnabled] = useState(false);
+  
+  const { location: currentLocation, error: locationError } = useCurrentLocation();
+  const { data: panchangData, calculations, loading, error, refetch } = usePanchang({
+    date: selectedDate,
+    latitude: customLocation?.latitude || (isLocationEnabled ? currentLocation?.latitude : 17.38333) || 17.38333,
+    longitude: customLocation?.longitude || (isLocationEnabled ? currentLocation?.longitude : 78.4666) || 78.4666,
+    includeCalculations: true
+  });
+
+  const [dataSource, setDataSource] = useState<'database' | 'api' | null>(null);
 
   useEffect(() => {
     window.scrollTo(0, 0);
   }, []);
+
+  const handleLocationToggle = () => {
+    setIsLocationEnabled(!isLocationEnabled);
+    if (!isLocationEnabled && currentLocation) {
+      setCustomLocation(null);
+    }
+  };
 
   return (
     <div className="relative min-h-screen overflow-hidden bg-gradient-to-b from-white via-indigo-50 to-white font-sans">
@@ -123,10 +144,341 @@ export default function PanchangPage() {
           <h1 className="text-5xl md:text-6xl font-extrabold text-black mb-4 text-center drop-shadow-lg font-serif" style={{ fontFamily: 'Cormorant Garamond, serif' }}>
             Panchang - Daily Vedic Almanac
           </h1>
-          <p className="text-xl md:text-2xl text-center max-w-2xl font-sans" style={{ fontFamily: 'Open Sans, Arial, sans-serif', color: '#166534' }}>
+          <p className="text-xl md:text-2xl text-center max-w-2xl font-sans mb-8" style={{ fontFamily: 'Open Sans, Arial, sans-serif', color: '#166534' }}>
             Discover the cosmic wisdom of daily timings, planetary positions, and auspicious moments to align your life with divine rhythms.
           </p>
+          
+          {/* Date and Location Selector */}
+          <div className="w-full max-w-4xl">
+            <div className="flex flex-col lg:flex-row gap-4 items-center mb-6">
+              {/* Date Selector */}
+              <div className="flex items-center gap-2 bg-white/80 rounded-lg p-3 shadow-sm">
+                <Calendar className="text-indigo-600 w-5 h-5" />
+                <input
+                  type="date"
+                  value={selectedDate.toISOString().split('T')[0]}
+                  onChange={(e) => setSelectedDate(new Date(e.target.value))}
+                  className="px-3 py-2 border border-indigo-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-transparent"
+                />
+              </div>
+
+              {/* Location Selector */}
+              <div className="flex items-center gap-2 bg-white/80 rounded-lg p-3 shadow-sm">
+                <MapPin className="text-indigo-600 w-5 h-5" />
+                <div className="flex items-center gap-2">
+                  <button
+                    onClick={handleLocationToggle}
+                    className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
+                      isLocationEnabled 
+                        ? 'bg-green-100 text-green-700 border border-green-300' 
+                        : 'bg-gray-100 text-gray-700 border border-gray-300'
+                    }`}
+                  >
+                    {isLocationEnabled ? '📍 Auto Location' : '📍 Manual Location'}
+                  </button>
+                  
+                  {!isLocationEnabled && (
+                    <>
+                      <input
+                        type="number"
+                        placeholder="Latitude"
+                        value={customLocation?.latitude || ''}
+                        onChange={(e) => setCustomLocation(prev => ({ 
+                          latitude: parseFloat(e.target.value) || 17.38333, 
+                          longitude: prev?.longitude || 78.4666 
+                        }))}
+                        className="px-2 py-1 border border-indigo-300 rounded text-sm focus:outline-none focus:ring-1 focus:ring-indigo-500 w-24"
+                        step="0.000001"
+                      />
+                      <input
+                        type="number"
+                        placeholder="Longitude"
+                        value={customLocation?.longitude || ''}
+                        onChange={(e) => setCustomLocation(prev => ({ 
+                          latitude: prev?.latitude || 17.38333, 
+                          longitude: parseFloat(e.target.value) || 78.4666 
+                        }))}
+                        className="px-2 py-1 border border-indigo-300 rounded text-sm focus:outline-none focus:ring-1 focus:ring-indigo-500 w-24"
+                        step="0.000001"
+                      />
+                    </>
+                  )}
+                  
+                  {isLocationEnabled && currentLocation && (
+                    <span className="text-sm text-green-600 font-medium">
+                      {currentLocation.latitude.toFixed(4)}, {currentLocation.longitude.toFixed(4)}
+                    </span>
+                  )}
+                  
+                  {isLocationEnabled && locationError && (
+                    <span className="text-sm text-red-600">
+                      Location unavailable
+                    </span>
+                  )}
+                </div>
+              </div>
+
+              {/* Refresh Button */}
+              <button
+                onClick={refetch}
+                disabled={loading}
+                className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 disabled:opacity-50 flex items-center gap-2 shadow-sm"
+              >
+                <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
+                {loading ? 'Loading...' : 'Refresh'}
+              </button>
+            </div>
+
+            {/* Current Location Info */}
+            {isLocationEnabled && currentLocation && (
+              <div className="text-center text-sm text-gray-600 mb-4">
+                Using your current location: {currentLocation.latitude.toFixed(4)}°N, {currentLocation.longitude.toFixed(4)}°E
+              </div>
+            )}
+          </div>
         </motion.div>
+
+        {/* Real-time Panchang Display */}
+        {loading && (
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="w-full rounded-2xl bg-white/70 backdrop-blur-md shadow-lg p-8 mb-8 text-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600 mx-auto mb-4"></div>
+            <p className="text-indigo-600 font-medium">Loading Panchang data...</p>
+          </motion.div>
+        )}
+
+        {error && (
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="w-full rounded-2xl bg-red-50 border border-red-200 p-8 mb-8 text-center">
+            <p className="text-red-600 font-medium">Error: {error}</p>
+            <button
+              onClick={refetch}
+              className="mt-4 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700"
+            >
+              Try Again
+            </button>
+          </motion.div>
+        )}
+
+        {panchangData && (
+          <motion.div initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.7 }} className="w-full rounded-2xl bg-white/70 backdrop-blur-md shadow-lg p-8 mb-8">
+            <div className="text-center mb-6">
+              <h2 className="text-3xl font-bold text-indigo-900 mb-2" style={{ fontFamily: 'Playfair Display, serif' }}>
+                {selectedDate.toLocaleDateString('en-US', { 
+                  weekday: 'long', 
+                  year: 'numeric', 
+                  month: 'long', 
+                  day: 'numeric' 
+                })}
+              </h2>
+              <p className="text-lg text-gray-600">
+                {panchangData.weekday.weekday_name} • {panchangData.lunar_month.lunar_month_full_name}
+              </p>
+            </div>
+            
+            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+              {/* Sun Times */}
+              <div className="bg-gradient-to-br from-yellow-50 to-orange-50 rounded-xl p-6 border border-yellow-200">
+                <div className="flex items-center mb-4">
+                  <Sun className="text-yellow-600 w-6 h-6 mr-2" />
+                  <h3 className="text-lg font-semibold text-yellow-800">Sun Times</h3>
+                </div>
+                <div className="space-y-2">
+                  <div className="flex justify-between">
+                    <span className="text-gray-600">Sunrise:</span>
+                    <span className="font-medium">{panchangData.sun_rise}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-gray-600">Sunset:</span>
+                    <span className="font-medium">{panchangData.sun_set}</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Tithi */}
+              <div className="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-xl p-6 border border-blue-200">
+                <div className="flex items-center mb-4">
+                  <Moon className="text-blue-600 w-6 h-6 mr-2" />
+                  <h3 className="text-lg font-semibold text-blue-800">Tithi</h3>
+                </div>
+                <div className="space-y-2">
+                  <div className="text-center">
+                    <div className="text-2xl font-bold text-blue-800">{panchangData.tithi.name}</div>
+                    <div className="text-sm text-gray-600 capitalize">{panchangData.tithi.paksha} Paksha</div>
+                  </div>
+                  {panchangData.tithi.left_precentage && (
+                    <div className="w-full bg-gray-200 rounded-full h-2">
+                      <div 
+                        className="bg-blue-600 h-2 rounded-full" 
+                        style={{ width: `${panchangData.tithi.left_precentage}%` }}
+                      ></div>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* Nakshatra */}
+              <div className="bg-gradient-to-br from-purple-50 to-pink-50 rounded-xl p-6 border border-purple-200">
+                <div className="flex items-center mb-4">
+                  <Star className="text-purple-600 w-6 h-6 mr-2" />
+                  <h3 className="text-lg font-semibold text-purple-800">Nakshatra</h3>
+                </div>
+                <div className="space-y-2">
+                  <div className="text-center">
+                    <div className="text-xl font-bold text-purple-800">{panchangData.nakshatra.name}</div>
+                  </div>
+                  {panchangData.nakshatra.left_percentage && (
+                    <div className="w-full bg-gray-200 rounded-full h-2">
+                      <div 
+                        className="bg-purple-600 h-2 rounded-full" 
+                        style={{ width: `${panchangData.nakshatra.left_percentage}%` }}
+                      ></div>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* Lunar Month */}
+              <div className="bg-gradient-to-br from-green-50 to-emerald-50 rounded-xl p-6 border border-green-200">
+                <div className="flex items-center mb-4">
+                  <Calendar className="text-green-600 w-6 h-6 mr-2" />
+                  <h3 className="text-lg font-semibold text-green-800">Lunar Month</h3>
+                </div>
+                <div className="text-center">
+                  <div className="text-xl font-bold text-green-800">{panchangData.lunar_month.lunar_month_full_name}</div>
+                  <div className="text-sm text-gray-600">Ritu: {panchangData.ritu.name}</div>
+                </div>
+              </div>
+
+              {/* Aayanam */}
+              <div className="bg-gradient-to-br from-teal-50 to-cyan-50 rounded-xl p-6 border border-teal-200">
+                <div className="flex items-center mb-4">
+                  <Compass className="text-teal-600 w-6 h-6 mr-2" />
+                  <h3 className="text-lg font-semibold text-teal-800">Aayanam</h3>
+                </div>
+                <div className="text-center">
+                  <div className="text-xl font-bold text-teal-800">{panchangData.aayanam}</div>
+                </div>
+              </div>
+
+              {/* Year Info */}
+              <div className="bg-gradient-to-br from-amber-50 to-yellow-50 rounded-xl p-6 border border-amber-200">
+                <div className="flex items-center mb-4">
+                  <Award className="text-amber-600 w-6 h-6 mr-2" />
+                  <h3 className="text-lg font-semibold text-amber-800">Year</h3>
+                </div>
+                <div className="text-center">
+                  <div className="text-sm font-medium text-amber-800">{panchangData.year.vikram_chaitradi_year_name}</div>
+                  <div className="text-xs text-gray-600">Vikram Samvat</div>
+                </div>
+              </div>
+            </div>
+
+            {/* Yoga and Karana Information */}
+            <div className="grid md:grid-cols-2 gap-6 mb-8">
+              {/* Current Yoga */}
+              <div className="bg-gradient-to-br from-violet-50 to-purple-50 rounded-xl p-6 border border-violet-200">
+                <h3 className="text-lg font-semibold text-violet-800 mb-4 flex items-center">
+                  <Zap className="w-5 h-5 mr-2" />
+                  Current Yoga
+                </h3>
+                <div className="space-y-3">
+                  {Object.values(panchangData.yoga).slice(0, 2).map((yoga: any, index: number) => (
+                    <div key={index} className="bg-white rounded-lg p-3">
+                      <div className="font-medium text-violet-800">{yoga.name}</div>
+                      {yoga.completion && (
+                        <div className="text-sm text-gray-600">
+                          Completes: {new Date(yoga.completion).toLocaleTimeString()}
+                        </div>
+                      )}
+                      {yoga.yoga_left_percentage && (
+                        <div className="w-full bg-gray-200 rounded-full h-2 mt-2">
+                          <div 
+                            className="bg-violet-600 h-2 rounded-full" 
+                            style={{ width: `${yoga.yoga_left_percentage}%` }}
+                          ></div>
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Current Karana */}
+              <div className="bg-gradient-to-br from-cyan-50 to-blue-50 rounded-xl p-6 border border-cyan-200">
+                <h3 className="text-lg font-semibold text-cyan-800 mb-4 flex items-center">
+                  <Clock className="w-5 h-5 mr-2" />
+                  Current Karana
+                </h3>
+                <div className="space-y-3">
+                  {Object.values(panchangData.karana).slice(0, 2).map((karana: any, index: number) => (
+                    <div key={index} className="bg-white rounded-lg p-3">
+                      <div className="font-medium text-cyan-800">{karana.name}</div>
+                      {karana.completion && (
+                        <div className="text-sm text-gray-600">
+                          Completes: {new Date(karana.completion).toLocaleTimeString()}
+                        </div>
+                      )}
+                      {karana.karana_left_percentage && (
+                        <div className="w-full bg-gray-200 rounded-full h-2 mt-2">
+                          <div 
+                            className="bg-cyan-600 h-2 rounded-full" 
+                            style={{ width: `${karana.karana_left_percentage}%` }}
+                          ></div>
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            {/* Auspicious and Inauspicious Times */}
+            {calculations && (
+              <div className="grid md:grid-cols-2 gap-6">
+                {/* Auspicious Times */}
+                <div className="bg-green-50 rounded-xl p-6 border border-green-200">
+                  <h3 className="text-lg font-semibold text-green-800 mb-4 flex items-center">
+                    <TrendingUp className="w-5 h-5 mr-2" />
+                    Auspicious Times
+                  </h3>
+                  <div className="space-y-3">
+                    {calculations.auspicious_times.map((time, index) => (
+                      <div key={index} className="flex justify-between items-center bg-white rounded-lg p-3">
+                        <div>
+                          <div className="font-medium text-green-800">{time.name}</div>
+                          <div className="text-sm text-gray-600">{time.description || ''}</div>
+                        </div>
+                        <div className="text-right">
+                          <div className="text-sm font-medium">{time.start} - {time.end}</div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Inauspicious Times */}
+                <div className="bg-red-50 rounded-xl p-6 border border-red-200">
+                  <h3 className="text-lg font-semibold text-red-800 mb-4 flex items-center">
+                    <Shield className="w-5 h-5 mr-2" />
+                    Avoid These Times
+                  </h3>
+                  <div className="space-y-3">
+                    {calculations.inauspicious_times.map((time, index) => (
+                      <div key={index} className="flex justify-between items-center bg-white rounded-lg p-3">
+                        <div>
+                          <div className="font-medium text-red-800">{time.name}</div>
+                          <div className="text-sm text-gray-600">{time.description || ''}</div>
+                        </div>
+                        <div className="text-right">
+                          <div className="text-sm font-medium">{time.start} - {time.end}</div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            )}
+          </motion.div>
+        )}
 
         <div className="flex flex-wrap gap-2 mb-8 border-b border-gray-200">
           {tabs.map((tab) => (
