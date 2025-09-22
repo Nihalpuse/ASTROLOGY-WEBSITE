@@ -284,12 +284,7 @@ const AdminLayout = ({ children }: { children: React.ReactNode }) => {
       expanded: ['/admin/products/zodiac-sign', '/admin/products/categories', '/admin/products/attributes', '/admin/products/create'].includes(pathname || ''),
       active: ['/admin/products/zodiac-sign', '/admin/products/categories', '/admin/products/attributes', '/admin/products/create'].includes(pathname || ''),
     },
-    {
-      icon: Package,
-      label: 'Stone',
-      href: '/admin/stone',
-      active: pathname === '/admin/stone'
-    },
+    
     { 
       icon: MessageCircle, 
       label: 'Services', 

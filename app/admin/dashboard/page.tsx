@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Image from 'next/image';
 import {
   BarChart, Bar, LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid,
@@ -15,6 +15,77 @@ import {
 import { products } from '../../../data/products.js';
 import { services } from '../../../data/services.js';
 
+// Types for API responses
+interface DashboardMetrics {
+  totalUsers: number;
+  totalOrders: number;
+  totalRevenue: number;
+  totalProducts: number;
+  totalServices: number;
+  totalAstrologers: number;
+}
+
+interface MonthlyRevenueData {
+  month: string;
+  revenue: number;
+  orders: number;
+  year: number;
+}
+
+interface WeeklyRevenueData {
+  week: string;
+  revenue: number;
+  orders: number;
+  date: string;
+}
+
+interface TopService {
+  id: number;
+  name: string;
+  image: string;
+  review: number;
+  bookings: number;
+  revenue: number;
+}
+
+interface TopProduct {
+  id: number;
+  name: string;
+  image: string;
+  review: number;
+  sold: number;
+  profit: number;
+}
+
+interface TopAstrologer {
+  id: number;
+  name: string;
+  image: string;
+  review: number;
+  consultations: number;
+  revenue: number;
+}
+
+interface RevenueBreakdownItem {
+  name: string;
+  value: number;
+  color: string;
+}
+
+interface RevenueBreakdownData {
+  breakdown: RevenueBreakdownItem[];
+  totalRevenue: number;
+  avgOrderValue: number;
+  topSegment: RevenueBreakdownItem;
+  breakdownShare: number;
+  contributors: {
+    name: string;
+    image: string;
+    type: string;
+    revenue: number;
+  }[];
+}
+
 // Currency formatting
 const formatCurrency = (value: string | number) => {
   const numValue = typeof value === 'string' ? parseFloat(value) : Number(value);
@@ -24,19 +95,19 @@ const formatCurrency = (value: string | number) => {
 const formatNumber = (value: number) => value ? String(value) : '0';
 
 // --- DASHBOARD DATA WITH REAL PRODUCT/SERVICE INTEGRATION ---
-const dashboardData = {
-  // Main Metrics
-  totalRevenue: 567890,
-  totalProducts: products.length,
-  totalServices: services.length,
-  totalOrders: 1250,
-  totalUsers: 3394,
-  totalAstrologers: 15,
+const initialDashboardData = {
+  // Main Metrics - will be updated from API
+  totalRevenue: 0,
+  totalProducts: 0,
+  totalServices: 0,
+  totalOrders: 0,
+  totalUsers: 0,
+  totalAstrologers: 0,
   
-  // Revenue breakdown
-  productRevenue: 234560,
-  serviceRevenue: 198320,
-  astrologerRevenue: 135010,
+  // Revenue breakdown - now calculated from real data
+  productRevenue: 0,
+  serviceRevenue: 0,
+  astrologerRevenue: 0,
   
   // Growth percentages
   revenueGrowth: 12.5,
@@ -46,97 +117,30 @@ const dashboardData = {
   userGrowth: 7.2,
   astrologerGrowth: 6.7,
   
-  // Monthly Revenue Data
-  monthlyRevenue: [
-    { month: 'Jan', revenue: 42000 },
-    { month: 'Feb', revenue: 38000 },
-    { month: 'Mar', revenue: 45000 },
-    { month: 'Apr', revenue: 52000 },
-    { month: 'May', revenue: 48000 },
-    { month: 'Jun', revenue: 55000 },
-    { month: 'Jul', revenue: 59000 },
-    { month: 'Aug', revenue: 62000 },
-    { month: 'Sep', revenue: 58000 },
-    { month: 'Oct', revenue: 65000 },
-    { month: 'Nov', revenue: 68000 },
-    { month: 'Dec', revenue: 72000 }
-  ],
+  // Monthly Revenue Data - will be updated from API
+  monthlyRevenue: [] as MonthlyRevenueData[],
   
-  // Weekly Revenue Data
-  weeklyRevenue: [
-    { week: 'W1', revenue: 16500 },
-    { week: 'W2', revenue: 14800 },
-    { week: 'W3', revenue: 18200 },
-    { week: 'W4', revenue: 17600 },
-    { week: 'W5', revenue: 19100 },
-    { week: 'W6', revenue: 20500 },
-    { week: 'W7', revenue: 18900 },
-    { week: 'W8', revenue: 21300 }
-  ],
+  // Weekly Revenue Data - will be updated from API
+  weeklyRevenue: [] as WeeklyRevenueData[],
   
-  // Top Products - Using real product data
-  topProducts: products.slice(0, 5).map((product, index) => ({
-    id: product.id,
-    name: product.title,
-    image: product.image || '/placeholder.jpg',
-    review: product.rating || 4.5,
-    sold: Math.floor(Math.random() * 200) + 50, // Random sold count
-    profit: Math.floor(Math.random() * 25000) + 10000 // Random profit
-  })),
+  // Top Products - will be updated from API
+  topProducts: [] as TopProduct[],
   
-  // Top Services - Using real service data
-  topServices: services.slice(0, 5).map((service, index) => ({
-    id: service.id,
-    name: service.title,
-    image: service.images ? service.images[0] : '/placeholder.jpg',
-    review: service.rating || 4.6,
-    bookings: service.ordersCount || Math.floor(Math.random() * 100) + 20,
-    revenue: service.price * (service.ordersCount || Math.floor(Math.random() * 100) + 20)
-  })),
+  // Top Services - will be updated from API
+  topServices: [] as TopService[],
   
-  // Top Astrologers - Mock data with placeholder images
-  topAstrologers: [
-    { 
-      id: 1, 
-      name: 'Dr. Raj Sharma', 
-      image: '/images/placeholder-author.jpg',
-      review: 4.9, 
-      consultations: 145, 
-      revenue: 43500 
-    },
-    { 
-      id: 2, 
-      name: 'Priya Joshi', 
-      image: '/images/female-avatar.png',
-      review: 4.8, 
-      consultations: 132, 
-      revenue: 39600 
-    },
-    { 
-      id: 3, 
-      name: 'Acharya Kumar', 
-      image: '/images/placeholder-author.jpg',
-      review: 4.7, 
-      consultations: 118, 
-      revenue: 35400 
-    },
-    { 
-      id: 4, 
-      name: 'Guru Divya', 
-      image: '/images/female-avatar.png',
-      review: 4.8, 
-      consultations: 98, 
-      revenue: 29400 
-    },
-    { 
-      id: 5, 
-      name: 'Pandit Verma', 
-      image: '/images/placeholder-author.jpg',
-      review: 4.6, 
-      consultations: 87, 
-      revenue: 26100 
-    }
-  ],
+  // Top Astrologers - will be updated from API
+  topAstrologers: [] as TopAstrologer[],
+  
+  // Revenue Breakdown - will be updated from API
+  revenueBreakdown: {
+    breakdown: [] as RevenueBreakdownItem[],
+    totalRevenue: 0,
+    avgOrderValue: 0,
+    topSegment: { name: 'Products', value: 0, color: '#3b82f6' },
+    breakdownShare: 0,
+    contributors: [] as { name: string; image: string; type: string; revenue: number; }[]
+  },
   
   // User Statistics
   userStats: {
@@ -192,6 +196,184 @@ export default function AdminDashboard() {
   const [timeRange, setTimeRange] = useState<'weekly' | 'monthly'>('monthly');
   const [selectedRegion, setSelectedRegion] = useState<string | null>(null);
   const [monthRange, setMonthRange] = useState<number>(12); // months shown when monthly selected (1,3,6,12)
+  const [dashboardData, setDashboardData] = useState(initialDashboardData);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [salesLoading, setSalesLoading] = useState(false);
+  const [revenueGrowth, setRevenueGrowth] = useState(0);
+
+  // Fetch sales revenue data
+  const fetchSalesData = async (timeRange: 'weekly' | 'monthly', months: number = 12) => {
+    try {
+      setSalesLoading(true);
+      
+      const metric = timeRange === 'monthly' ? 'monthly-revenue' : 'weekly-revenue';
+      const params = timeRange === 'monthly' ? `?metric=${metric}&months=${months}` : `?metric=${metric}&weeks=8`;
+      
+      const response = await fetch(`/api/dashboard${params}`);
+      if (!response.ok) {
+        throw new Error('Failed to fetch sales data');
+      }
+      
+      const result = await response.json();
+      
+      if (result.success) {
+        if (timeRange === 'monthly') {
+          setDashboardData(prevData => ({
+            ...prevData,
+            monthlyRevenue: result.monthlyRevenue || []
+          }));
+        } else {
+          setDashboardData(prevData => ({
+            ...prevData,
+            weeklyRevenue: result.weeklyRevenue || []
+          }));
+        }
+      }
+    } catch (err) {
+      console.error('Error fetching sales data:', err);
+    } finally {
+      setSalesLoading(false);
+    }
+  };
+
+  // Fetch revenue growth
+  const fetchRevenueGrowth = async () => {
+    try {
+      const response = await fetch('/api/dashboard?metric=revenue-growth');
+      if (response.ok) {
+        const result = await response.json();
+        if (result.success) {
+          setRevenueGrowth(result.revenueGrowth);
+        }
+      }
+    } catch (err) {
+      console.error('Error fetching revenue growth:', err);
+    }
+  };
+
+  // Fetch top services
+  const fetchTopServices = async () => {
+    try {
+      const response = await fetch('/api/dashboard?metric=top-services&limit=5');
+      if (response.ok) {
+        const result = await response.json();
+        if (result.success) {
+          setDashboardData(prevData => ({
+            ...prevData,
+            topServices: result.topServices || []
+          }));
+        }
+      }
+    } catch (err) {
+      console.error('Error fetching top services:', err);
+    }
+  };
+
+  // Fetch top products
+  const fetchTopProducts = async () => {
+    try {
+      const response = await fetch('/api/dashboard?metric=top-products&limit=5');
+      if (response.ok) {
+        const result = await response.json();
+        if (result.success) {
+          setDashboardData(prevData => ({
+            ...prevData,
+            topProducts: result.topProducts || []
+          }));
+        }
+      }
+    } catch (err) {
+      console.error('Error fetching top products:', err);
+    }
+  };
+
+  // Fetch top astrologers
+  const fetchTopAstrologers = async () => {
+    try {
+      const response = await fetch('/api/dashboard?metric=top-astrologers&limit=5');
+      if (response.ok) {
+        const result = await response.json();
+        if (result.success) {
+          setDashboardData(prevData => ({
+            ...prevData,
+            topAstrologers: result.topAstrologers || []
+          }));
+        }
+      }
+    } catch (err) {
+      console.error('Error fetching top astrologers:', err);
+    }
+  };
+
+  // Fetch revenue breakdown
+  const fetchRevenueBreakdown = async () => {
+    try {
+      const response = await fetch('/api/dashboard?metric=revenue-breakdown');
+      if (response.ok) {
+        const result = await response.json();
+        if (result.success) {
+          setDashboardData(prevData => ({
+            ...prevData,
+            revenueBreakdown: result.revenueBreakdown || {
+              breakdown: [],
+              totalRevenue: 0,
+              avgOrderValue: 0,
+              topSegment: { name: 'Products', value: 0, color: '#3b82f6' },
+              breakdownShare: 0,
+              contributors: []
+            }
+          }));
+        }
+      }
+    } catch (err) {
+      console.error('Error fetching revenue breakdown:', err);
+    }
+  };
+
+  // Fetch dashboard data from API
+  useEffect(() => {
+    const fetchDashboardData = async () => {
+      try {
+        setLoading(true);
+        setError(null);
+        
+        const response = await fetch('/api/dashboard');
+        if (!response.ok) {
+          throw new Error('Failed to fetch dashboard data');
+        }
+        
+        const result = await response.json();
+        
+        if (result.success && result.data) {
+          setDashboardData(prevData => ({
+            ...prevData,
+            totalUsers: result.data.totalUsers,
+            totalOrders: result.data.totalOrders,
+            totalRevenue: result.data.totalRevenue,
+            totalProducts: result.data.totalProducts,
+            totalServices: result.data.totalServices,
+            totalAstrologers: result.data.totalAstrologers
+          }));
+        } else {
+          throw new Error(result.error || 'Failed to fetch data');
+        }
+      } catch (err) {
+        console.error('Error fetching dashboard data:', err);
+        setError(err instanceof Error ? err.message : 'An error occurred');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchDashboardData();
+    fetchRevenueGrowth();
+    fetchSalesData('monthly', 12);
+    fetchTopServices();
+    fetchTopProducts();
+    fetchTopAstrologers();
+    fetchRevenueBreakdown();
+  }, []);
 
   const getMonthlySlice = (months: number) => {
     const data = dashboardData.monthlyRevenue.slice(-months);
@@ -200,24 +382,59 @@ export default function AdminDashboard() {
   
   const currentRevenueData = timeRange === 'monthly' ? getMonthlySlice(monthRange) : dashboardData.weeklyRevenue;
 
-  // Revenue breakdown for donut chart
-  const revenueBreakdown = [
-    { name: 'Products', value: dashboardData.productRevenue, color: '#3b82f6' },
-    { name: 'Services', value: dashboardData.serviceRevenue, color: '#8b5cf6' },
-    { name: 'Astrologers', value: dashboardData.astrologerRevenue, color: '#10b981' }
-  ];
+  // Use real revenue breakdown data from API
+  const revenueBreakdown = dashboardData.revenueBreakdown.breakdown;
+  const totalBreakdown = dashboardData.revenueBreakdown.totalRevenue;
+  const topSegment = dashboardData.revenueBreakdown.topSegment;
+  const avgOrderValue = dashboardData.revenueBreakdown.avgOrderValue;
+  const breakdownShare = dashboardData.revenueBreakdown.breakdownShare;
+  const contributors = dashboardData.revenueBreakdown.contributors;
 
-  // --- Derived values for the Revenue Breakdown card ---
-  const totalBreakdown = revenueBreakdown.reduce((s, r) => s + r.value, 0);
-  const topSegment = revenueBreakdown.reduce((prev, curr) => (curr.value > prev.value ? curr : prev), revenueBreakdown[0]);
-  const avgOrderValue = dashboardData.totalOrders ? Math.round(dashboardData.totalRevenue / dashboardData.totalOrders) : 0;
+  // Show loading state
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gray-50 dark:bg-gray-900 p-3 sm:p-4 lg:p-6">
+        <div className="max-w-7xl mx-auto">
+          <div className="mb-6 sm:mb-8">
+            <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white mb-2">Dashboard</h1>
+          </div>
+          <div className="flex items-center justify-center min-h-96">
+            <div className="text-center">
+              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+              <p className="text-gray-600 dark:text-gray-400">Loading dashboard data...</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
-  // Build a simple contributors list from top lists (products use profit as proxy revenue)
-  const contributors = [
-    ...dashboardData.topProducts.map(p => ({ name: p.name, image: p.image, type: 'Product', revenue: p.profit })),
-    ...dashboardData.topServices.map(s => ({ name: s.name, image: s.image, type: 'Service', revenue: s.revenue })),
-    ...dashboardData.topAstrologers.map(a => ({ name: a.name, image: a.image, type: 'Astrologer', revenue: a.revenue }))
-  ].sort((a, b) => b.revenue - a.revenue).slice(0, 5);
+  // Show error state
+  if (error) {
+    return (
+      <div className="min-h-screen bg-gray-50 dark:bg-gray-900 p-3 sm:p-4 lg:p-6">
+        <div className="max-w-7xl mx-auto">
+          <div className="mb-6 sm:mb-8">
+            <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white mb-2">Dashboard</h1>
+          </div>
+          <div className="flex items-center justify-center min-h-96">
+            <div className="text-center">
+              <div className="bg-red-100 dark:bg-red-900/20 border border-red-300 dark:border-red-700 rounded-lg p-6">
+                <p className="text-red-600 dark:text-red-400 font-medium mb-2">Error loading dashboard</p>
+                <p className="text-red-500 dark:text-red-300 text-sm">{error}</p>
+                <button 
+                  onClick={() => window.location.reload()} 
+                  className="mt-4 px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 transition-colors"
+                >
+                  Retry
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900 p-3 sm:p-4 lg:p-6">
@@ -270,7 +487,7 @@ export default function AdminDashboard() {
             </div>
             <div className="mb-2">
               <span className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white">
-                ${dashboardData.totalRevenue.toLocaleString()}
+                ₹{dashboardData.totalRevenue.toLocaleString()}
               </span>
             </div>
             <div className="flex flex-col sm:flex-row sm:items-center">
@@ -324,7 +541,7 @@ export default function AdminDashboard() {
               </span>
             </div>
             <div className="text-xs sm:text-sm text-gray-500">
-              Revenue: ${dashboardData.productRevenue.toLocaleString()}
+              Revenue: ₹{dashboardData.productRevenue.toLocaleString()}
             </div>
           </div>
 
@@ -342,7 +559,7 @@ export default function AdminDashboard() {
               </span>
             </div>
             <div className="text-xs sm:text-sm text-gray-500">
-              Revenue: ${dashboardData.serviceRevenue.toLocaleString()}
+              Revenue: ₹{dashboardData.serviceRevenue.toLocaleString()}
             </div>
           </div>
 
@@ -360,7 +577,7 @@ export default function AdminDashboard() {
               </span>
             </div>
             <div className="text-xs sm:text-sm text-gray-500">
-              Revenue: ${dashboardData.astrologerRevenue.toLocaleString()}
+              Revenue: ₹{dashboardData.astrologerRevenue.toLocaleString()}
             </div>
           </div>
         </div>
@@ -378,25 +595,40 @@ export default function AdminDashboard() {
               <div className="mt-3 lg:mt-0 flex flex-col sm:flex-row items-start sm:items-center space-y-3 sm:space-y-0 sm:space-x-3">
                 <div className="flex bg-gray-100 dark:bg-gray-700 rounded-lg p-1 w-full sm:w-auto">
                   <button
-                    onClick={() => { setTimeRange('weekly'); }}
+                    onClick={() => { 
+                      setTimeRange('weekly'); 
+                      fetchSalesData('weekly', 8);
+                    }}
                     className={`px-2 sm:px-3 py-1 text-xs sm:text-sm rounded-md transition-colors ${timeRange === 'weekly' ? 'bg-white dark:bg-gray-600 text-gray-900 dark:text-white shadow-sm' : 'text-gray-600 dark:text-gray-400'}`}
                   >
                     1W
                   </button>
                   <button
-                    onClick={() => { setTimeRange('monthly'); setMonthRange(1); }}
+                    onClick={() => { 
+                      setTimeRange('monthly'); 
+                      setMonthRange(1);
+                      fetchSalesData('monthly', 1);
+                    }}
                     className={`px-2 sm:px-3 py-1 text-xs sm:text-sm rounded-md transition-colors ${timeRange === 'monthly' && monthRange === 1 ? 'bg-white dark:bg-gray-600 text-gray-900 dark:text-white shadow-sm' : 'text-gray-600 dark:text-gray-400'}`}
                   >
                     1M
                   </button>
                   <button
-                    onClick={() => { setTimeRange('monthly'); setMonthRange(3); }}
+                    onClick={() => { 
+                      setTimeRange('monthly'); 
+                      setMonthRange(3);
+                      fetchSalesData('monthly', 3);
+                    }}
                     className={`px-2 sm:px-3 py-1 text-xs sm:text-sm rounded-md transition-colors ${timeRange === 'monthly' && monthRange === 3 ? 'bg-white dark:bg-gray-600 text-gray-900 dark:text-white shadow-sm' : 'text-gray-600 dark:text-gray-400'}`}
                   >
                     3M
                   </button>
                   <button
-                    onClick={() => { setTimeRange('monthly'); setMonthRange(12); }}
+                    onClick={() => { 
+                      setTimeRange('monthly'); 
+                      setMonthRange(12);
+                      fetchSalesData('monthly', 12);
+                    }}
                     className={`px-2 sm:px-3 py-1 text-xs sm:text-sm rounded-md transition-colors ${timeRange === 'monthly' && monthRange === 12 ? 'bg-blue-600 text-white shadow-sm' : 'text-gray-600 dark:text-gray-400'}`}
                   >
                     1Y
@@ -435,7 +667,12 @@ export default function AdminDashboard() {
                 max={12}
                 step={1}
                 value={monthRange}
-                onChange={(e) => { setTimeRange('monthly'); setMonthRange(Number(e.target.value)); }}
+                onChange={(e) => { 
+                  setTimeRange('monthly'); 
+                  const newMonthRange = Number(e.target.value);
+                  setMonthRange(newMonthRange);
+                  fetchSalesData('monthly', newMonthRange);
+                }}
                 className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"
               />
             </div>
@@ -452,23 +689,34 @@ export default function AdminDashboard() {
               </div>
               <div className="p-2 sm:p-3 bg-gray-50 dark:bg-gray-700 rounded">
                 <div className="text-xs text-gray-500">Growth (vs prev)</div>
-                <div className="text-sm sm:text-lg font-semibold text-green-600">{dashboardData.revenueGrowth}%</div>
+                <div className={`text-sm sm:text-lg font-semibold ${revenueGrowth >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                  {revenueGrowth >= 0 ? '+' : ''}{revenueGrowth}%
+                </div>
               </div>
             </div>
 
             <div className="flex-1 min-h-0">
               {/* Main combined chart - extended */}
               <div className="w-full h-full min-h-0" style={{ minHeight: '250px' }}>
-                <ResponsiveContainer width="100%" height="100%">
-                  <ComposedChart data={currentRevenueData}>
-                    <CartesianGrid stroke="#f1f5f9" />
-                    <XAxis dataKey={timeRange === 'monthly' ? 'month' : 'week'} stroke="#6b7280" />
-                    <YAxis stroke="#6b7280" />
-                    <Tooltip formatter={(value: number) => [`₹${value.toLocaleString()}`, 'Revenue']} />
-                    <Area type="monotone" dataKey="revenue" fill="#bfdbfe" stroke="#3b82f6" fillOpacity={0.35} />
-                    <Bar dataKey="revenue" barSize={18} fill="#3b82f6" />
-                  </ComposedChart>
-                </ResponsiveContainer>
+                {salesLoading ? (
+                  <div className="flex items-center justify-center h-full">
+                    <div className="text-center">
+                      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-2"></div>
+                      <p className="text-sm text-gray-500">Loading sales data...</p>
+                    </div>
+                  </div>
+                ) : (
+                  <ResponsiveContainer width="100%" height="100%">
+                    <ComposedChart data={currentRevenueData}>
+                      <CartesianGrid stroke="#f1f5f9" />
+                      <XAxis dataKey={timeRange === 'monthly' ? 'month' : 'week'} stroke="#6b7280" />
+                      <YAxis stroke="#6b7280" />
+                      <Tooltip formatter={(value: number) => [`₹${value.toLocaleString()}`, 'Revenue']} />
+                      <Area type="monotone" dataKey="revenue" fill="#bfdbfe" stroke="#3b82f6" fillOpacity={0.35} />
+                      <Bar dataKey="revenue" barSize={18} fill="#3b82f6" />
+                    </ComposedChart>
+                  </ResponsiveContainer>
+                )}
               </div>
             </div>
           </div>
@@ -502,7 +750,7 @@ export default function AdminDashboard() {
 
               <div className="flex-1">
                 <div className="text-xs sm:text-sm text-gray-500 mb-2">Total Revenue</div>
-                <div className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white">₹{(dashboardData.productRevenue + dashboardData.serviceRevenue + dashboardData.astrologerRevenue).toLocaleString()}</div>
+                <div className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white">₹{totalBreakdown.toLocaleString()}</div>
 
                 <div className="mt-4 space-y-2">
                   {revenueBreakdown.map((r) => (
@@ -533,7 +781,7 @@ export default function AdminDashboard() {
                 </div>
                 <div className="p-2 sm:p-3 bg-gray-50 dark:bg-gray-700 rounded">
                   <div className="text-xs text-gray-500">Breakdown Share</div>
-                  <div className="text-sm font-semibold text-gray-900 dark:text-white">{Math.round((topSegment.value / (totalBreakdown || 1)) * 100)}%</div>
+                  <div className="text-sm font-semibold text-gray-900 dark:text-white">{breakdownShare}%</div>
                   <div className="text-xs text-gray-400">of total revenue</div>
                 </div>
               </div>
@@ -614,7 +862,7 @@ export default function AdminDashboard() {
                         </div>
                       </td>
                       <td className="py-3 text-sm text-gray-900 dark:text-white hidden md:table-cell">{astrologer.consultations}</td>
-                      <td className="py-3 text-xs sm:text-sm font-medium text-gray-900 dark:text-white">${astrologer.revenue.toLocaleString()}</td>
+                      <td className="py-3 text-xs sm:text-sm font-medium text-gray-900 dark:text-white">₹{astrologer.revenue.toLocaleString()}</td>
                     </tr>
                   ))}
                 </tbody>
@@ -743,7 +991,7 @@ export default function AdminDashboard() {
                         </div>
                       </td>
                       <td className="py-3 text-sm text-gray-900 dark:text-white hidden md:table-cell">{service.bookings}</td>
-                      <td className="py-3 text-xs sm:text-sm font-medium text-gray-900 dark:text-white">${service.revenue.toLocaleString()}</td>
+                      <td className="py-3 text-xs sm:text-sm font-medium text-gray-900 dark:text-white">₹{service.revenue.toLocaleString()}</td>
                     </tr>
                   ))}
                 </tbody>
@@ -801,7 +1049,7 @@ export default function AdminDashboard() {
                         </div>
                       </td>
                       <td className="py-3 text-sm text-gray-900 dark:text-white hidden md:table-cell">{product.sold}</td>
-                      <td className="py-3 text-xs sm:text-sm font-medium text-gray-900 dark:text-white">${product.profit.toLocaleString()}</td>
+                      <td className="py-3 text-xs sm:text-sm font-medium text-gray-900 dark:text-white">₹{product.profit.toLocaleString()}</td>
                     </tr>
                   ))}
                 </tbody>
