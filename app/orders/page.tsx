@@ -73,6 +73,9 @@ export default function OrdersPage() {
   const [loading, setLoading] = useState(true)
   const [orders, setOrders] = useState<Order[]>([])
   const [activeOrderId, setActiveOrderId] = useState<number | null>(null)
+  const [ratings, setRatings] = useState<Record<number, { rating: number; review: string; submitting?: boolean }>>({})
+  const [ratedIds, setRatedIds] = useState<number[]>([])
+  const [previewRatings, setPreviewRatings] = useState(false)
   
   useEffect(() => {
     // Redirect if not authenticated
@@ -186,6 +189,46 @@ export default function OrdersPage() {
   const toggleOrderDetails = (orderId: number) => {
     setActiveOrderId(activeOrderId === orderId ? null : orderId);
   };
+
+  const handleRatingChange = (orderId: number, value: number) => {
+    setRatings((prev) => ({
+      ...prev,
+      [orderId]: { ...(prev[orderId] || { rating: 5, review: '' }), rating: value },
+    }))
+  }
+
+  const handleReviewChange = (orderId: number, review: string) => {
+    setRatings((prev) => ({
+      ...prev,
+      [orderId]: { ...(prev[orderId] || { rating: 5, review: '' }), review },
+    }))
+  }
+
+  const submitRating = async (orderId: number) => {
+    const payload = ratings[orderId] || { rating: 5, review: '' }
+    try {
+      setRatings((prev) => ({ ...prev, [orderId]: { ...(prev[orderId] || {}), submitting: true } }))
+      if (!previewRatings) {
+        const res = await fetch('/api/orders/rate', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ orderId, rating: payload.rating, review: payload.review, userId })
+        })
+        const data = await res.json()
+        if (!res.ok || !data.success) throw new Error(data.error || 'Failed to submit rating')
+      } else {
+        // In preview mode just simulate a small delay
+        await new Promise((res) => setTimeout(res, 300))
+      }
+      // mark as rated locally
+      setRatedIds((prev) => Array.from(new Set([...prev, orderId])))
+      toast.success('Thanks for your feedback!')
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : 'Failed to submit rating')
+    } finally {
+      setRatings((prev) => ({ ...prev, [orderId]: { ...(prev[orderId] || {}), submitting: false } }))
+    }
+  }
   
   const getStatusColor = (status: string) => {
     switch (status.toLowerCase()) {
@@ -225,6 +268,12 @@ export default function OrdersPage() {
             My Orders
           </h1>
           <p className="text-lg text-neutral-700">Track and view details of all your orders</p>
+          <div className="mt-4 flex justify-center">
+            <label className="inline-flex items-center space-x-2 text-sm text-neutral-600">
+              <input type="checkbox" checked={previewRatings} onChange={(e) => setPreviewRatings(e.target.checked)} />
+              <span>Preview Ratings UI</span>
+            </label>
+          </div>
         </div>
         
         <div className="max-w-4xl mx-auto">
@@ -446,6 +495,52 @@ export default function OrdersPage() {
                         </div>
                       </div>
                       
+                      {/* Rating UI for delivered/completed orders */}
+                      {(order.status === 'completed' || previewRatings) && !ratedIds.includes(order.id) && (
+                        <div className="w-full bg-white rounded-lg p-4 border border-neutral-200 mb-4">
+                          <h5 className="font-medium text-neutral-900 mb-2">Rate your order</h5>
+                          <div className="flex items-center mb-3">
+                            {[1,2,3,4,5].map((s) => {
+                              const current = ratings[order.id]?.rating ?? 5
+                              return (
+                                <button
+                                  key={s}
+                                  type="button"
+                                  aria-label={`${s} star${s>1? 's':''}`}
+                                  onClick={(e) => { e.stopPropagation(); handleRatingChange(order.id, s) }}
+                                  className={`text-2xl mr-2 ${s <= current ? 'text-yellow-400' : 'text-neutral-300'}`}
+                                >
+                                  ★
+                                </button>
+                              )
+                            })}
+                          </div>
+                          <textarea
+                            value={ratings[order.id]?.review ?? ''}
+                            onChange={(e) => handleReviewChange(order.id, e.target.value)}
+                            placeholder="Write a short review (optional)"
+                            className="w-full border border-neutral-200 rounded-md p-2 mb-3 text-sm"
+                            rows={3}
+                          />
+                          <div className="flex items-center gap-3">
+                            <Button
+                              onClick={async (e) => { e.stopPropagation(); await submitRating(order.id) }}
+                              className="bg-green-800 hover:bg-green-900 text-white rounded-xl px-4 py-2"
+                              disabled={ratings[order.id]?.submitting}
+                            >
+                              {ratings[order.id]?.submitting ? 'Submitting...' : 'Submit Rating'}
+                            </Button>
+                            <Button
+                              variant="outline"
+                              className="border-neutral-300 text-neutral-700 hover:bg-neutral-50 rounded-xl px-4 py-2"
+                              onClick={(e) => { e.stopPropagation(); setRatings((prev) => ({ ...prev, [order.id]: { rating: 5, review: '' } })) }}
+                            >
+                              Reset
+                            </Button>
+                          </div>
+                        </div>
+                      )}
+
                       <div className="flex flex-wrap gap-3">
                         <Button 
                           variant="outline" 
@@ -453,6 +548,13 @@ export default function OrdersPage() {
                           onClick={() => router.push(`/order-confirmation/${order.id}`)}
                         >
                           View Full Details
+                        </Button>
+                        <Button 
+                          variant="outline" 
+                          className="border-green-200 text-green-600 hover:bg-green-50 rounded-xl"
+                          onClick={() => router.push(`/order-tracking/${order.id}`)}
+                        >
+                          Track Order
                         </Button>
                         {(order.status === 'pending' || order.status === 'processing') && (
                           <Button 
