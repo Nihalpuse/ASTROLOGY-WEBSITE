@@ -262,9 +262,9 @@ export default function OrdersPage() {
     <div className="relative min-h-screen overflow-hidden bg-gradient-to-b from-golden-amber-dark via-sunburst-yellow to-golden-amber-dark">
       <AnimatedStars />
       <MysticBackground />
-      <div className="container mx-auto px-4 py-16 relative z-10">
+  <div className="container mx-auto px-3 sm:px-4 md:px-6 lg:px-8 py-8 sm:py-12 relative z-10">
         <div className="text-center mb-12">
-          <h1 className="text-4xl md:text-5xl font-serif font-bold mb-4 text-neutral-900">
+          <h1 className="text-3xl sm:text-4xl md:text-5xl font-serif font-bold mb-4 text-neutral-900">
             My Orders
           </h1>
           <p className="text-lg text-neutral-700">Track and view details of all your orders</p>
@@ -278,22 +278,22 @@ export default function OrdersPage() {
         
         <div className="max-w-4xl mx-auto">
           {/* Order Status Tabs */}
-          <div className="flex justify-center mb-8">
-            <div className="bg-white/95 rounded-xl p-2 shadow-lg">
-              <div className="flex space-x-1">
-                <button className="px-6 py-3 rounded-lg bg-green-800 text-white font-medium shadow-sm">
+          <div className="flex justify-center mb-6 sm:mb-8">
+            <div className="bg-white/95 rounded-xl p-2 shadow-lg w-full max-w-xl">
+              <div className="flex flex-wrap gap-2 justify-center">
+                <button className="px-4 py-2 sm:px-6 sm:py-3 rounded-lg bg-green-800 text-white font-medium shadow-sm text-sm">
                   On Shipping
                   <span className="ml-2 bg-white/20 px-2 py-1 rounded-full text-xs">
                     {orders.filter(o => o.status === 'processing' || o.status === 'pending').length}
                   </span>
                 </button>
-                <button className="px-6 py-3 rounded-lg text-neutral-600 hover:bg-neutral-50 font-medium">
+                <button className="px-4 py-2 sm:px-6 sm:py-3 rounded-lg text-neutral-600 hover:bg-neutral-50 font-medium text-sm">
                   Arrived
                   <span className="ml-2 text-neutral-400 text-xs">
                     {orders.filter(o => o.status === 'completed').length}
                   </span>
                 </button>
-                <button className="px-6 py-3 rounded-lg text-neutral-600 hover:bg-neutral-50 font-medium">
+                <button className="px-4 py-2 sm:px-6 sm:py-3 rounded-lg text-neutral-600 hover:bg-neutral-50 font-medium text-sm">
                   Cancelled
                   <span className="ml-2 text-neutral-400 text-xs">
                     {orders.filter(o => o.status === 'cancelled').length}
@@ -326,55 +326,63 @@ export default function OrdersPage() {
                 <div key={order.id} className="bg-white/95 rounded-2xl shadow-lg hover:shadow-xl transition-shadow duration-300">
                   {/* Order Header */}
                   <div 
-                    className="p-6 cursor-pointer"
-                    onClick={() => toggleOrderDetails(order.id)}
-                  >
-                    <div className="flex items-start justify-between">
-                      <div className="flex-1">
-                        <div className="flex items-center mb-2">
-                          <div className="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center mr-4">
-                            <svg className="w-5 h-5 text-green-800" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
-                            </svg>
+                      className="p-4 sm:p-6 cursor-pointer relative"
+                      onClick={() => toggleOrderDetails(order.id)}
+                    >
+                      {/* Details Button - Top Right */}
+                      <button 
+                        className="absolute top-4 right-4 text-green-800 hover:text-green-900 text-sm font-medium bg-white/80 px-3 py-1 rounded-lg shadow-sm hover:shadow-md transition-shadow"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          toggleOrderDetails(order.id);
+                        }}
+                      >
+                        Details
+                      </button>
+                      
+                      <div className="flex flex-col sm:flex-row items-start justify-between pr-16 sm:pr-0">
+                        <div className="flex-1">
+                          <div className="flex items-center mb-2">
+                            <div className="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center mr-3">
+                              <svg className="w-5 h-5 text-green-800" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
+                              </svg>
+                            </div>
+                            <div>
+                              <h3 className="font-semibold text-neutral-900 text-base sm:text-lg">Order #{order.id}</h3>
+                              <p className="text-neutral-600 text-xs sm:text-sm">{formatDate(order.created_at)}</p>
+                            </div>
                           </div>
-                          <div>
-                            <h3 className="font-semibold text-neutral-900 text-lg">Order #{order.id}</h3>
-                            <p className="text-neutral-600 text-sm">{formatDate(order.created_at)}</p>
+                          <div className="ml-0 sm:ml-14">
+                            <div className="flex items-center space-x-3">
+                              <span className={`px-3 py-1 rounded-full text-sm font-medium ${getStatusColor(order.status)}`}>
+                                {order.status === 'processing' || order.status === 'pending' ? 'On Delivery' : 
+                                 order.status.charAt(0).toUpperCase() + order.status.slice(1)}
+                              </span>
+                              <span className="text-neutral-600 text-sm">
+                                {order.items.length} {order.items.length === 1 ? 'item' : 'items'}
+                              </span>
+                            </div>
+                            {(order.status === 'processing' || order.status === 'pending') && (
+                              <p className="text-sm text-neutral-600 mt-2">
+                                Estimated arrival: {new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toLocaleDateString('en-IN', { day: 'numeric', month: 'long', year: 'numeric' })}
+                              </p>
+                            )}
                           </div>
                         </div>
-                        <div className="ml-14">
-                          <div className="flex items-center space-x-4">
-                            <span className={`px-3 py-1 rounded-full text-sm font-medium ${getStatusColor(order.status)}`}>
-                              {order.status === 'processing' || order.status === 'pending' ? 'On Delivery' : 
-                               order.status.charAt(0).toUpperCase() + order.status.slice(1)}
-                            </span>
-                            <span className="text-neutral-600 text-sm">
-                              {order.items.length} {order.items.length === 1 ? 'item' : 'items'}
-                            </span>
+                        <div className="text-right mt-3 sm:mt-0">
+                          <div className="text-xl sm:text-2xl font-bold text-neutral-900 mb-1">
+                            ₹{order.total_amount.toLocaleString('en-IN')}
                           </div>
-                          {(order.status === 'processing' || order.status === 'pending') && (
-                            <p className="text-sm text-neutral-600 mt-2">
-                              Estimated arrival: {new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toLocaleDateString('en-IN', { day: 'numeric', month: 'long', year: 'numeric' })}
-                            </p>
-                          )}
                         </div>
-                      </div>
-                      <div className="text-right">
-                        <div className="text-2xl font-bold text-neutral-900 mb-1">
-                          ₹{order.total_amount.toLocaleString('en-IN')}
-                        </div>
-                        <button className="text-green-800 hover:text-green-900 text-sm font-medium">
-                          Details
-                        </button>
                       </div>
                     </div>
-                  </div>
 
                   {/* Order Items Preview */}
-                  <div className="px-6 pb-4">
+                  <div className="px-4 sm:px-6 pb-4">
                     <div className="flex space-x-3 overflow-x-auto">
                       {order.items.slice(0, 3).map((item, idx) => (
-                        <div key={idx} className="flex-shrink-0 bg-neutral-50 rounded-lg p-3 min-w-[200px]">
+                        <div key={idx} className="flex-shrink-0 bg-neutral-50 rounded-lg p-3 min-w-[160px] sm:min-w-[200px]">
                           <div className="w-12 h-12 bg-neutral-200 rounded-lg mb-2 overflow-hidden">
                             {item.image_url ? (
                               <img 
@@ -416,7 +424,7 @@ export default function OrdersPage() {
 
                   {/* Expanded Order Details */}
                   {activeOrderId === order.id && (
-                    <div className="border-t border-neutral-100 p-6 bg-neutral-50/50">
+                    <div className="border-t border-neutral-200 p-4 sm:p-6 bg-neutral-50/50">
                       <div className="mb-6">
                         <h4 className="font-semibold text-neutral-900 mb-4">Order Details</h4>
                         <div className="space-y-3">
@@ -485,7 +493,7 @@ export default function OrdersPage() {
                             </div>
                           ))}
                         </div>
-                        <div className="border-t border-neutral-200 mt-4 pt-4">
+                        <div className="border-t border-neutral-200 mt-3 pt-3">
                           <div className="flex justify-between items-center">
                             <span className="font-semibold text-neutral-900">Total</span>
                             <span className="font-bold text-xl text-neutral-900">

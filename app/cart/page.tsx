@@ -244,7 +244,7 @@ export default function CartPage() {
     <div className="relative min-h-screen overflow-hidden bg-gradient-to-b from-golden-amber-dark via-sunburst-yellow to-golden-amber-dark">
       <AnimatedStars />
       <MysticBackground />
-      <div className="container mx-auto px-4 py-16 relative z-10">
+      <div className="container mx-auto px-3 sm:px-4 md:px-6 lg:px-8 py-12 sm:py-16 relative z-10">
         
         {items.length === 0 ? (
           <div className="max-w-md mx-auto">
@@ -265,16 +265,16 @@ export default function CartPage() {
         ) : (
           <div className="max-w-6xl mx-auto">
             {/* Page Header */}
-            <div className="text-center mb-8">
-              <h1 className="text-4xl md:text-5xl font-serif font-bold mb-4 text-neutral-900">
+            <div className="text-center mb-6 sm:mb-8">
+              <h1 className="text-3xl sm:text-4xl md:text-5xl font-serif font-bold mb-3 sm:mb-4 text-neutral-900">
                 Shopping Cart
               </h1>
-              <p className="text-lg text-neutral-700">
+              <p className="text-base sm:text-lg text-neutral-700">
                 {items.length} {items.length === 1 ? t('cart.item') : t('cart.items')} in your cart
               </p>
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-8">
               {/* Cart Items */}
               <div className="lg:col-span-2 space-y-4">
                 {items.map((item) => {
@@ -311,25 +311,25 @@ export default function CartPage() {
                   const itemQuantity = item.quantity;
 
                   return (
-                    <div key={itemId} className="bg-white/95 rounded-2xl p-6 shadow-lg hover:shadow-xl transition-shadow duration-300">
+                    <div key={itemId} className="bg-white/95 rounded-2xl p-4 sm:p-6 shadow-lg hover:shadow-xl transition-shadow duration-300">
                       <div className="flex items-start gap-4">
                         {/* Product Image */}
-                        <div className="relative h-20 w-20 min-w-[80px] min-h-[80px] rounded-xl overflow-hidden bg-neutral-100">
+                        <div className="relative h-24 w-24 sm:h-28 sm:w-28 md:h-32 md:w-32 min-w-[96px] sm:min-w-[112px] md:min-w-[128px] rounded-xl overflow-hidden bg-neutral-100 flex-shrink-0">
                           {itemImage ? (
                             <img src={itemImage} alt={itemName || 'Item'} className="object-cover w-full h-full" />
                           ) : (
                             <div className="w-full h-full flex items-center justify-center text-neutral-400">
-                              <ShoppingBag className="h-8 w-8" />
+                              <ShoppingBag className="h-8 w-8 sm:h-10 sm:w-10" />
                             </div>
                           )}
                         </div>
 
                         {/* Product Details */}
                         <div className="flex-1 min-w-0">
-                          <div className="flex justify-between items-start mb-2">
-                            <div>
-                              <h3 className="font-semibold text-lg text-neutral-900 truncate">{itemName || 'Unnamed Item'}</h3>
-                              <p className="text-sm text-neutral-600 capitalize">
+                          <div className="flex justify-between items-start mb-3">
+                            <div className="flex-1 min-w-0 pr-3">
+                              <h3 className="font-semibold text-lg sm:text-xl text-neutral-900 line-clamp-2 leading-tight">{itemName || 'Unnamed Item'}</h3>
+                              <p className="text-sm text-neutral-600 capitalize mt-1">
                                 {isDatabaseItem 
                                   ? ((item as DatabaseCartItem).products ? 'Product' : 'Service')
                                   : 'Item'
@@ -340,38 +340,38 @@ export default function CartPage() {
                               variant="ghost"
                               size="sm"
                               onClick={() => removeItem(itemId)}
-                              className="text-neutral-400 hover:text-red-500 hover:bg-red-50 rounded-lg"
+                              className="text-neutral-400 hover:text-red-500 hover:bg-red-50 rounded-lg p-2 flex-shrink-0"
                               title={t('cart.remove')}
                             >
-                              <Trash2 className="h-5 w-5" />
+                              <Trash2 className="h-4 w-4" />
                             </Button>
                           </div>
 
                           {/* Quantity and Price Controls */}
-                          <div className="flex items-center justify-between mt-4">
-                            <div className="flex items-center gap-3">
+                          <div className="flex items-center justify-between mt-6">
+                            <div className="flex items-center gap-1">
                               <button
-                                className="w-10 h-10 flex items-center justify-center border border-neutral-300 rounded-lg bg-white hover:bg-neutral-50 text-neutral-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                                className="w-8 h-8 sm:w-9 sm:h-9 flex items-center justify-center border border-neutral-300 rounded-lg bg-white hover:bg-neutral-50 text-neutral-700 disabled:opacity-50 disabled:cursor-not-allowed text-sm font-medium"
                                 onClick={() => updateQuantity(itemId, itemQuantity - 1)}
                                 disabled={itemQuantity <= 1}
                                 aria-label="Decrease quantity"
                               >
                                 −
                               </button>
-                              <span className="w-12 text-center text-lg font-medium text-neutral-900">{itemQuantity}</span>
+                              <span className="w-10 text-center text-base font-semibold text-neutral-900">{itemQuantity}</span>
                               <button
-                                className="w-10 h-10 flex items-center justify-center border border-neutral-300 rounded-lg bg-white hover:bg-neutral-50 text-neutral-700"
+                                className="w-8 h-8 sm:w-9 sm:h-9 flex items-center justify-center border border-neutral-300 rounded-lg bg-white hover:bg-neutral-50 text-neutral-700 text-sm font-medium"
                                 onClick={() => updateQuantity(itemId, itemQuantity + 1)}
                                 aria-label="Increase quantity"
                               >
                                 +
                               </button>
                             </div>
-                            <div className="text-right">
-                              <div className="font-bold text-xl text-neutral-900">
+                            <div className="text-right ml-4">
+                              <div className="font-bold text-xl sm:text-2xl text-neutral-900">
                                 ₹{(Number(itemPrice) * itemQuantity).toLocaleString('en-IN')}
                               </div>
-                              <div className="text-sm text-neutral-600">
+                              <div className="text-sm text-neutral-600 mt-1">
                                 ₹{Number(itemPrice).toLocaleString('en-IN')} each
                               </div>
                             </div>
@@ -385,44 +385,44 @@ export default function CartPage() {
 
               {/* Order Summary Sidebar */}
               <div className="lg:col-span-1">
-                <div className="bg-white/95 rounded-2xl p-6 shadow-lg sticky top-8">
-                  <h3 className="text-2xl font-semibold mb-6 text-neutral-900">Order Summary</h3>
+                <div className="bg-white/95 rounded-2xl p-4 sm:p-6 shadow-lg lg:sticky lg:top-8">
+                  <h3 className="text-xl sm:text-2xl font-semibold mb-4 sm:mb-6 text-neutral-900">Order Summary</h3>
                   
-                  <div className="space-y-4 mb-6">
-                    <div className="flex justify-between text-lg text-neutral-700">
+                  <div className="space-y-3 sm:space-y-4 mb-4 sm:mb-6">
+                    <div className="flex justify-between text-base sm:text-lg text-neutral-700">
                       <span>Subtotal</span>
                       <span>₹{total.toLocaleString('en-IN')}</span>
                     </div>
-                    <div className="flex justify-between text-lg text-neutral-700">
+                    <div className="flex justify-between text-base sm:text-lg text-neutral-700">
                       <span>Shipping</span>
                       <div className="text-right">
                         <span className="line-through text-neutral-400 mr-2">₹9.99</span>
                         <span className="inline-block bg-green-100 text-green-800 rounded-full px-2 py-1 text-xs font-medium">Free</span>
                       </div>
                     </div>
-                    <div className="flex justify-between text-lg text-neutral-700">
+                    <div className="flex justify-between text-base sm:text-lg text-neutral-700">
                       <span>Tax</span>
                       <span>₹{(total * 0.08).toLocaleString('en-IN')}</span>
                     </div>
-                    <div className="border-t border-neutral-200 pt-4">
-                      <div className="flex justify-between text-xl font-bold text-neutral-900">
+                    <div className="border-t border-neutral-200 pt-3 sm:pt-4">
+                      <div className="flex justify-between text-lg sm:text-xl font-bold text-neutral-900">
                         <span>Total</span>
                         <span>₹{(total * 1.08).toLocaleString('en-IN')}</span>
                       </div>
                     </div>
                   </div>
                   
-                  <div className="space-y-4">
+                  <div className="space-y-3 sm:space-y-4">
                     <Button 
                       asChild 
-                      className="w-full bg-green-800 hover:bg-green-900 text-white text-lg font-semibold py-4 rounded-xl shadow-lg"
+                      className="w-full bg-green-800 hover:bg-green-900 text-white text-base sm:text-lg font-semibold py-3 sm:py-4 rounded-xl shadow-lg"
                     >
                       <Link href="/checkout">Proceed to Checkout</Link>
                     </Button>
                     <Button 
                       asChild 
                       variant="outline" 
-                      className="w-full border-neutral-300 text-neutral-700 hover:bg-neutral-50 text-lg font-semibold py-4 rounded-xl"
+                      className="w-full border-neutral-300 text-neutral-700 hover:bg-neutral-50 text-base sm:text-lg font-semibold py-3 sm:py-4 rounded-xl"
                     >
                       <Link href="/">Continue Shopping</Link>
                     </Button>
@@ -430,17 +430,17 @@ export default function CartPage() {
                 </div>
 
                 {/* Promo Code Section */}
-                <div className="bg-white/95 rounded-2xl p-6 shadow-lg mt-6">
-                  <h4 className="text-lg font-semibold mb-4 text-neutral-900">Promo Code</h4>
+                <div className="bg-white/95 rounded-2xl p-4 sm:p-6 shadow-lg mt-4 sm:mt-6">
+                  <h4 className="text-base sm:text-lg font-semibold mb-3 sm:mb-4 text-neutral-900">Promo Code</h4>
                   <div className="space-y-3">
                     <input
                       type="text"
                       placeholder="Enter promo code"
-                      className="w-full px-4 py-3 border border-neutral-300 rounded-xl text-base focus:outline-none focus:ring-2 focus:ring-green-800 focus:border-transparent"
+                      className="w-full px-3 py-2 sm:px-4 sm:py-3 border border-neutral-300 rounded-xl text-sm sm:text-base focus:outline-none focus:ring-2 focus:ring-green-800 focus:border-transparent"
                     />
                     <Button 
                       variant="outline" 
-                      className="w-full border-neutral-300 text-neutral-700 hover:bg-neutral-50 rounded-xl py-3"
+                      className="w-full border-neutral-300 text-neutral-700 hover:bg-neutral-50 rounded-xl py-2 sm:py-3 text-sm sm:text-base"
                     >
                       Apply Code
                     </Button>

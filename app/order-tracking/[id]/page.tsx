@@ -228,7 +228,7 @@ export default function OrderTrackingPage({ params }: { params: { id: string } }
     <div className="relative min-h-screen overflow-hidden bg-gradient-to-b from-golden-amber-dark via-sunburst-yellow to-golden-amber-dark">
       <AnimatedStars />
     <MysticBackground>
-  <div className="container mx-auto pt-12 px-4 py-8 relative z-10">
+  <div className="container mx-auto pt-8 sm:pt-12 px-3 sm:px-4 md:px-6 lg:px-8 py-6 sm:py-8 relative z-10">
           {loading ? (
             <div className="flex justify-center items-center h-64">
               <div className="animate-spin rounded-full h-32 w-32 border-t-2 border-b-2 border-gold"></div>
@@ -236,22 +236,22 @@ export default function OrderTrackingPage({ params }: { params: { id: string } }
           ) : order ? (
             <div className="max-w-4xl mx-auto">
               {/* Header */}
-              <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8">
-                <div>
+              <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center mb-6 sm:mb-8">
+                <div className="w-full lg:w-auto">
                   <Button
                     variant="ghost"
-                    className="text-lavender hover:text-celestial-blue hover:bg-celestial-blue/10 mb-4"
+                    className="text-lavender hover:text-celestial-blue hover:bg-celestial-blue/10 mb-3 sm:mb-4"
                     onClick={() => router.back()}
                   >
                     <ArrowLeft className="h-4 w-4 mr-2" />
                     Back
                   </Button>
-                  <h1 className="text-4xl md:text-5xl font-serif font-bold mb-2 text-mystic-brown">
+                  <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-serif font-bold mb-2 text-mystic-brown">
                     Track Your Order
                   </h1>
-                  <div className="flex items-center space-x-4">
+                  <div className="flex flex-col sm:flex-row sm:items-center space-y-2 sm:space-y-0 sm:space-x-4">
                     <div className="flex items-center">
-                      <p className="text-lavender mr-2">Order #{order.order_number}</p>
+                      <p className="text-lavender mr-2 text-sm sm:text-base">Order #{order.order_number}</p>
                       <Button 
                         variant="ghost" 
                         size="icon" 
@@ -263,7 +263,7 @@ export default function OrderTrackingPage({ params }: { params: { id: string } }
                     </div>
                     {order.tracking_number && (
                       <div className="flex items-center">
-                        <p className="text-lavender mr-2">Tracking: {order.tracking_number}</p>
+                        <p className="text-lavender mr-2 text-sm sm:text-base">Tracking: {order.tracking_number}</p>
                         <Button 
                           variant="ghost" 
                           size="icon" 
@@ -279,7 +279,7 @@ export default function OrderTrackingPage({ params }: { params: { id: string } }
                 <Button
                   onClick={refreshTracking}
                   disabled={refreshing}
-                  className="bg-green-800 hover:bg-green-900 text-white shadow-lg hover:shadow-xl transition-all duration-200 hover:scale-105"
+                  className="bg-green-800 hover:bg-green-900 text-white shadow-lg hover:shadow-xl transition-all duration-200 hover:scale-105 mt-4 lg:mt-0 w-full sm:w-auto"
                 >
                   {refreshing ? (
                     <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
@@ -291,36 +291,36 @@ export default function OrderTrackingPage({ params }: { params: { id: string } }
               </div>
 
               {/* Progress Bar */}
-              <Card className="mb-8 bg-midnight-blue-light/80 shadow-2xl backdrop-blur-sm">
-                <CardContent className="p-6">
+              <Card className="mb-6 sm:mb-8 bg-midnight-blue-light/80 shadow-2xl backdrop-blur-sm">
+                <CardContent className="p-4 sm:p-6">
                   <div className="relative">
                     <div className="flex justify-between mb-4">
                         <div className="flex flex-col items-center">
-                          <div className={`w-12 h-12 rounded-full flex items-center justify-center mb-2 shadow-lg transition-all duration-300 ${effectiveIndex >= 0 ? (effectiveIndex >= stages.indexOf('placed') ? 'bg-green-600' : 'bg-lavender/30') : 'bg-green-600'}`}>
-                            {getStatusIcon('placed', effectiveIndex >= stages.indexOf('placed'), 'h-6 w-6')}
+                          <div className={`w-8 h-8 sm:w-10 md:w-12 sm:h-10 md:h-12 rounded-full flex items-center justify-center mb-2 shadow-lg transition-all duration-300 ${effectiveIndex >= 0 ? (effectiveIndex >= stages.indexOf('placed') ? 'bg-green-600' : 'bg-lavender/30') : 'bg-green-600'}`}>
+                            {getStatusIcon('placed', effectiveIndex >= stages.indexOf('placed'), 'h-4 w-4 sm:h-5 sm:w-5 md:h-6 md:w-6')}
                           </div>
-                          <span className="text-sm text-lavender font-medium">Placed</span>
+                          <span className="text-xs sm:text-sm text-lavender font-medium text-center">Placed</span>
                         </div>
                       <div className="flex flex-col items-center">
-                        <div className={`w-12 h-12 rounded-full flex items-center justify-center mb-2 shadow-lg transition-all duration-300 ${effectiveIndex >= stages.indexOf('processing') ? 'bg-green-600 scale-110' : 'bg-lavender/30'}`}>
-                          {getStatusIcon('processing', effectiveIndex >= stages.indexOf('processing'), 'h-6 w-6')}
+                        <div className={`w-8 h-8 sm:w-10 md:w-12 sm:h-10 md:h-12 rounded-full flex items-center justify-center mb-2 shadow-lg transition-all duration-300 ${effectiveIndex >= stages.indexOf('processing') ? 'bg-green-600 scale-110' : 'bg-lavender/30'}`}>
+                          {getStatusIcon('processing', effectiveIndex >= stages.indexOf('processing'), 'h-4 w-4 sm:h-5 sm:w-5 md:h-6 md:w-6')}
                         </div>
-                        <span className="text-sm text-lavender font-medium">Processing</span>
+                        <span className="text-xs sm:text-sm text-lavender font-medium text-center">Processing</span>
                       </div>
                       <div className="flex flex-col items-center">
-                        <div className={`w-12 h-12 rounded-full flex items-center justify-center mb-2 shadow-lg transition-all duration-300 ${effectiveIndex >= stages.indexOf('shipped') ? 'bg-green-600 scale-110' : 'bg-lavender/30'}`}>
-                          {getStatusIcon('shipped', effectiveIndex >= stages.indexOf('shipped'), 'h-6 w-6')}
+                        <div className={`w-8 h-8 sm:w-10 md:w-12 sm:h-10 md:h-12 rounded-full flex items-center justify-center mb-2 shadow-lg transition-all duration-300 ${effectiveIndex >= stages.indexOf('shipped') ? 'bg-green-600 scale-110' : 'bg-lavender/30'}`}>
+                          {getStatusIcon('shipped', effectiveIndex >= stages.indexOf('shipped'), 'h-4 w-4 sm:h-5 sm:w-5 md:h-6 md:w-6')}
                         </div>
-                        <span className="text-sm text-lavender font-medium">Shipped</span>
+                        <span className="text-xs sm:text-sm text-lavender font-medium text-center">Shipped</span>
                       </div>
                       <div className="flex flex-col items-center">
-                        <div className={`w-12 h-12 rounded-full flex items-center justify-center mb-2 shadow-lg transition-all duration-300 ${effectiveIndex >= stages.indexOf('delivered') ? 'bg-green-600 scale-110' : 'bg-lavender/30'}`}>
-                          {getStatusIcon('delivered', effectiveIndex >= stages.indexOf('delivered'), 'h-6 w-6')}
+                        <div className={`w-8 h-8 sm:w-10 md:w-12 sm:h-10 md:h-12 rounded-full flex items-center justify-center mb-2 shadow-lg transition-all duration-300 ${effectiveIndex >= stages.indexOf('delivered') ? 'bg-green-600 scale-110' : 'bg-lavender/30'}`}>
+                          {getStatusIcon('delivered', effectiveIndex >= stages.indexOf('delivered'), 'h-4 w-4 sm:h-5 sm:w-5 md:h-6 md:w-6')}
                         </div>
-                        <span className="text-sm text-lavender font-medium">Delivered</span>
+                        <span className="text-xs sm:text-sm text-lavender font-medium text-center">Delivered</span>
                       </div>
                     </div>
-                    <div className="absolute top-6 left-6 right-6 h-2 bg-lavender/20 rounded-full -z-10">
+                    <div className="absolute top-4 sm:top-5 md:top-6 left-4 sm:left-5 md:left-6 right-4 sm:right-5 md:right-6 h-1 sm:h-2 bg-lavender/20 rounded-full -z-10">
                       <div 
                         className="h-full bg-gradient-to-r from-green-500 to-green-600 rounded-full transition-all duration-500 shadow-sm"
                         style={{ width: getProgressWidth() }}
@@ -331,27 +331,27 @@ export default function OrderTrackingPage({ params }: { params: { id: string } }
               </Card>
 
               {/* Tracking Timeline */}
-              <Card className="mb-8 bg-midnight-blue-light/80 shadow-2xl backdrop-blur-sm">
-                <CardContent className="p-6">
-                  <h2 className="text-2xl font-serif font-semibold text-gold mb-6 flex items-center">
-                    <div className="w-1 h-6 bg-green-600 rounded mr-3"></div>
+              <Card className="mb-6 sm:mb-8 bg-midnight-blue-light/80 shadow-2xl backdrop-blur-sm">
+                <CardContent className="p-4 sm:p-6">
+                  <h2 className="text-xl sm:text-2xl font-serif font-semibold text-gold mb-4 sm:mb-6 flex items-center">
+                    <div className="w-1 h-4 sm:h-6 bg-green-600 rounded mr-2 sm:mr-3"></div>
                     Tracking History
                   </h2>
-                  <div className="space-y-6">
+                  <div className="space-y-4 sm:space-y-6">
                     {trackingEvents.map((event, index) => (
-                      <div key={index} className="flex items-start space-x-4 relative">
+                      <div key={index} className="flex items-start space-x-3 sm:space-x-4 relative">
                         {index !== trackingEvents.length - 1 && (
-                          <div className="absolute left-2.5 top-8 w-0.5 h-16 bg-gradient-to-b from-green-600 to-green-300"></div>
+                          <div className="absolute left-2 sm:left-2.5 top-6 sm:top-8 w-0.5 h-12 sm:h-16 bg-gradient-to-b from-green-600 to-green-300"></div>
                         )}
                         <div className="flex-shrink-0 mt-1 relative z-10">
-              <div className={`w-5 h-5 rounded-full flex items-center justify-center shadow-md ${effectiveIndex >= stages.indexOf(event.status) ? 'bg-green-600' : 'bg-lavender/30'}`}>
-                {getStatusIcon(event.status, effectiveIndex >= stages.indexOf(event.status), 'h-3 w-3')}
+              <div className={`w-4 h-4 sm:w-5 sm:h-5 rounded-full flex items-center justify-center shadow-md ${effectiveIndex >= stages.indexOf(event.status) ? 'bg-green-600' : 'bg-lavender/30'}`}>
+                {getStatusIcon(event.status, effectiveIndex >= stages.indexOf(event.status), 'h-2 w-2 sm:h-3 sm:w-3')}
                             </div>
                         </div>
-                        <div className="flex-1 bg-midnight-blue/20 rounded-lg p-4 backdrop-blur-sm">
-                          <div className="flex justify-between items-start">
-                            <div>
-                              <p className="text-lavender font-medium text-lg">{event.description}</p>
+                        <div className="flex-1 bg-midnight-blue/20 rounded-lg p-3 sm:p-4 backdrop-blur-sm">
+                          <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start space-y-2 sm:space-y-0">
+                            <div className="flex-1">
+                              <p className="text-lavender font-medium text-base sm:text-lg">{event.description}</p>
                               {event.location && (
                                 <div className="flex items-center mt-1">
                                   <MapPin className="h-3 w-3 text-celestial-blue mr-1" />
@@ -359,7 +359,7 @@ export default function OrderTrackingPage({ params }: { params: { id: string } }
                                 </div>
                               )}
                             </div>
-                            <div className="text-right">
+                            <div className="text-left sm:text-right">
                               <p className="text-gold text-sm font-medium">{formatDate(event.date)}</p>
                             </div>
                           </div>
@@ -371,91 +371,91 @@ export default function OrderTrackingPage({ params }: { params: { id: string } }
               </Card>
 
               {/* Order Details */}
-              <Card className="mb-8 bg-midnight-blue-light/80 shadow-2xl backdrop-blur-sm">
-                <CardContent className="p-6">
-                  <h2 className="text-2xl font-serif font-semibold text-gold mb-6 flex items-center">
-                    <div className="w-1 h-6 bg-green-600 rounded mr-3"></div>
+              <Card className="mb-6 sm:mb-8 bg-midnight-blue-light/80 shadow-2xl backdrop-blur-sm">
+                <CardContent className="p-4 sm:p-6">
+                  <h2 className="text-xl sm:text-2xl font-serif font-semibold text-gold mb-4 sm:mb-6 flex items-center">
+                    <div className="w-1 h-4 sm:h-6 bg-green-600 rounded mr-2 sm:mr-3"></div>
                     Order Details
                   </h2>
                   
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6 mb-6 sm:mb-8">
                     <div className="flex items-start">
-                      <Calendar className="h-5 w-5 text-celestial-blue mr-3 mt-0.5" />
+                      <Calendar className="h-4 w-4 sm:h-5 sm:w-5 text-celestial-blue mr-2 sm:mr-3 mt-0.5" />
                       <div>
-                        <p className="text-lavender font-medium">Order Date</p>
-                        <p className="text-gold">{formatDate(order.order_date)}</p>
+                        <p className="text-lavender font-medium text-sm sm:text-base">Order Date</p>
+                        <p className="text-gold text-sm sm:text-base">{formatDate(order.order_date)}</p>
                       </div>
                     </div>
                     
                     <div className="flex items-start">
-                      <Clock className="h-5 w-5 text-celestial-blue mr-3 mt-0.5" />
+                      <Clock className="h-4 w-4 sm:h-5 sm:w-5 text-celestial-blue mr-2 sm:mr-3 mt-0.5" />
                       <div>
-                        <p className="text-lavender font-medium">Estimated Delivery</p>
-                        <p className="text-gold">{order.estimated_delivery}</p>
+                        <p className="text-lavender font-medium text-sm sm:text-base">Estimated Delivery</p>
+                        <p className="text-gold text-sm sm:text-base">{order.estimated_delivery}</p>
                       </div>
                     </div>
                     
                     <div className="flex items-start">
-                      <CreditCard className="h-5 w-5 text-celestial-blue mr-3 mt-0.5" />
+                      <CreditCard className="h-4 w-4 sm:h-5 sm:w-5 text-celestial-blue mr-2 sm:mr-3 mt-0.5" />
                       <div>
-                        <p className="text-lavender font-medium">Payment Method</p>
-                        <p className="text-gold">{order.payment_method}</p>
-                        <p className="text-sm text-lavender/70">Status: {order.payment_status}</p>
+                        <p className="text-lavender font-medium text-sm sm:text-base">Payment Method</p>
+                        <p className="text-gold text-sm sm:text-base">{order.payment_method}</p>
+                        <p className="text-xs sm:text-sm text-lavender/70">Status: {order.payment_status}</p>
                       </div>
                     </div>
                     
                     <div className="flex items-start">
-                      <MapPin className="h-5 w-5 text-celestial-blue mr-3 mt-0.5" />
+                      <MapPin className="h-4 w-4 sm:h-5 sm:w-5 text-celestial-blue mr-2 sm:mr-3 mt-0.5" />
                       <div>
-                        <p className="text-lavender font-medium">Shipping Address</p>
-                        <p className="text-gold">{order.shipping_address.fullName}</p>
-                        <p className="text-lavender/70">{order.shipping_address.addressLine1}</p>
+                        <p className="text-lavender font-medium text-sm sm:text-base">Shipping Address</p>
+                        <p className="text-gold text-sm sm:text-base">{order.shipping_address.fullName}</p>
+                        <p className="text-lavender/70 text-xs sm:text-sm">{order.shipping_address.addressLine1}</p>
                         {order.shipping_address.addressLine2 && (
-                          <p className="text-lavender/70">{order.shipping_address.addressLine2}</p>
+                          <p className="text-lavender/70 text-xs sm:text-sm">{order.shipping_address.addressLine2}</p>
                         )}
-                        <p className="text-lavender/70">
+                        <p className="text-lavender/70 text-xs sm:text-sm">
                           {order.shipping_address.city}, {order.shipping_address.state}, {order.shipping_address.pincode}
                         </p>
                         <div className="flex items-center mt-1">
                           <Phone className="h-3 w-3 text-lavender/70 mr-1" />
-                          <p className="text-lavender/70 text-sm">{order.shipping_address.phone}</p>
+                          <p className="text-lavender/70 text-xs sm:text-sm">{order.shipping_address.phone}</p>
                         </div>
                       </div>
                     </div>
                   </div>
                   
-                  <h3 className="text-xl font-serif font-semibold mb-4 text-gold flex items-center">
-                    <div className="w-1 h-5 bg-green-600 rounded mr-3"></div>
+                  <h3 className="text-lg sm:text-xl font-serif font-semibold mb-3 sm:mb-4 text-gold flex items-center">
+                    <div className="w-1 h-4 sm:h-5 bg-green-600 rounded mr-2 sm:mr-3"></div>
                     Order Items
                   </h3>
-                  <div className="overflow-x-auto bg-midnight-blue/10 rounded-lg p-4 backdrop-blur-sm">
+                  <div className="overflow-x-auto bg-midnight-blue/10 rounded-lg p-3 sm:p-4 backdrop-blur-sm">
                     <Table>
                       <TableHeader>
                         <TableRow className="border-b border-gold/20">
-                          <TableHead className="text-lavender font-semibold">Product</TableHead>
-                          <TableHead className="text-lavender text-right font-semibold">Price</TableHead>
-                          <TableHead className="text-lavender text-center font-semibold">Quantity/Carats</TableHead>
-                          <TableHead className="text-lavender text-right font-semibold">Total</TableHead>
+                          <TableHead className="text-lavender font-semibold text-xs sm:text-sm">Product</TableHead>
+                          <TableHead className="text-lavender text-right font-semibold text-xs sm:text-sm">Price</TableHead>
+                          <TableHead className="text-lavender text-center font-semibold text-xs sm:text-sm">Quantity/Carats</TableHead>
+                          <TableHead className="text-lavender text-right font-semibold text-xs sm:text-sm">Total</TableHead>
                         </TableRow>
                       </TableHeader>
                       <TableBody>
                         {order.items.map((item) => (
                           <TableRow key={item.id} className="border-b border-gold/10 hover:bg-midnight-blue/20 transition-colors">
-                            <TableCell className="text-lavender font-medium py-4">
+                            <TableCell className="text-lavender font-medium py-3 sm:py-4 text-xs sm:text-sm">
                               {item.product_name}
                             </TableCell>
-                            <TableCell className="text-lavender text-right py-4">
+                            <TableCell className="text-lavender text-right py-3 sm:py-4 text-xs sm:text-sm">
                               ₹{item.unit_price.toLocaleString('en-IN')}
-                              {item.is_stone && <span className="text-sm">/carat</span>}
+                              {item.is_stone && <span className="text-xs">/carat</span>}
                             </TableCell>
-                            <TableCell className="text-center text-lavender py-4">
+                            <TableCell className="text-center text-lavender py-3 sm:py-4 text-xs sm:text-sm">
                               {item.is_stone ? (
-                                <span className="bg-green-100 text-green-800 px-2 py-1 rounded text-sm">{item.carats} carats</span>
+                                <span className="bg-green-100 text-green-800 px-2 py-1 rounded text-xs">{item.carats} carats</span>
                               ) : (
-                                <span className=" px-2 py-1 rounded text-sm">{item.quantity}</span>
+                                <span className=" px-2 py-1 rounded text-xs">{item.quantity}</span>
                               )}
                             </TableCell>
-                            <TableCell className="text-gold text-right font-semibold py-4">
+                            <TableCell className="text-gold text-right font-semibold py-3 sm:py-4 text-xs sm:text-sm">
                               ₹{item.total_price.toLocaleString('en-IN')}
                             </TableCell>
                           </TableRow>
@@ -464,19 +464,19 @@ export default function OrderTrackingPage({ params }: { params: { id: string } }
                     </Table>
                   </div>
                   
-                  <div className="mt-6 bg-midnight-blue/20 rounded-lg p-4 backdrop-blur-sm">
-                    <div className="space-y-3">
-                      <div className="flex justify-between text-lg">
+                  <div className="mt-4 sm:mt-6 bg-midnight-blue/20 rounded-lg p-3 sm:p-4 backdrop-blur-sm">
+                    <div className="space-y-2 sm:space-y-3">
+                      <div className="flex justify-between text-base sm:text-lg">
                         <span className="text-lavender">Subtotal</span>
                         <span className="text-gold font-semibold">₹{order.subtotal.toLocaleString('en-IN')}</span>
                       </div>
-                      <div className="flex justify-between text-lg">
+                      <div className="flex justify-between text-base sm:text-lg">
                         <span className="text-lavender">Shipping</span>
                         <span className="text-green-600 font-semibold">Free</span>
                       </div>
-                      <div className="border-t border-gold/30 pt-3 mt-3 flex justify-between">
-                        <span className="text-xl text-lavender font-bold">Total</span>
-                        <span className="text-xl text-gold font-bold">₹{order.total.toLocaleString('en-IN')}</span>
+                      <div className="border-t border-gold/30 pt-2 sm:pt-3 mt-2 sm:mt-3 flex justify-between">
+                        <span className="text-lg sm:text-xl text-lavender font-bold">Total</span>
+                        <span className="text-lg sm:text-xl text-gold font-bold">₹{order.total.toLocaleString('en-IN')}</span>
                       </div>
                     </div>
                   </div>
