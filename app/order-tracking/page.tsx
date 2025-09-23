@@ -150,7 +150,7 @@ export default function OrderTrackingPage() {
                   <div className="bg-midnight-blue/20 rounded-lg p-4 backdrop-blur-sm">
                     <h4 className="font-semibold text-gold flex items-center">
                       <div className="w-2 h-2 bg-green-600 rounded-full mr-2"></div>
-                      Can't find your order number?
+                      Can&apos;t find your order number?
                     </h4>
                     <p className="text-sm mt-1">Check your email confirmation or visit your orders page to find all your order numbers.</p>
                   </div>

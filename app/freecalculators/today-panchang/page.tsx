@@ -100,7 +100,7 @@ const TodayPanchangPage = () => {
                 <div className="flex items-center gap-3">
                   <Calendar className="text-indigo-600 w-5 h-5 flex-shrink-0" />
                   <div className="flex-1">
-                    <label className="text-xs text-indigo-600 font-medium mb-1 block">Today's Date</label>
+                    <label className="text-xs text-indigo-600 font-medium mb-1 block">Today&apos;s Date</label>
                     <div className="text-lg font-semibold text-gray-900">
                       {selectedDate.toLocaleDateString('en-GB', { 
                         weekday: 'long', 
@@ -365,7 +365,7 @@ const TodayPanchangPage = () => {
                   Current Yoga
                 </h3>
                 <div className="space-y-3">
-                  {Object.values(panchangData.yoga).slice(0, 2).map((yoga: any, index: number) => (
+                  {Object.values(panchangData.yoga).slice(0, 2).map((yoga: { number: number; name: string; completion: string | null; yoga_left_percentage?: number | null }, index: number) => (
                     <div key={index} className="bg-white rounded-lg p-3">
                       <div className="font-medium text-violet-800">{yoga.name}</div>
                       {yoga.completion && (
@@ -393,7 +393,7 @@ const TodayPanchangPage = () => {
                   Current Karana
                 </h3>
                 <div className="space-y-3">
-                  {Object.values(panchangData.karana).slice(0, 2).map((karana: any, index: number) => (
+                  {Object.values(panchangData.karana).slice(0, 2).map((karana: { number: number; name: string; completion: string | null; karana_left_percentage?: number | null }, index: number) => (
                     <div key={index} className="bg-white rounded-lg p-3">
                       <div className="font-medium text-cyan-800">{karana.name}</div>
                       {karana.completion && (
