@@ -106,7 +106,7 @@ const KundliMatchingPage = () => {
 
   return (
     <div className="relative min-h-screen overflow-hidden bg-gradient-to-br from-slate-50 via-purple-50/30 to-orange-50/20 font-sans">
-      <div className="max-w-6xl mx-auto pt-8 px-6 md:px-8 lg:px-12 pb-16 relative z-10">
+      <div className="max-w-6xl mx-auto pt-6 px-4 sm:px-6 md:px-8 lg:px-12 pb-12 relative z-10">
         
         {/* Banner Heading */}
         <motion.div
@@ -114,17 +114,17 @@ const KundliMatchingPage = () => {
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.7 }}
-          className="w-full rounded-3xl py-12 px-4 md:px-16 mb-12 flex flex-col items-center justify-center shadow-md border border-[#e6c77e]"
+          className="w-full rounded-3xl py-8 sm:py-12 px-4 sm:px-8 md:px-16 mb-8 sm:mb-12 flex flex-col items-center justify-center shadow-md border border-[#e6c77e]"
           style={{ backgroundColor: "#FEFBF2" }}
         >
           <h1
-            className="text-5xl md:text-6xl font-extrabold text-black mb-4 text-center drop-shadow-lg font-serif"
+            className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-extrabold text-black mb-3 sm:mb-4 text-center drop-shadow-lg font-serif"
             style={{ fontFamily: "Cormorant Garamond, serif" }}
           >
             Kundli Matching
           </h1>
           <p
-            className="text-xl md:text-2xl text-center max-w-3xl font-sans"
+            className="text-base sm:text-lg md:text-xl text-center max-w-3xl font-sans"
             style={{
               fontFamily: "Open Sans, Arial, sans-serif",
               color: "#166534",
@@ -136,13 +136,13 @@ const KundliMatchingPage = () => {
 
         {/* Introduction Section */}
         <motion.section 
-          className="mb-12"
+          className="mb-8 sm:mb-12"
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.6 }}
         >
-          <div className="bg-white rounded-lg shadow-lg p-8 border border-[#e6c77e]">
+          <div className="bg-white rounded-lg shadow-lg p-6 sm:p-8 border border-[#e6c77e]">
             <div className="text-center mb-8">
               <h2 className="text-3xl font-bold text-[#23244a] mb-4" style={{ fontFamily: 'Cormorant Garamond, serif' }}>What Is Kundli Matching?</h2>
               <div className="w-24 h-1 bg-gradient-to-r from-green-700 via-emerald-500 to-green-700 mx-auto mb-6"></div>
@@ -181,7 +181,7 @@ const KundliMatchingPage = () => {
               <div className="grid lg:grid-cols-2 gap-8">
                 
                 {/* Boy's Details */}
-                <div className="bg-gradient-to-br from-blue-50 to-indigo-50 p-6 rounded-lg border border-blue-200">
+                <div className="bg-gradient-to-br from-blue-50 to-indigo-50 p-4 sm:p-6 rounded-lg border border-blue-200">
                   <h3 className="text-2xl font-bold text-[#23244a] mb-6 text-center">Boy&apos;s Details</h3>
                   <div className="space-y-4">
                     <div>
@@ -191,7 +191,7 @@ const KundliMatchingPage = () => {
                         name="boyName"
                         value={formData.boyName}
                         onChange={handleInputChange}
-                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent transition-colors"
+                        className="w-full px-3 py-2 sm:px-4 sm:py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent transition-colors"
                         placeholder="Enter boy's full name"
                         required
                       />
@@ -255,7 +255,7 @@ const KundliMatchingPage = () => {
                 </div>
 
                 {/* Girl's Details */}
-                <div className="bg-gradient-to-br from-pink-50 to-rose-50 p-6 rounded-lg border border-pink-200">
+                <div className="bg-gradient-to-br from-pink-50 to-rose-50 p-4 sm:p-6 rounded-lg border border-pink-200">
                   <h3 className="text-2xl font-bold text-[#23244a] mb-6 text-center">Girl&apos;s Details</h3>
                   <div className="space-y-4">
                     <div>
@@ -265,7 +265,7 @@ const KundliMatchingPage = () => {
                         name="girlName"
                         value={formData.girlName}
                         onChange={handleInputChange}
-                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent transition-colors"
+                        className="w-full px-3 py-2 sm:px-4 sm:py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent transition-colors"
                         placeholder="Enter girl's full name"
                         required
                       />
@@ -329,10 +329,10 @@ const KundliMatchingPage = () => {
                 </div>
               </div>
 
-              <div className="text-center mt-8">
+              <div className="text-center mt-6">
                 <button
                   type="submit"
-                  className="bg-gradient-to-r from-green-700 via-emerald-500 to-green-700 text-white py-4 px-12 rounded-lg hover:from-green-800 hover:via-emerald-600 hover:to-green-800 transition-all duration-300 transform hover:scale-105 shadow-lg font-semibold text-lg"
+                  className="bg-gradient-to-r from-green-700 via-emerald-500 to-green-700 text-white py-3 px-6 sm:py-4 sm:px-12 rounded-lg hover:from-green-800 hover:via-emerald-600 hover:to-green-800 transition-all duration-300 transform hover:scale-105 shadow-lg font-semibold text-base sm:text-lg"
                 >
                   Match Kundlis Now →
                 </button>
@@ -343,13 +343,13 @@ const KundliMatchingPage = () => {
 
         {/* 36 Gunas Explanation */}
         <motion.section 
-          className="mb-12"
+          className="mb-8 sm:mb-12"
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.6, delay: 0.3 }}
         >
-          <div className="rounded-lg p-8 border border-[#e6c77e]" style={{ backgroundColor: '#FEFBF2' }}>
+          <div className="rounded-lg p-6 sm:p-8 border border-[#e6c77e]" style={{ backgroundColor: '#FEFBF2' }}>
             <div className="text-center mb-8">
               <h2 className="text-3xl font-bold text-[#23244a] mb-4" style={{ fontFamily: 'Cormorant Garamond, serif' }}>Understanding the 36 Gunas</h2>
               <div className="w-24 h-1 bg-gradient-to-r from-green-700 via-emerald-500 to-green-700 mx-auto"></div>
@@ -360,9 +360,9 @@ const KundliMatchingPage = () => {
                 The 36 Gunas system evaluates compatibility across 8 different aspects of life. Each aspect carries different points, totaling 36 points for perfect compatibility.
               </p>
               
-              <div className="grid md:grid-cols-2 gap-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {gunaDetails.map((guna, index) => (
-                  <div key={index} className="bg-white p-6 rounded-lg shadow-sm border border-green-200">
+                  <div key={index} className="bg-white p-4 sm:p-6 rounded-lg shadow-sm border border-green-200">
                     <div className="flex justify-between items-start mb-3">
                       <h3 className="text-xl font-semibold text-[#23244a]">{guna.name}</h3>
                       <span className="bg-green-100 text-green-800 px-3 py-1 rounded-full text-sm font-medium">
@@ -374,7 +374,7 @@ const KundliMatchingPage = () => {
                 ))}
               </div>
 
-              <div className="mt-8 bg-white p-6 rounded-lg border border-amber-200">
+              <div className="mt-6 sm:mt-8 bg-white p-4 sm:p-6 rounded-lg border border-amber-200">
                 <h3 className="text-xl font-semibold text-[#23244a] mb-4">Compatibility Score Guide</h3>
                 <div className="grid md:grid-cols-3 gap-4 text-center">
                   <div className="p-4 bg-red-50 rounded-lg border border-red-200">
@@ -397,20 +397,20 @@ const KundliMatchingPage = () => {
 
         {/* Benefits Section */}
         <motion.section 
-          className="mb-12"
+          className="mb-8 sm:mb-12"
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.6, delay: 0.4 }}
         >
-          <div className="bg-white rounded-lg shadow-lg p-8 border border-[#e6c77e]">
+          <div className="bg-white rounded-lg shadow-lg p-6 sm:p-8 border border-[#e6c77e]">
             <div className="text-center mb-8">
               <h2 className="text-3xl font-bold text-[#23244a] mb-4" style={{ fontFamily: 'Cormorant Garamond, serif' }}>Why Choose Kundli Matching?</h2>
               <div className="w-24 h-1 bg-gradient-to-r from-green-700 via-emerald-500 to-green-700 mx-auto mb-6"></div>
             </div>
             
             <div className="max-w-5xl mx-auto">
-              <div className="grid md:grid-cols-2 gap-8">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 {matchingFeatures.map((feature, index) => (
                   <div key={index} className="flex items-start space-x-4">
                     <div className="flex-shrink-0 mt-1">
@@ -424,7 +424,7 @@ const KundliMatchingPage = () => {
                 ))}
               </div>
               
-              <div className="mt-8 p-6 bg-gradient-to-r from-green-50 to-emerald-50 rounded-lg border border-green-200">
+              <div className="mt-6 sm:mt-8 p-4 sm:p-6 bg-gradient-to-r from-green-50 to-emerald-50 rounded-lg border border-green-200">
                 <h3 className="text-xl font-semibold text-[#23244a] mb-4 text-center">What You&apos;ll Receive</h3>
                 <div className="grid md:grid-cols-2 gap-4">
                   <div className="flex items-center space-x-3">
@@ -451,13 +451,13 @@ const KundliMatchingPage = () => {
 
         {/* FAQ Section */}
         <motion.section 
-          className="mb-12"
+          className="mb-8 sm:mb-12"
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.6, delay: 0.5 }}
         >
-          <div className="bg-white rounded-lg shadow-lg p-8 border border-[#e6c77e]">
+          <div className="bg-white rounded-lg shadow-lg p-6 sm:p-8 border border-[#e6c77e]">
             <div className="text-center mb-8">
               <h2 className="text-3xl font-bold text-[#23244a] mb-4" style={{ fontFamily: 'Cormorant Garamond, serif' }}>Frequently Asked Questions</h2>
               <div className="w-24 h-1 bg-gradient-to-r from-green-700 via-emerald-500 to-green-700 mx-auto"></div>
@@ -468,7 +468,7 @@ const KundliMatchingPage = () => {
                 <div key={index} className={`border-l-4 ${faq.borderColor} bg-white rounded-r-lg shadow-sm transition-all duration-300 hover:shadow-md`}>
                   <button
                     onClick={() => toggleFAQ(index)}
-                    className="w-full px-6 py-4 text-left flex justify-between items-center focus:outline-none rounded-r-lg"
+                    className="w-full px-4 sm:px-6 py-3 sm:py-4 text-left flex justify-between items-center focus:outline-none rounded-r-lg"
                   >
                     <h3 className="text-lg font-semibold text-[#23244a] pr-4">
                       Q: {faq.question}

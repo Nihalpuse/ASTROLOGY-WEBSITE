@@ -93,7 +93,7 @@ const MoonSignCalculatorPage = () => {
 
   return (
     <div className="relative min-h-screen overflow-hidden bg-gradient-to-br from-slate-50 via-purple-50/30 to-orange-50/20 font-sans">
-      <div className="max-w-6xl mx-auto pt-8 px-6 md:px-8 lg:px-12 pb-16 relative z-10">
+  <div className="max-w-6xl mx-auto pt-6 px-4 sm:px-6 md:px-8 lg:px-12 pb-12 relative z-10">
         
         {/* Banner Heading */}
         <motion.div
@@ -101,7 +101,7 @@ const MoonSignCalculatorPage = () => {
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.7 }}
-          className="w-full rounded-3xl py-12 px-4 md:px-16 mb-12 flex flex-col items-center justify-center shadow-md border border-[#e6c77e]"
+          className="w-full rounded-3xl py-8 sm:py-12 px-4 sm:px-6 md:px-16 mb-8 sm:mb-12 flex flex-col items-center justify-center shadow-md border border-[#e6c77e]"
           style={{ backgroundColor: "#FEFBF2" }}
         >
           <h1
@@ -129,7 +129,7 @@ const MoonSignCalculatorPage = () => {
           viewport={{ once: true }}
           transition={{ duration: 0.6 }}
         >
-          <div className="bg-white rounded-lg shadow-lg p-8 border border-[#e6c77e]">
+          <div className="bg-white rounded-lg shadow-lg p-6 sm:p-8 border border-[#e6c77e]">
             <div className="text-center mb-8">
               <h2 className="text-3xl font-bold text-[#23244a] mb-4" style={{ fontFamily: 'Cormorant Garamond, serif' }}>What Is A Moon Sign Calculator?</h2>
               <div className="w-24 h-1 bg-gradient-to-r from-green-700 via-emerald-500 to-green-700 mx-auto mb-6"></div>
@@ -153,7 +153,7 @@ const MoonSignCalculatorPage = () => {
           viewport={{ once: true }}
           transition={{ duration: 0.6, delay: 0.1 }}
         >
-          <div className="rounded-lg p-8 border border-[#e6c77e]" style={{ backgroundColor: '#FEFBF2' }}>
+          <div className="rounded-lg p-6 sm:p-8 border border-[#e6c77e]" style={{ backgroundColor: '#FEFBF2' }}>
             <div className="text-center mb-8">
               <h2 className="text-3xl font-bold text-[#23244a] mb-4" style={{ fontFamily: 'Cormorant Garamond, serif' }}>Why Is Your Moon Sign Important?</h2>
               <div className="w-24 h-1 bg-gradient-to-r from-green-700 via-emerald-500 to-green-700 mx-auto mb-6"></div>
@@ -182,14 +182,14 @@ const MoonSignCalculatorPage = () => {
           viewport={{ once: true }}
           transition={{ duration: 0.6, delay: 0.2 }}
         >
-          <div className="bg-white rounded-lg shadow-lg p-8 border border-[#e6c77e]">
+          <div className="bg-white rounded-lg shadow-lg p-6 sm:p-8 border border-[#e6c77e]">
             <div className="text-center mb-8">
               <h2 className="text-3xl font-bold text-[#23244a] mb-4" style={{ fontFamily: 'Cormorant Garamond, serif' }}>Moon Sign Calculator</h2>
               <div className="w-24 h-1 bg-gradient-to-r from-green-700 via-emerald-500 to-green-700 mx-auto mb-6"></div>
             </div>
             
             <div className="max-w-2xl mx-auto">
-              <form onSubmit={handleSubmit} className="space-y-6">
+              <form onSubmit={handleSubmit} className="space-y-4">
                 <div>
                   <label className="block text-sm font-semibold text-[#23244a] mb-2">
                     <Calendar className="w-4 h-4 inline mr-2" />
@@ -200,7 +200,7 @@ const MoonSignCalculatorPage = () => {
                     name="name"
                     value={formData.name}
                     onChange={handleInputChange}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent transition-colors bg-gray-50"
+                    className="w-full px-3 py-2 sm:px-4 sm:py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent transition-colors bg-gray-50"
                     placeholder="Enter your full name"
                     required
                   />
@@ -213,7 +213,7 @@ const MoonSignCalculatorPage = () => {
                     name="email"
                     value={formData.email}
                     onChange={handleInputChange}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent transition-colors bg-gray-50"
+                    className="w-full px-3 py-2 sm:px-4 sm:py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent transition-colors bg-gray-50"
                     placeholder="your@email.com"
                     required
                   />
@@ -226,7 +226,7 @@ const MoonSignCalculatorPage = () => {
                     name="phone"
                     value={formData.phone}
                     onChange={handleInputChange}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent transition-colors bg-gray-50"
+                    className="w-full px-3 py-2 sm:px-4 sm:py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent transition-colors bg-gray-50"
                     placeholder="+91 XXXXX XXXXX"
                     required
                   />
@@ -242,7 +242,7 @@ const MoonSignCalculatorPage = () => {
                     name="dateOfBirth"
                     value={formData.dateOfBirth}
                     onChange={handleInputChange}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent transition-colors bg-gray-50"
+                    className="w-full px-3 py-2 sm:px-4 sm:py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent transition-colors bg-gray-50"
                     placeholder="DD/MM/YYYY"
                     required
                   />
@@ -258,7 +258,7 @@ const MoonSignCalculatorPage = () => {
                     name="timeOfBirth"
                     value={formData.timeOfBirth}
                     onChange={handleInputChange}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent transition-colors bg-gray-50"
+                    className="w-full px-3 py-2 sm:px-4 sm:py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent transition-colors bg-gray-50"
                     required
                   />
                 </div>
@@ -273,7 +273,7 @@ const MoonSignCalculatorPage = () => {
                     name="placeOfBirth"
                     value={formData.placeOfBirth}
                     onChange={handleInputChange}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent transition-colors bg-gray-50"
+                    className="w-full px-3 py-2 sm:px-4 sm:py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent transition-colors bg-gray-50"
                     placeholder="ENTER PLACE OF BIRTH"
                     required
                   />
@@ -282,7 +282,7 @@ const MoonSignCalculatorPage = () => {
                 <div className="text-center">
                   <button
                     type="submit"
-                    className="w-full bg-gradient-to-r from-green-700 via-emerald-500 to-green-700 text-white py-4 px-8 rounded-lg hover:from-green-800 hover:via-emerald-600 hover:to-green-800 transition-all duration-300 transform hover:scale-105 shadow-lg font-semibold text-lg"
+                    className="w-full bg-gradient-to-r from-green-700 via-emerald-500 to-green-700 text-white py-3 sm:py-4 px-6 sm:px-8 rounded-lg hover:from-green-800 hover:via-emerald-600 hover:to-green-800 transition-all duration-300 transform hover:scale-105 shadow-lg font-semibold text-base sm:text-lg"
                   >
                     SUBMIT NOW
                   </button>
@@ -300,7 +300,7 @@ const MoonSignCalculatorPage = () => {
           viewport={{ once: true }}
           transition={{ duration: 0.6, delay: 0.3 }}
         >
-          <div className="bg-gradient-to-r from-green-700 via-emerald-500 to-green-700 rounded-lg shadow-lg p-8 text-white">
+          <div className="bg-gradient-to-r from-green-700 via-emerald-500 to-green-700 rounded-lg shadow-lg p-6 sm:p-8 text-white">
             <div className="max-w-4xl mx-auto text-center">
               <h2 className="text-3xl font-bold mb-4" style={{ fontFamily: 'Cormorant Garamond, serif' }}>
                 You&apos;ve Seen a Glimpse...
@@ -308,7 +308,7 @@ const MoonSignCalculatorPage = () => {
               <p className="text-xl mb-6">
                 Now Explore the Full Download on Your Life
               </p>
-              <button className="bg-white text-green-700 px-8 py-3 rounded-lg hover:bg-gray-100 transition-all duration-300 transform hover:scale-105 shadow-lg font-semibold">
+              <button className="bg-white text-green-700 px-6 py-2.5 sm:px-8 sm:py-3 rounded-lg hover:bg-gray-100 transition-all duration-300 transform hover:scale-105 shadow-lg font-semibold">
                 Get Your Personalized Kundli
               </button>
             </div>
@@ -323,7 +323,7 @@ const MoonSignCalculatorPage = () => {
           viewport={{ once: true }}
           transition={{ duration: 0.6, delay: 0.4 }}
         >
-          <div className="bg-white rounded-lg shadow-lg p-8 border border-[#e6c77e]">
+          <div className="bg-white rounded-lg shadow-lg p-6 sm:p-8 border border-[#e6c77e]">
             <div className="text-center mb-8">
               <h2 className="text-3xl font-bold text-[#23244a] mb-4" style={{ fontFamily: 'Cormorant Garamond, serif' }}>How Does The Moon Sign Calculator Work?</h2>
               <div className="w-24 h-1 bg-gradient-to-r from-green-700 via-emerald-500 to-green-700 mx-auto mb-6"></div>
@@ -344,7 +344,7 @@ const MoonSignCalculatorPage = () => {
           viewport={{ once: true }}
           transition={{ duration: 0.6, delay: 0.5 }}
         >
-          <div className="rounded-lg p-8 border border-[#e6c77e]" style={{ backgroundColor: '#FEFBF2' }}>
+          <div className="rounded-lg p-6 sm:p-8 border border-[#e6c77e]" style={{ backgroundColor: '#FEFBF2' }}>
             <div className="text-center mb-8">
               <h2 className="text-3xl font-bold text-[#23244a] mb-4" style={{ fontFamily: 'Cormorant Garamond, serif' }}>What Is My Moon Sign?</h2>
               <div className="w-24 h-1 bg-gradient-to-r from-green-700 via-emerald-500 to-green-700 mx-auto mb-6"></div>
@@ -399,9 +399,9 @@ const MoonSignCalculatorPage = () => {
                 Discover the emotional and psychological traits associated with your moon sign. For example:
               </p>
               
-              <div className="grid md:grid-cols-2 gap-6">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 {moonSignTraits.map((trait, index) => (
-                  <div key={index} className="bg-white p-6 rounded-lg shadow-sm border border-green-200">
+                  <div key={index} className="bg-white p-4 sm:p-6 rounded-lg shadow-sm border border-green-200">
                     <h3 className="text-lg font-semibold text-[#23244a] mb-3 flex items-center">
                       <Moon className="w-5 h-5 mr-2 text-green-600" />
                       {trait.sign}
