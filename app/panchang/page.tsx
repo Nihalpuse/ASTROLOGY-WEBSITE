@@ -381,7 +381,7 @@ export default function PanchangPage() {
                   Current Yoga
                 </h3>
                 <div className="space-y-3">
-                  {Object.values(panchangData.yoga).slice(0, 2).map((yoga: any, index: number) => (
+                  {Object.values(panchangData.yoga).slice(0, 2).map((yoga: { number: number; name: string; completion: string | null; yoga_left_percentage?: number | null }, index: number) => (
                     <div key={index} className="bg-white rounded-lg p-3">
                       <div className="font-medium text-violet-800">{yoga.name}</div>
                       {yoga.completion && (
@@ -409,7 +409,7 @@ export default function PanchangPage() {
                   Current Karana
                 </h3>
                 <div className="space-y-3">
-                  {Object.values(panchangData.karana).slice(0, 2).map((karana: any, index: number) => (
+                  {Object.values(panchangData.karana).slice(0, 2).map((karana: { number: number; name: string; completion: string | null; karana_left_percentage?: number | null }, index: number) => (
                     <div key={index} className="bg-white rounded-lg p-3">
                       <div className="font-medium text-cyan-800">{karana.name}</div>
                       {karana.completion && (

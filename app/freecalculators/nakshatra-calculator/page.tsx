@@ -206,7 +206,7 @@ const NakshatraCalculatorPage = () => {
 
   return (
     <div className="relative min-h-screen overflow-hidden bg-gradient-to-br from-slate-50 via-purple-50/30 to-orange-50/20 font-sans">
-      <div className="max-w-6xl mx-auto pt-8 px-6 md:px-8 lg:px-12 pb-16 relative z-10">
+  <div className="max-w-6xl mx-auto pt-6 px-4 sm:px-6 md:px-8 lg:px-12 pb-12 relative z-10">
         
         {/* Banner Heading */}
         <motion.div
@@ -235,7 +235,7 @@ const NakshatraCalculatorPage = () => {
         </motion.div>
 
         {/* Main Content Section */}
-        <div className="grid lg:grid-cols-2 gap-12 mb-12">
+  <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
           
           {/* Left Side - Information */}
           <motion.div
@@ -288,13 +288,13 @@ const NakshatraCalculatorPage = () => {
             viewport={{ once: true }}
             transition={{ duration: 0.6 }}
           >
-            <div className="bg-white rounded-lg shadow-lg p-8 border border-[#e6c77e] sticky top-8">
+            <div className="bg-white rounded-lg shadow-lg p-6 sm:p-8 border border-[#e6c77e] lg:sticky lg:top-8">
               <h3 className="text-3xl font-bold text-[#23244a] mb-6 text-center" style={{ fontFamily: 'Cormorant Garamond, serif' }}>
                 Calculate Your Nakshatra
               </h3>
-              <div className="w-16 h-1 bg-gradient-to-r from-green-700 via-emerald-500 to-green-700 mx-auto mb-8"></div>
+              <div className="w-16 h-1 bg-gradient-to-r from-green-700 via-emerald-500 to-green-700 mx-auto mb-6"></div>
               
-            <form onSubmit={handleSubmit} className="space-y-6">
+            <form onSubmit={handleSubmit} className="space-y-4">
                 <div>
                   <label className="block text-sm font-semibold text-[#23244a] mb-2">Name *</label>
                   <input
@@ -302,7 +302,7 @@ const NakshatraCalculatorPage = () => {
                     name="name"
                     value={formData.name}
                     onChange={handleInputChange}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent transition-colors"
+                    className="w-full px-3 py-2 sm:px-4 sm:py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent transition-colors"
                     placeholder="Enter your full name"
                     required
                   />
@@ -407,7 +407,7 @@ const NakshatraCalculatorPage = () => {
                   {advancedOpen ? <ChevronUp className="w-5 h-5 text-gray-600"/> : <ChevronDown className="w-5 h-5 text-gray-600"/>}
                 </button>
                 {advancedOpen && (
-                  <div className="px-4 pb-4 grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div className="px-3 sm:px-4 pb-4 grid grid-cols-1 sm:grid-cols-2 gap-3">
                     <div>
                       <label className="block text-sm font-medium text-[#23244a] mb-1">Latitude</label>
                       <input
@@ -474,7 +474,7 @@ const NakshatraCalculatorPage = () => {
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full bg-gradient-to-r from-green-700 via-emerald-500 to-green-700 text-white py-3 px-6 rounded-lg hover:from-green-800 hover:via-emerald-600 hover:to-green-800 transition-all duration-300 transform hover:scale-105 shadow-lg font-semibold disabled:opacity-60 disabled:cursor-not-allowed"
+                className="w-full bg-gradient-to-r from-green-700 via-emerald-500 to-green-700 text-white py-2.5 sm:py-3 px-5 sm:px-6 rounded-lg hover:from-green-800 hover:via-emerald-600 hover:to-green-800 transition-all duration-300 transform hover:scale-105 shadow-lg font-semibold disabled:opacity-60 disabled:cursor-not-allowed"
               >
                 {loading ? 'Calculating…' : 'Calculate My Nakshatra →'}
               </button>
@@ -514,8 +514,8 @@ const NakshatraCalculatorPage = () => {
                 Whether you&apos;re new to Vedic astrology or a seasoned enthusiast, this tool offers insights tailored to your unique cosmic configuration.
               </p>
               
-              <div className="grid md:grid-cols-3 gap-6">
-                <div className="text-center p-6 bg-gradient-to-br from-green-50 to-emerald-50 rounded-lg border border-green-200">
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+                <div className="text-center p-5 sm:p-6 bg-gradient-to-br from-green-50 to-emerald-50 rounded-lg border border-green-200">
                   <div className="w-12 h-12 bg-green-600 rounded-full flex items-center justify-center mx-auto mb-4">
                     <span className="text-white font-bold text-lg">1</span>
                   </div>
@@ -523,16 +523,16 @@ const NakshatraCalculatorPage = () => {
                   <p className="text-gray-700 text-sm">Discover your Nakshatra in seconds with a simple, easy-to-use interface.</p>
                 </div>
                 
-                <div className="text-center p-6 bg-gradient-to-br from-blue-50 to-indigo-50 rounded-lg border border-blue-200">
-                  <div className="w-12 h-12 bg-blue-600 rounded-full flex items-center justify-center mx-auto mb-4">
+                <div className="text-center p-5 sm:p-6 bg-gradient-to-br from-emerald-50 to-green-50 rounded-lg border border-emerald-200">
+                  <div className="w-12 h-12 bg-emerald-600 rounded-full flex items-center justify-center mx-auto mb-4">
                     <span className="text-white font-bold text-lg">2</span>
                   </div>
                   <h3 className="text-xl font-semibold text-[#23244a] mb-3">In-depth Analysis</h3>
                   <p className="text-gray-700 text-sm">Receive a detailed description of your Nakshatra&apos;s traits, strengths, and characteristics.</p>
                 </div>
                 
-                <div className="text-center p-6 bg-gradient-to-br from-purple-50 to-pink-50 rounded-lg border border-purple-200">
-                  <div className="w-12 h-12 bg-purple-600 rounded-full flex items-center justify-center mx-auto mb-4">
+                <div className="text-center p-5 sm:p-6 bg-gradient-to-br from-emerald-50 to-green-50 rounded-lg border border-emerald-200">
+                  <div className="w-12 h-12 bg-emerald-600 rounded-full flex items-center justify-center mx-auto mb-4">
                     <span className="text-white font-bold text-lg">3</span>
                   </div>
                   <h3 className="text-xl font-semibold text-[#23244a] mb-3">Free & Accurate</h3>
