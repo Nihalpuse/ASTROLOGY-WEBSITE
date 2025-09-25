@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import Image from 'next/image';
+import { AstrologerProfile } from '@/app/components/AstrologerProfile';
 import { motion } from 'framer-motion';
 import { ChevronDown, ChevronUp, RefreshCw, MapPin, Calendar } from 'lucide-react';
 import { usePanchang, useCurrentLocation } from '../../../hooks/usePanchang';
@@ -645,6 +646,10 @@ const TodayPanchangPage = () => {
           </div>
         </motion.section>
 
+        {/* Astrologer profile - appended to end of calculator content */}
+        <div className="mt-12">
+          <AstrologerProfile />
+        </div>
       </div>
     </div>
   );

@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
+import { AstrologerProfile } from '@/app/components/AstrologerProfile';
 import { motion } from 'framer-motion';
 import { ChevronDown, ChevronUp, Moon, Star, Heart, Calendar, Clock, MapPin, Sparkles } from 'lucide-react';
 
@@ -552,6 +553,10 @@ const MoonSignCalculatorPage = () => {
           </div>
         </motion.section>
 
+        {/* Astrologer profile - appended to end of calculator content */}
+        <div className="mt-12">
+          <AstrologerProfile />
+        </div>
       </div>
     </div>
   );

@@ -2,6 +2,7 @@
 
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
+import { AstrologerProfile } from '@/app/components/AstrologerProfile';
 import { ChevronDown, ChevronUp, Heart, Star, Users, Check, X } from 'lucide-react';
 
 const KundliMatchingPage = () => {
@@ -503,6 +504,10 @@ const KundliMatchingPage = () => {
           </div>
         </motion.section>
 
+        {/* Astrologer profile - appended to end of calculator content */}
+        <div className="mt-12">
+          <AstrologerProfile />
+        </div>
       </div>
     </div>
   );
