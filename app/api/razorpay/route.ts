@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 
 // Initialize Razorpay
-const Razorpay = require('razorpay')
+import Razorpay from 'razorpay'
 const razorpay = new Razorpay({
   key_id: process.env.RAZORPAY_KEY_ID!,
   key_secret: process.env.RAZORPAY_KEY_SECRET!,
@@ -55,6 +55,7 @@ export async function PUT(request: NextRequest) {
     const { razorpay_order_id, razorpay_payment_id, razorpay_signature } = body
 
     // Verify payment signature
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
     const crypto = require('crypto')
     const hmac = crypto.createHmac('sha256', process.env.RAZORPAY_KEY_SECRET!)
     hmac.update(razorpay_order_id + '|' + razorpay_payment_id)

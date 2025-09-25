@@ -468,7 +468,7 @@ const MoonSignCalculatorPage = () => {
                         const newH12 = Number(e.target.value);
                         const { m } = getTimeParts();
                         const h24 = to24Hour(newH12, ampm);
-                        handleInputChange({ target: { name: 'timeOfBirth', value: `${pad2(h24)}:${pad2(m)}` } } as any);
+                        handleInputChange({ target: { name: 'timeOfBirth', value: `${pad2(h24)}:${pad2(m)}` } } as React.ChangeEvent<HTMLInputElement>);
                       }}
                       className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent bg-gray-50 text-neutral-900 placeholder:text-neutral-500" />
                   </div>
@@ -478,7 +478,7 @@ const MoonSignCalculatorPage = () => {
                       onChange={(e) => {
                         const newM = Math.max(0, Math.min(59, Number(e.target.value) || 0));
                         const { h24 } = getTimeParts();
-                        handleInputChange({ target: { name: 'timeOfBirth', value: `${pad2(h24)}:${pad2(newM)}` } } as any);
+                        handleInputChange({ target: { name: 'timeOfBirth', value: `${pad2(h24)}:${pad2(newM)}` } } as React.ChangeEvent<HTMLInputElement>);
                       }}
                       className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent bg-gray-50 text-neutral-900 placeholder:text-neutral-500" />
                   </div>
@@ -488,13 +488,13 @@ const MoonSignCalculatorPage = () => {
                       <label className="inline-flex items-center gap-2 text-sm text-gray-700"><input type="radio" name="ampm" checked={ampm==='AM'} onChange={()=>{
                         const { h24, m } = getTimeParts();
                         const newH24 = to24Hour(to12Hour(h24), 'AM');
-                        handleInputChange({ target: { name: 'timeOfBirth', value: `${pad2(newH24)}:${pad2(m)}` } } as any);
+                        handleInputChange({ target: { name: 'timeOfBirth', value: `${pad2(newH24)}:${pad2(m)}` } } as React.ChangeEvent<HTMLInputElement>);
                         setAmpm('AM');
                       }} /> AM</label>
                       <label className="inline-flex items-center gap-2 text-sm text-gray-700"><input type="radio" name="ampm" checked={ampm==='PM'} onChange={()=>{
                         const { h24, m } = getTimeParts();
                         const newH24 = to24Hour(to12Hour(h24), 'PM');
-                        handleInputChange({ target: { name: 'timeOfBirth', value: `${pad2(newH24)}:${pad2(m)}` } } as any);
+                        handleInputChange({ target: { name: 'timeOfBirth', value: `${pad2(newH24)}:${pad2(m)}` } } as React.ChangeEvent<HTMLInputElement>);
                         setAmpm('PM');
                       }} /> PM</label>
                     </div>

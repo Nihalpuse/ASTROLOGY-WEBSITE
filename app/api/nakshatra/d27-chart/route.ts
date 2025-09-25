@@ -17,6 +17,32 @@ type D27Request = {
 
 const EXTERNAL_ENDPOINT = 'https://json.freeastrologyapi.com/d27-chart-svg-code'
 
+// Minimal model typings to avoid `any` while keeping flexibility
+interface D27CacheRecord {
+  cache_key: string
+  year: number
+  month: number
+  date: number
+  hours: number
+  minutes: number
+  seconds: number
+  latitude: number
+  longitude: number
+  timezone: number
+  observation_point: 'topocentric' | 'geocentric'
+  language: string
+  svg_code: string
+}
+
+interface D27CacheModel {
+  findUnique: (args: { where: { cache_key: string } }) => Promise<D27CacheRecord | null>
+  create: (args: { data: D27CacheRecord }) => Promise<D27CacheRecord>
+}
+
+interface PrismaWithD27Cache {
+  d27_chart_cache?: D27CacheModel
+}
+
 export async function POST(req: Request) {
   try {
     const body = (await req.json()) as Partial<D27Request>
@@ -57,7 +83,7 @@ export async function POST(req: Request) {
 
     // Try cache
     try {
-      const cacheModel = (prisma as any)?.d27_chart_cache
+      const cacheModel = (prisma as unknown as PrismaWithD27Cache)?.d27_chart_cache
       if (cacheModel) {
         const cached = await cacheModel.findUnique({ where: { cache_key: cacheKey } })
         if (cached) {
@@ -109,10 +135,30 @@ export async function POST(req: Request) {
     const text = await externalResp.text()
     // Debug: surface upstream payload when no svg found
     try {
-      const parsed = JSON.parse(text) as any
-      svg = parsed?.svg_code || parsed?.svg || parsed?.code || parsed?.output || parsed?.data?.svg_code || parsed?.data?.svg || ''
-      if (!svg && typeof parsed === 'string' && parsed.includes('<svg')) svg = parsed
-      if (!svg && typeof parsed?.output === 'string' && parsed.output.includes('<svg')) svg = parsed.output
+      const parsed: unknown = JSON.parse(text)
+      if (typeof parsed === 'string') {
+        if (parsed.includes('<svg')) svg = parsed
+      } else if (parsed && typeof parsed === 'object') {
+        const obj = parsed as Record<string, unknown>
+        const dataObj = (obj['data'] as Record<string, unknown> | undefined) ?? undefined
+        const candidates: unknown[] = [
+          obj['svg_code'],
+          obj['svg'],
+          obj['code'],
+          obj['output'],
+          dataObj?.['svg_code'],
+          dataObj?.['svg']
+        ]
+        for (const c of candidates) {
+          if (typeof c === 'string' && c.includes('<svg')) {
+            svg = c
+            break
+          }
+        }
+        if (!svg && typeof obj['output'] === 'string' && (obj['output'] as string).includes('<svg')) {
+          svg = obj['output'] as string
+        }
+      }
     } catch {
       if (text.includes('<svg')) svg = text
     }
@@ -125,7 +171,7 @@ export async function POST(req: Request) {
 
     // Save to cache (best-effort)
     try {
-      const cacheModel = (prisma as any)?.d27_chart_cache
+      const cacheModel = (prisma as unknown as PrismaWithD27Cache)?.d27_chart_cache
       if (cacheModel) {
         await cacheModel.create({
           data: {

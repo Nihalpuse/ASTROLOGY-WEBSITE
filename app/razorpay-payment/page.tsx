@@ -16,6 +16,44 @@ import {
   Loader2
 } from 'lucide-react'
 
+// Razorpay type definitions
+declare global {
+  interface Window {
+    Razorpay: new (options: RazorpayOptions) => RazorpayInstance;
+  }
+}
+
+interface RazorpayOptions {
+  key: string;
+  amount: number;
+  currency: string;
+  name: string;
+  description: string;
+  order_id: string;
+  handler: (response: RazorpayResponse) => void;
+  prefill: {
+    name: string;
+    email: string;
+    contact: string;
+  };
+  theme: {
+    color: string;
+  };
+  modal: {
+    ondismiss: () => void;
+  };
+}
+
+interface RazorpayResponse {
+  razorpay_order_id: string;
+  razorpay_payment_id: string;
+  razorpay_signature: string;
+}
+
+interface RazorpayInstance {
+  open(): void;
+}
+
 interface PaymentDetails {
   orderId: string
   amount: number
@@ -69,7 +107,11 @@ export default function RazorpayPaymentPage() {
         setOrderDetails({
           orderNumber: orderData.order.order_number,
           total: orderData.order.total,
-          items: orderData.order.items.map((item: any) => ({
+          items: orderData.order.items.map((item: {
+            product_name: string;
+            quantity: number;
+            total_price: number;
+          }) => ({
             name: item.product_name,
             quantity: item.quantity,
             price: item.total_price
@@ -126,7 +168,7 @@ export default function RazorpayPaymentPage() {
         name: 'Nakshatra Gyaan',
         description: `Order #${orderDetails?.orderNumber}`,
         order_id: paymentDetails.orderId,
-        handler: async (response: any) => {
+        handler: async (response: RazorpayResponse) => {
           try {
             // Verify payment
             const verifyRes = await fetch('/api/razorpay', {
@@ -169,7 +211,7 @@ export default function RazorpayPaymentPage() {
         },
       }
 
-      const razorpay = (window as any).Razorpay
+      const razorpay = window.Razorpay
       if (razorpay) {
         const rzp = new razorpay(options)
         rzp.open()
