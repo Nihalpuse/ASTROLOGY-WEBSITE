@@ -299,8 +299,7 @@ export default function CheckoutPage() {
       
       // Process payment based on method
       if (paymentMethod === 'online') {
-        // For online payments, we still need to create the order first
-        // Then redirect to payment gateway
+        // Create order first
         const orderRes = await fetch("/api/orders", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -316,25 +315,8 @@ export default function CheckoutPage() {
         const orderData = await orderRes.json();
         
         if (orderData.success) {
-          // Now redirect to payment gateway with order info
-          const paymentRes = await fetch("/api/checkout/finalize", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ 
-              orderId: orderData.orderId,
-              orderNumber: orderData.orderNumber,
-              shippingAddress: address,
-              billingAddress: address
-            }),
-          });
-          
-          const paymentData = await paymentRes.json();
-          
-          if (paymentData.redirectUrl) {
-            router.push(paymentData.redirectUrl); // Handle dummy checkout redirect
-          } else {
-            throw new Error("Payment initialization failed");
-          }
+          // Redirect to Razorpay payment page
+          router.push(`/razorpay-payment?orderId=${orderData.orderId}&orderNumber=${orderData.orderNumber}`);
         } else {
           throw new Error("Order creation failed");
         }
@@ -455,7 +437,7 @@ export default function CheckoutPage() {
                               <Button 
                                 variant="outline" 
                                 size="icon" 
-                                className="h-8 w-8 rounded-lg border-neutral-300 hover:bg-neutral-50"
+                                className="h-8 w-8 rounded-lg border-gray-400 hover:bg-gray-100 text-gray-700 hover:text-gray-900"
                                 onClick={() => handleUpdateQuantity(itemId, itemQuantity - 1)}
                                 disabled={isUpdatingCart || itemQuantity <= 1}
                               >
@@ -469,7 +451,7 @@ export default function CheckoutPage() {
                               <Button 
                                 variant="outline" 
                                 size="icon" 
-                                className="h-8 w-8 rounded-lg border-neutral-300 hover:bg-neutral-50"
+                                className="h-8 w-8 rounded-lg border-gray-400 hover:bg-gray-100 text-gray-700 hover:text-gray-900"
                                 onClick={() => handleUpdateQuantity(itemId, itemQuantity + 1)}
                                 disabled={isUpdatingCart}
                               >
@@ -500,7 +482,7 @@ export default function CheckoutPage() {
                   <div className="mt-6 pt-4 border-t border-neutral-200">
                     <Button 
                       variant="outline"
-                      className="border-neutral-300 text-neutral-700 hover:bg-neutral-50 rounded-xl"
+                      className="border-gray-400 text-gray-700 hover:bg-gray-100 hover:text-gray-900 rounded-xl"
                       onClick={() => router.push('/shop')}
                     >
                       Continue Shopping
