@@ -1,41 +1,357 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { motion } from 'framer-motion';
 import { AstrologerProfile } from '@/app/components/AstrologerProfile';
 import { ChevronDown, ChevronUp, Heart, Star, Users, Check, X } from 'lucide-react';
 
+type BirthDetailsForm = {
+  name: string;
+  email: string;
+  phone: string;
+  dateOfBirth: string; 
+  timeOfBirth: string; 
+  placeOfBirth: string;
+  latitude: string; 
+  longitude: string; 
+  timezone: string; 
+};
+
+type AshtakootApiResponse = {
+  success: boolean;
+  cached: boolean;
+  data: unknown;
+};
+
+// Types for parsed Ashtakoot response (keep optional to be resilient)
+type KootScore = { out_of?: number; score?: number };
+type VarnaKootam = KootScore & {
+  bride?: { moon_sign_number?: number; moon_sign?: string; varnam?: number; varnam_name?: string };
+  groom?: { moon_sign_number?: number; moon_sign?: string; varnam?: number; varnam_name?: string };
+};
+type VasyaKootam = KootScore & {
+  bride?: { bride_kootam?: number; bride_kootam_name?: string };
+  groom?: { groom_kootam?: number; groom_kootam_name?: string };
+};
+type TaraKootam = KootScore & {
+  bride?: { star_number?: number; star_name?: string };
+  groom?: { star_number?: number; star_name?: string };
+};
+type YoniKootam = KootScore & {
+  bride?: { star?: number; yoni_number?: number; yoni?: string };
+  groom?: { star?: number; yoni_number?: number; yoni?: string };
+};
+type GrahaMaitriKootam = KootScore & {
+  bride?: { moon_sign_number?: number; moon_sign?: string; moon_sign_lord?: number; moon_sign_lord_name?: string };
+  groom?: { moon_sign_number?: number; moon_sign?: string; moon_sign_lord?: number; moon_sign_lord_name?: string };
+};
+type GanaKootam = KootScore & {
+  bride?: { bride_nadi?: number; bride_nadi_name?: string };
+  groom?: { groom_nadi?: number; groom_nadi_name?: string };
+};
+type RasiKootam = KootScore & {
+  bride?: { moon_sign?: number; moon_sign_name?: string };
+  groom?: { moon_sign?: number; moon_sign_name?: string };
+};
+type NadiKootam = KootScore & {
+  bride?: { nadi?: number; nadi_name?: string };
+  groom?: { nadi?: number; nadi_name?: string };
+};
+
+type AshtakootOutput = {
+  out_of?: number;
+  total_score?: number;
+  varna_kootam?: VarnaKootam;
+  vasya_kootam?: VasyaKootam;
+  tara_kootam?: TaraKootam;
+  yoni_kootam?: YoniKootam;
+  graha_maitri_kootam?: GrahaMaitriKootam;
+  gana_kootam?: GanaKootam;
+  rasi_kootam?: RasiKootam;
+  nadi_kootam?: NadiKootam;
+};
+
+type GeoapifySuggestion = { label: string; lat: number; lon: number };
+type GeoapifyAutocompleteResponse = { results?: GeoapifySuggestion[] };
+
 const KundliMatchingPage = () => {
   const [openFAQ, setOpenFAQ] = useState<number | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [apiError, setApiError] = useState<string | null>(null);
+  const [apiResult, setApiResult] = useState<AshtakootApiResponse | null>(null);
   const [formData, setFormData] = useState({
-    boyName: '',
-    boyEmail: '',
-    boyPhone: '',
-    boyDateOfBirth: '',
-    boyTimeOfBirth: '',
-    boyPlaceOfBirth: '',
-    girlName: '',
-    girlEmail: '',
-    girlPhone: '',
-    girlDateOfBirth: '',
-    girlTimeOfBirth: '',
-    girlPlaceOfBirth: ''
+    boy: {
+      name: '',
+      email: '',
+      phone: '',
+      dateOfBirth: '',
+      timeOfBirth: '',
+      placeOfBirth: '',
+      latitude: '',
+      longitude: '',
+      timezone: '5.5',
+    } as BirthDetailsForm,
+    girl: {
+      name: '',
+      email: '',
+      phone: '',
+      dateOfBirth: '',
+      timeOfBirth: '',
+      placeOfBirth: '',
+      latitude: '',
+      longitude: '',
+      timezone: '5.5',
+    } as BirthDetailsForm,
   });
+
+  // Autocomplete state
+  const [boyPlaceQuery, setBoyPlaceQuery] = useState('');
+  const [girlPlaceQuery, setGirlPlaceQuery] = useState('');
+  const [boySuggestions, setBoySuggestions] = useState<GeoapifySuggestion[]>([]);
+  const [girlSuggestions, setGirlSuggestions] = useState<GeoapifySuggestion[]>([]);
+  const [showBoySuggestions, setShowBoySuggestions] = useState(false);
+  const [showGirlSuggestions, setShowGirlSuggestions] = useState(false);
+  const boyPlaceRef = useRef<HTMLDivElement | null>(null);
+  const girlPlaceRef = useRef<HTMLDivElement | null>(null);
 
   const toggleFAQ = (index: number) => {
     setOpenFAQ(openFAQ === index ? null : index);
   };
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setFormData({
-      ...formData,
-      [e.target.name]: e.target.value
-    });
+    const { name, value } = e.target;
+    const isBoyField = name.startsWith('boy');
+    const target = isBoyField ? 'boy' : 'girl';
+    const key = name
+      .replace(/^boy|^girl/, '')
+      .replace(/^./, (c) => c.toLowerCase());
+
+    setFormData((prev) => ({
+      ...prev,
+      [target]: {
+        ...prev[target as 'boy' | 'girl'],
+        [key]: value,
+      },
+    }));
+
+    if (key === 'placeOfBirth') {
+      if (isBoyField) {
+        setBoyPlaceQuery(value);
+        setShowBoySuggestions(true);
+      } else {
+        setGirlPlaceQuery(value);
+        setShowGirlSuggestions(true);
+      }
+    }
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  // Debounce helper
+  function useDebouncedValue<T>(val: T, delayMs: number): T {
+    const [debounced, setDebounced] = useState<T>(val);
+    useEffect(() => {
+      const t = setTimeout(() => setDebounced(val), delayMs);
+      return () => clearTimeout(t);
+    }, [val, delayMs]);
+    return debounced;
+  }
+
+  const boyQueryDebounced = useDebouncedValue(boyPlaceQuery, 300);
+  const girlQueryDebounced = useDebouncedValue(girlPlaceQuery, 300);
+
+  // Fetch autocomplete suggestions
+  useEffect(() => {
+    const fetchBoy = async () => {
+      if (!boyQueryDebounced || boyQueryDebounced.length < 2) {
+        setBoySuggestions([]);
+        return;
+      }
+      try {
+        const res = await fetch(`/api/geoapify/autocomplete?text=${encodeURIComponent(boyQueryDebounced)}&limit=5`);
+        const data: GeoapifyAutocompleteResponse = await res.json();
+        setBoySuggestions(Array.isArray(data.results) ? data.results : []);
+      } catch {
+        setBoySuggestions([]);
+      }
+    };
+    fetchBoy();
+  }, [boyQueryDebounced]);
+
+  useEffect(() => {
+    const fetchGirl = async () => {
+      if (!girlQueryDebounced || girlQueryDebounced.length < 2) {
+        setGirlSuggestions([]);
+        return;
+      }
+      try {
+        const res = await fetch(`/api/geoapify/autocomplete?text=${encodeURIComponent(girlQueryDebounced)}&limit=5`);
+        const data: GeoapifyAutocompleteResponse = await res.json();
+        setGirlSuggestions(Array.isArray(data.results) ? data.results : []);
+      } catch {
+        setGirlSuggestions([]);
+      }
+    };
+    fetchGirl();
+  }, [girlQueryDebounced]);
+
+  // Close suggestion lists on outside click
+  useEffect(() => {
+    const onClick = (e: MouseEvent) => {
+      const target = e.target as Node;
+      if (boyPlaceRef.current && !boyPlaceRef.current.contains(target)) {
+        setShowBoySuggestions(false);
+      }
+      if (girlPlaceRef.current && !girlPlaceRef.current.contains(target)) {
+        setShowGirlSuggestions(false);
+      }
+    };
+    document.addEventListener('mousedown', onClick);
+    return () => document.removeEventListener('mousedown', onClick);
+  }, []);
+
+  const selectPlace = async (
+    who: 'boy' | 'girl',
+    suggestion: GeoapifySuggestion,
+  ) => {
+    const label = suggestion.label;
+    const lat = suggestion.lat;
+    const lon = suggestion.lon;
+
+    setFormData((prev) => ({
+      ...prev,
+      [who]: {
+        ...prev[who],
+        placeOfBirth: label,
+        latitude: String(lat),
+        longitude: String(lon),
+      },
+    }));
+
+    if (who === 'boy') {
+      setBoyPlaceQuery(label);
+      setShowBoySuggestions(false);
+    } else {
+      setGirlPlaceQuery(label);
+      setShowGirlSuggestions(false);
+    }
+
+    // Fetch timezone by lat/lon
+    try {
+      const tzRes = await fetch(`/api/geoapify/timezone?lat=${encodeURIComponent(String(lat))}&lon=${encodeURIComponent(String(lon))}`);
+      const tzData = await tzRes.json() as { offset_hours?: number | null };
+      let tz = '5.5';
+      if (typeof tzData.offset_hours === 'number') {
+        tz = String(Number(tzData.offset_hours.toFixed(2)));
+      }
+      setFormData((prev) => ({
+        ...prev,
+        [who]: {
+          ...prev[who],
+          timezone: tz,
+        },
+      }));
+    } catch {
+      // ignore timezone failure
+    }
+  };
+
+  const parseBirth = (dateStr: string, timeStr: string, latStr: string, lonStr: string, tzStr: string) => {
+    const date = new Date(dateStr);
+    const [hoursStr, minutesStr] = timeStr.split(':');
+    const year = date.getUTCFullYear();
+    const month = date.getUTCMonth() + 1;
+    const day = date.getUTCDate();
+    const hours = Number(hoursStr || '0');
+    const minutes = Number(minutesStr || '0');
+    const seconds = 0;
+    const latitude = Number(latStr || '0');
+    const longitude = Number(lonStr || '0');
+    const timezone = Number(tzStr || '5.5');
+    return { year, month, date: day, hours, minutes, seconds, latitude, longitude, timezone };
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    console.log('Form submitted:', formData);
+    setApiError(null);
+    setApiResult(null);
+    setIsSubmitting(true);
+
+    try {
+      const female = parseBirth(
+        formData.girl.dateOfBirth,
+        formData.girl.timeOfBirth,
+        formData.girl.latitude,
+        formData.girl.longitude,
+        formData.girl.timezone
+      );
+
+      const male = parseBirth(
+        formData.boy.dateOfBirth,
+        formData.boy.timeOfBirth,
+        formData.boy.latitude,
+        formData.boy.longitude,
+        formData.boy.timezone
+      );
+
+      const res = await fetch('/api/match-making/ashtakoot-score', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          female,
+          male,
+          observation_point: 'topocentric',
+          language: 'en',
+          ayanamsha: 'lahiri',
+        }),
+      });
+
+      const data: AshtakootApiResponse = await res.json();
+      if (!res.ok || !data.success) {
+        setApiError(typeof data === 'object' && data !== null ? JSON.stringify(data) : 'Failed to fetch score');
+      } else {
+        setApiResult(data);
+      }
+    } catch (err) {
+      setApiError('Something went wrong. Please try again.');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  // Helpers to render human-friendly summary
+  const parseAshtakoot = (data: unknown): AshtakootOutput | null => {
+    if (!data || typeof data !== 'object') return null;
+    const root = data as { statusCode?: number; output?: AshtakootOutput };
+    return root.output ?? null;
+  };
+
+  const compatibilityBand = (score: number): { label: string; color: string; message: string } => {
+    if (score >= 30) return { label: 'Excellent Match', color: 'text-green-700', message: 'Very strong compatibility across most aspects.' };
+    if (score >= 24) return { label: 'Good Match', color: 'text-green-600', message: 'Overall compatibility is good with a few areas to work on.' };
+    if (score >= 18) return { label: 'Average Match', color: 'text-amber-600', message: 'Acceptable match; improvements and mutual effort advised.' };
+    return { label: 'Low Match', color: 'text-red-600', message: 'Compatibility is limited; consider guidance and remedies.' };
+  };
+
+  type KootKey = keyof Pick<AshtakootOutput, 'varna_kootam'|'vasya_kootam'|'tara_kootam'|'yoni_kootam'|'graha_maitri_kootam'|'gana_kootam'|'rasi_kootam'|'nadi_kootam'>;
+  const kootTitles: Record<KootKey, string> = {
+    varna_kootam: 'Varna (Spiritual/Values)',
+    vasya_kootam: 'Vashya (Attraction/Influence)',
+    tara_kootam: 'Tara (Health/Longevity)',
+    yoni_kootam: 'Yoni (Intimacy/Nature)',
+    graha_maitri_kootam: 'Graha Maitri (Mental Harmony)',
+    gana_kootam: 'Gana (Temperament)',
+    rasi_kootam: 'Rashi (Moon Sign Placement)',
+    nadi_kootam: 'Nadi (Health/Progeny)',
+  };
+
+  const kootHelp: Record<KootKey, string> = {
+    varna_kootam: 'How similar your core values and life approach are.',
+    vasya_kootam: 'Balance of attraction and mutual influence.',
+    tara_kootam: 'Support for wellbeing and long-term stability.',
+    yoni_kootam: 'Intimate compatibility and basic nature alignment.',
+    graha_maitri_kootam: 'Friendliness between Moon sign lords (mental rapport).',
+    gana_kootam: 'Match of temperaments and day-to-day behavior.',
+    rasi_kootam: 'Moon sign distance factors that affect harmony.',
+    nadi_kootam: 'Physiological harmony and potential for progeny.',
   };
 
   const faqData = [
@@ -183,14 +499,14 @@ const KundliMatchingPage = () => {
                 
                 {/* Boy's Details */}
                 <div className="bg-gradient-to-br from-blue-50 to-indigo-50 p-4 sm:p-6 rounded-lg border border-blue-200">
-                  <h3 className="text-2xl font-bold text-[#23244a] mb-6 text-center">Boy&apos;s Details</h3>
+              <h3 className="text-2xl font-bold text-[#23244a] mb-6 text-center">Boy&apos;s Details</h3>
                   <div className="space-y-4">
                     <div>
                       <label className="block text-sm font-semibold text-[#23244a] mb-2">Full Name *</label>
                       <input
                         type="text"
-                        name="boyName"
-                        value={formData.boyName}
+                    name="boyName"
+                    value={formData.boy.name}
                         onChange={handleInputChange}
                         className="w-full px-3 py-2 sm:px-4 sm:py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent transition-colors"
                         placeholder="Enter boy's full name"
@@ -201,8 +517,8 @@ const KundliMatchingPage = () => {
                       <label className="block text-sm font-semibold text-[#23244a] mb-2">Email</label>
                       <input
                         type="email"
-                        name="boyEmail"
-                        value={formData.boyEmail}
+                    name="boyEmail"
+                    value={formData.boy.email}
                         onChange={handleInputChange}
                         className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent transition-colors"
                         placeholder="boy@email.com"
@@ -212,8 +528,8 @@ const KundliMatchingPage = () => {
                       <label className="block text-sm font-semibold text-[#23244a] mb-2">Phone</label>
                       <input
                         type="tel"
-                        name="boyPhone"
-                        value={formData.boyPhone}
+                    name="boyPhone"
+                    value={formData.boy.phone}
                         onChange={handleInputChange}
                         className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent transition-colors"
                         placeholder="+91 XXXXX XXXXX"
@@ -223,8 +539,8 @@ const KundliMatchingPage = () => {
                       <label className="block text-sm font-semibold text-[#23244a] mb-2">Date of Birth *</label>
                       <input
                         type="date"
-                        name="boyDateOfBirth"
-                        value={formData.boyDateOfBirth}
+                    name="boyDateOfBirth"
+                    value={formData.boy.dateOfBirth}
                         onChange={handleInputChange}
                         className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent transition-colors"
                         required
@@ -234,24 +550,78 @@ const KundliMatchingPage = () => {
                       <label className="block text-sm font-semibold text-[#23244a] mb-2">Time of Birth</label>
                       <input
                         type="time"
-                        name="boyTimeOfBirth"
-                        value={formData.boyTimeOfBirth}
+                    name="boyTimeOfBirth"
+                    value={formData.boy.timeOfBirth}
                         onChange={handleInputChange}
                         className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent transition-colors"
                       />
                     </div>
                     <div>
                       <label className="block text-sm font-semibold text-[#23244a] mb-2">Place of Birth *</label>
+                    <div className="relative" ref={boyPlaceRef}>
                       <input
                         type="text"
                         name="boyPlaceOfBirth"
-                        value={formData.boyPlaceOfBirth}
+                        value={formData.boy.placeOfBirth}
                         onChange={handleInputChange}
+                        onFocus={() => setShowBoySuggestions(true)}
                         className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent transition-colors"
                         placeholder="City, State, Country"
                         required
                       />
+                      {showBoySuggestions && boySuggestions.length > 0 && (
+                        <ul className="absolute z-20 mt-1 w-full bg-white border border-gray-200 rounded-lg shadow max-h-56 overflow-auto">
+                          {boySuggestions.map((f, idx) => (
+                            <li
+                              key={idx}
+                              className="px-3 py-2 hover:bg-gray-50 cursor-pointer text-sm text-gray-700"
+                              onClick={() => selectPlace('boy', f)}
+                            >
+                              {f.label}
+                            </li>
+                          ))}
+                        </ul>
+                      )}
                     </div>
+                    </div>
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                  <div>
+                    <label className="block text-sm font-semibold text-[#23244a] mb-2">Latitude</label>
+                    <input
+                      type="number"
+                      step="any"
+                      name="boyLatitude"
+                      value={formData.boy.latitude}
+                      onChange={handleInputChange}
+                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent transition-colors"
+                      placeholder="e.g. 28.6139"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-semibold text-[#23244a] mb-2">Longitude</label>
+                    <input
+                      type="number"
+                      step="any"
+                      name="boyLongitude"
+                      value={formData.boy.longitude}
+                      onChange={handleInputChange}
+                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent transition-colors"
+                      placeholder="e.g. 77.2090"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-semibold text-[#23244a] mb-2">Timezone</label>
+                    <input
+                      type="number"
+                      step="any"
+                      name="boyTimezone"
+                      value={formData.boy.timezone}
+                      onChange={handleInputChange}
+                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent transition-colors"
+                      placeholder="e.g. 5.5"
+                    />
+                  </div>
+                </div>
                   </div>
                 </div>
 
@@ -264,7 +634,7 @@ const KundliMatchingPage = () => {
                       <input
                         type="text"
                         name="girlName"
-                        value={formData.girlName}
+                        value={formData.girl.name}
                         onChange={handleInputChange}
                         className="w-full px-3 py-2 sm:px-4 sm:py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent transition-colors"
                         placeholder="Enter girl's full name"
@@ -276,7 +646,7 @@ const KundliMatchingPage = () => {
                       <input
                         type="email"
                         name="girlEmail"
-                        value={formData.girlEmail}
+                        value={formData.girl.email}
                         onChange={handleInputChange}
                         className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent transition-colors"
                         placeholder="girl@email.com"
@@ -287,7 +657,7 @@ const KundliMatchingPage = () => {
                       <input
                         type="tel"
                         name="girlPhone"
-                        value={formData.girlPhone}
+                        value={formData.girl.phone}
                         onChange={handleInputChange}
                         className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent transition-colors"
                         placeholder="+91 XXXXX XXXXX"
@@ -298,7 +668,7 @@ const KundliMatchingPage = () => {
                       <input
                         type="date"
                         name="girlDateOfBirth"
-                        value={formData.girlDateOfBirth}
+                        value={formData.girl.dateOfBirth}
                         onChange={handleInputChange}
                         className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent transition-colors"
                         required
@@ -309,22 +679,76 @@ const KundliMatchingPage = () => {
                       <input
                         type="time"
                         name="girlTimeOfBirth"
-                        value={formData.girlTimeOfBirth}
+                        value={formData.girl.timeOfBirth}
                         onChange={handleInputChange}
                         className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent transition-colors"
                       />
                     </div>
                     <div>
                       <label className="block text-sm font-semibold text-[#23244a] mb-2">Place of Birth *</label>
-                      <input
-                        type="text"
-                        name="girlPlaceOfBirth"
-                        value={formData.girlPlaceOfBirth}
-                        onChange={handleInputChange}
-                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent transition-colors"
-                        placeholder="City, State, Country"
-                        required
-                      />
+                        <div className="relative" ref={girlPlaceRef}>
+                          <input
+                            type="text"
+                            name="girlPlaceOfBirth"
+                            value={formData.girl.placeOfBirth}
+                            onChange={handleInputChange}
+                            onFocus={() => setShowGirlSuggestions(true)}
+                            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent transition-colors"
+                            placeholder="City, State, Country"
+                            required
+                          />
+                          {showGirlSuggestions && girlSuggestions.length > 0 && (
+                            <ul className="absolute z-20 mt-1 w-full bg-white border border-gray-200 rounded-lg shadow max-h-56 overflow-auto">
+                              {girlSuggestions.map((f, idx) => (
+                                <li
+                                  key={idx}
+                                  className="px-3 py-2 hover:bg-gray-50 cursor-pointer text-sm text-gray-700"
+                                  onClick={() => selectPlace('girl', f)}
+                                >
+                                  {f.label}
+                                </li>
+                              ))}
+                            </ul>
+                          )}
+                        </div>
+                    </div>
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                      <div>
+                        <label className="block text-sm font-semibold text-[#23244a] mb-2">Latitude</label>
+                        <input
+                          type="number"
+                          step="any"
+                          name="girlLatitude"
+                          value={formData.girl.latitude}
+                          onChange={handleInputChange}
+                          className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent transition-colors"
+                          placeholder="e.g. 19.0760"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-semibold text-[#23244a] mb-2">Longitude</label>
+                        <input
+                          type="number"
+                          step="any"
+                          name="girlLongitude"
+                          value={formData.girl.longitude}
+                          onChange={handleInputChange}
+                          className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent transition-colors"
+                          placeholder="e.g. 72.8777"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-semibold text-[#23244a] mb-2">Timezone</label>
+                        <input
+                          type="number"
+                          step="any"
+                          name="girlTimezone"
+                          value={formData.girl.timezone}
+                          onChange={handleInputChange}
+                          className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent transition-colors"
+                          placeholder="e.g. 5.5"
+                        />
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -333,14 +757,81 @@ const KundliMatchingPage = () => {
               <div className="text-center mt-6">
                 <button
                   type="submit"
-                  className="bg-gradient-to-r from-green-700 via-emerald-500 to-green-700 text-white py-3 px-6 sm:py-4 sm:px-12 rounded-lg hover:from-green-800 hover:via-emerald-600 hover:to-green-800 transition-all duration-300 transform hover:scale-105 shadow-lg font-semibold text-base sm:text-lg"
+                  disabled={isSubmitting}
+                  className="bg-gradient-to-r from-green-700 via-emerald-500 to-green-700 text-white py-3 px-6 sm:py-4 sm:px-12 rounded-lg hover:from-green-800 hover:via-emerald-600 hover:to-green-800 transition-all duration-300 transform hover:scale-105 shadow-lg font-semibold text-base sm:text-lg disabled:opacity-60"
                 >
-                  Match Kundlis Now →
+                  {isSubmitting ? 'Calculating…' : 'Match Kundlis Now →'}
                 </button>
               </div>
             </form>
           </div>
         </motion.section>
+
+        {/* Results Section */}
+        {(apiError || apiResult) && (
+          <motion.section 
+            className="mb-12"
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.6 }}
+          >
+            <div className="bg-white rounded-lg shadow-lg p-6 sm:p-8 border border-green-200">
+              <div className="text-center mb-6">
+                <h2 className="text-3xl font-bold text-[#23244a]" style={{ fontFamily: 'Cormorant Garamond, serif' }}>Ashtakoot Score</h2>
+              </div>
+              {apiError && (
+                <div className="p-4 rounded-lg bg-red-50 border border-red-200 text-red-700 mb-6">{apiError}</div>
+              )}
+              {apiResult && (() => {
+                const parsed = parseAshtakoot(apiResult.data);
+                if (!parsed) {
+                  return (
+                    <pre className="bg-gray-50 border border-gray-200 rounded-lg p-4 overflow-auto text-sm text-gray-800">{JSON.stringify(apiResult.data, null, 2)}</pre>
+                  );
+                }
+                const total = Number(parsed.total_score || 0);
+                const outOf = Number(parsed.out_of || 36);
+                const band = compatibilityBand(total);
+                const kootKeys: KootKey[] = ['varna_kootam','vasya_kootam','tara_kootam','yoni_kootam','graha_maitri_kootam','gana_kootam','rasi_kootam','nadi_kootam'];
+
+                return (
+                  <div>
+                    <div className="mb-3 text-sm text-gray-600">Cached: {apiResult.cached ? 'Yes' : 'No'}</div>
+                    <div className="rounded-lg border border-gray-200 p-4 bg-gray-50 mb-6">
+                      <div className="text-2xl font-bold text-[#23244a]">Total: {total} / {outOf}</div>
+                      <div className={`text-sm mt-1 ${band.color}`}>{band.label}</div>
+                      <div className="text-gray-700 text-sm mt-2">{band.message}</div>
+                      <div className="mt-3 w-full bg-gray-200 rounded-full h-2 overflow-hidden">
+                        <div className="bg-green-600 h-2" style={{ width: `${Math.max(0, Math.min(100, (total / outOf) * 100))}%` }} />
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      {kootKeys.map((key) => {
+                        const koot = parsed[key] as KootScore | undefined;
+                        const score = Number(koot?.score || 0);
+                        const max = Number(koot?.out_of || 0);
+                        return (
+                          <div key={key} className="border border-gray-200 rounded-lg p-4">
+                            <div className="flex items-baseline justify-between mb-1">
+                              <div className="font-semibold text-[#23244a]">{kootTitles[key]}</div>
+                              <div className="text-sm text-gray-700 font-medium">{score} / {max}</div>
+                            </div>
+                            <div className="text-xs text-gray-600 mb-3">{kootHelp[key]}</div>
+                            <div className="w-full bg-gray-100 rounded-full h-1.5 overflow-hidden">
+                              <div className="bg-emerald-500 h-1.5" style={{ width: max > 0 ? `${(score / max) * 100}%` : '0%' }} />
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                );
+              })()}
+            </div>
+          </motion.section>
+        )}
 
         {/* 36 Gunas Explanation */}
         <motion.section 

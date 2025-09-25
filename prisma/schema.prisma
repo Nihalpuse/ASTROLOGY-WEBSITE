@@ -727,3 +727,16 @@ model d27_chart_cache {
   created_at        DateTime  @default(now()) @db.Timestamp(0)
   updated_at        DateTime  @default(now()) @db.Timestamp(0)
 }
+
+/// Cache for Ashtakoot (match-making) score responses
+model ashtakoot_score_cache {
+  id          Int       @id @default(autoincrement())
+  cache_key   String    @unique @db.VarChar(300)
+  language    String    @db.VarChar(5)
+  request     Json
+  response    Json
+  created_at  DateTime  @default(now()) @db.Timestamp(0)
+  expires_at  DateTime  @db.Timestamp(0)
+
+  @@index([expires_at])
+}
