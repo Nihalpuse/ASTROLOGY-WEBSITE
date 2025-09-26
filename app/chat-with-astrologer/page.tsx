@@ -63,6 +63,8 @@ interface Astrologer {
   orders: number;
   isNew: boolean;
   img: string;
+  isOnline: boolean;
+  lastOnlineAt?: string;
 }
 
 function AstrologerCard({ astrologer }: { astrologer: Astrologer }) {
@@ -83,7 +85,7 @@ function AstrologerCard({ astrologer }: { astrologer: Astrologer }) {
       onMouseLeave={handleMouseLeave}
       className="block"
     >
-      <Link href={`/astrologer/${a.id}`} className="block h-full">
+      <Link href={`/astrologers/${a.id}`} className="block h-full">
         <div className="bg-white rounded-xl shadow-sm p-4 sm:p-5 flex flex-col gap-3 cursor-pointer h-full border border-transparent transition-all duration-300 hover:shadow-lg hover:border-yellow-300 hover:shadow-yellow-200/50 w-full mx-auto" style={{ fontFamily: 'Poppins, Inter, Montserrat, Arial, sans-serif' }}>
           <div className="flex items-start gap-3 sm:gap-4 md:gap-6 lg:gap-8 flex-1">
             <img src={a.img} alt={a.name} className="w-16 h-16 sm:w-18 sm:h-18 md:w-20 md:h-20 rounded-full object-cover border-2 border-gray-200 flex-shrink-0" />
@@ -92,7 +94,10 @@ function AstrologerCard({ astrologer }: { astrologer: Astrologer }) {
                 <span className="font-bold text-lg sm:text-xl text-[#23244a] line-clamp-2" style={{ fontFamily: 'Playfair Display, Poppins, Inter, Montserrat, Arial, sans-serif' }}>{a.name}</span>
                 <div className="flex items-center gap-1 flex-shrink-0">
                   {a.isNew && <span className="text-xs text-red-500 font-bold">{t('chatWithAstrologer.new', 'New!')}</span>}
-                  <CheckCircle className="w-4 h-4 sm:w-5 sm:h-5 text-green-500" />
+                  <div className="flex items-center gap-1">
+                    <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
+                    <span className="text-xs text-green-600 font-semibold">Online</span>
+                  </div>
                 </div>
               </div>
               <div className="text-sm sm:text-base text-gray-700 font-medium mb-1 line-clamp-2">{a.skills.join(", ")}</div>
@@ -175,10 +180,10 @@ export default function ChatWithAstrologer() {
         style={{ backgroundColor: '#FEFBF2' }}
       >
         <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-extrabold text-black mb-3 md:mb-4 text-center drop-shadow-lg font-serif leading-tight" style={{ fontFamily: 'Cormorant Garamond, serif' }}>
-          {t('chatWithAstrologer.title', 'Chat with Astrologer')}
+          {t('chatWithAstrologer.title', 'Chat with Online Astrologers')}
         </h1>
         <p className="text-base sm:text-lg md:text-xl lg:text-2xl text-center max-w-3xl font-sans px-2" style={{ fontFamily: 'Open Sans, Arial, sans-serif', color: '#166534' }}>
-          Connect with experienced astrologers for personalized guidance and spiritual insights.
+          Connect with verified astrologers who are currently online and available for immediate consultations.
         </p>
       </motion.div>
 
@@ -239,6 +244,11 @@ export default function ChatWithAstrologer() {
           <div className="col-span-full text-center py-12 text-base sm:text-lg font-semibold text-gray-500">{t('chatWithAstrologer.loading', 'Loading astrologers...')}</div>
         ) : error ? (
           <div className="col-span-full text-center py-12 text-base sm:text-lg font-semibold text-red-500">{error}</div>
+        ) : filteredAstrologers.length === 0 ? (
+          <div className="col-span-full text-center py-12">
+            <div className="text-base sm:text-lg font-semibold text-gray-500 mb-2">No Online Astrologers Available</div>
+            <div className="text-sm text-gray-400">Check back later when astrologers come online</div>
+          </div>
         ) : (
           <AnimatePresence>
             {filteredAstrologers.map((a, idx) => (

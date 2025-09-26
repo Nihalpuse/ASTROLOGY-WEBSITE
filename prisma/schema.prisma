@@ -128,24 +128,12 @@ model astrologer {
   about                  String?
   languages              String?
   pricePerChat           Decimal?                 @db.Decimal(10, 2)
-  astrologeravailability astrologeravailability[]
+  isOnline               Boolean                  @default(false)
+  lastOnlineAt           DateTime?
   astrologerverification astrologerverification?
   booking                booking[]
 }
 
-model astrologeravailability {
-  id           Int        @id @default(autoincrement())
-  astrologerId Int
-  date         DateTime
-  start        String
-  end          String
-  repeat       String
-  createdAt    DateTime   @default(now())
-  updatedAt    DateTime
-  astrologer   astrologer @relation(fields: [astrologerId], references: [id], map: "AstrologerAvailability_astrologerId_fkey")
-
-  @@index([astrologerId], map: "AstrologerAvailability_astrologerId_fkey")
-}
 
 model astrologercertification {
   id                     Int                    @id @default(autoincrement())

@@ -24,10 +24,11 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   const { skill, language, sortBy, search } = req.query;
 
   try {
-    // Fetch all astrologers (could add pagination if needed)
+    // Fetch only online astrologers
     const astrologers = await prisma.astrologer.findMany({
       where: {
-        verificationStatus: 'approved',
+        verificationStatus: { in: ['verified', 'approved'] },
+        isOnline: true,
       },
     });
 
@@ -43,6 +44,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       orders: getAstrologerOrders(a),
       isNew: !a.yearsOfExperience || a.yearsOfExperience <= 3,
       img: a.profileImage || '/images/placeholder-user.jpg',
+      isOnline: a.isOnline,
+      lastOnlineAt: a.lastOnlineAt?.toISOString(),
     }));
 
     // Filtering

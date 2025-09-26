@@ -153,12 +153,7 @@ export default function AstrologerProfile() {
   const params = useParams<{ id: string }>();
   const astrologerIdParam = params?.id || '';
   const [activeTab, setActiveTab] = useState('chat');
-  const [selectedSlot, setSelectedSlot] = useState<Slot | null>(null);
-  const [bookedSlots, setBookedSlots] = useState<Booking[]>(initialBookedSlots as Booking[]);
   const [bookingStatus, setBookingStatus] = useState('');
-  const [ratingSlot, setRatingSlot] = useState<number | null>(null);
-  const [userRating, setUserRating] = useState(0);
-  const [bookingLoading, setBookingLoading] = useState(false);
   const [bookingError, setBookingError] = useState('');
   const [astrologer, setAstrologer] = useState<Astrologer>({
     id: '1',
@@ -184,128 +179,32 @@ export default function AstrologerProfile() {
   const [astrologerError, setAstrologerError] = useState('');
   const [user, setUser] = useState<User | null>(null);
   const [userLoading, setUserLoading] = useState(true);
-  const [availableSlots, setAvailableSlots] = useState<Slot[]>([]);
-  const [slotsLoading, setSlotsLoading] = useState(false);
-  const [slotsError, setSlotsError] = useState('');
-  const [cancelLoading, setCancelLoading] = useState(false);
-  const [cancelError, setCancelError] = useState('');
-  const [rateLoading, setRateLoading] = useState(false);
-  const [rateError, setRateError] = useState('');
   const [showChat, setShowChat] = useState(false);
   const [showVideoCall, setShowVideoCall] = useState(false);
   const [showPayment, setShowPayment] = useState(false);
   const [socket, setSocket] = useState<Socket | null>(null);
   const [currentBookingId, setCurrentBookingId] = useState<number | null>(null);
-  const [isFetchingBookings, setIsFetchingBookings] = useState(false);
 
-  // 6. fetchUserBookings as useCallback - moved here to avoid initialization error
-  const fetchUserBookings = useCallback(async (clientId: string | number) => {
-    if (!clientId || isNaN(Number(clientId))) {
-      console.log('Invalid clientId:', clientId);
-      return;
-    }
-
-    if (!astrologer?.id) {
-      console.log('Astrologer ID not available yet');
-      return;
-    }
-
-    // Prevent multiple simultaneous calls
-    if (isFetchingBookings) {
-      console.log('Already fetching bookings, skipping...');
-      return;
-    }
-
-    setIsFetchingBookings(true);
-
-    // Add a small delay to prevent rapid successive calls
-    await new Promise(resolve => setTimeout(resolve, 100));
-
-    try {
-      console.log('Fetching bookings for clientId:', clientId, 'astrologerId:', astrologer.id);
-      const res = await axios.get(`/api/user/booking?clientId=${clientId}`);
-      const allBookings = res.data?.bookings || [];
-
-      console.log('All bookings fetched:', allBookings);
-      console.log('Current astrologer ID:', astrologer?.id);
-
-      // Filter bookings for the current astrologer and sort by date (latest first)
-      const currentAstrologerBookings = allBookings
-        .filter((booking: { astrologerId: number; date: string }) => booking.astrologerId === Number(astrologer?.id))
-        .sort((a: { date: string }, b: { date: string }) => new Date(b.date).getTime() - new Date(a.date).getTime());
-
-      console.log('Filtered and sorted bookings for current astrologer:', currentAstrologerBookings);
-      console.log('Booking details:', currentAstrologerBookings.map((b: { id: number; date: string; status: string; isPaid: boolean; chatEnabled: boolean; videoEnabled: boolean }) => ({
-        id: b.id,
-        date: b.date,
-        status: b.status,
-        isPaid: b.isPaid,
-        chatEnabled: b.chatEnabled,
-        videoEnabled: b.videoEnabled
-      })));
-
-      setBookedSlots(currentAstrologerBookings);
-
-      // Find the most recent active booking (paid and enabled)
-      const latestActiveBooking = currentAstrologerBookings.find((booking: { isPaid: boolean; chatEnabled: boolean; videoEnabled: boolean; status: string; id: number }) =>
-        booking.isPaid && (booking.chatEnabled || booking.videoEnabled) &&
-        (booking.status === 'upcoming' || booking.status === 'accepted' || booking.status === 'active')
-      );
-
-      if (latestActiveBooking) {
-        setBookingStatus('You have an active booking. Chat and video features are available.');
-        // Set the current booking ID to the latest active booking
-        setCurrentBookingId(latestActiveBooking.id);
-      } else {
-        // Check if there's an unpaid booking that needs payment
-        const unpaidBooking = currentAstrologerBookings.find((booking: { status: string; isPaid: boolean; id: number }) =>
-          (booking.status === 'upcoming' || booking.status === 'accepted') && !booking.isPaid
-        );
-        if (unpaidBooking) {
-          setCurrentBookingId(unpaidBooking.id);
-          setBookingStatus('Payment required to unlock chat and video features.');
-        } else {
-          setCurrentBookingId(null);
-          setBookingStatus('');
-        }
-      }
-
-    } catch (error) {
-      console.error('Failed to fetch user bookings:', error);
-      // Don't clear existing bookings on error
-    } finally {
-      setIsFetchingBookings(false);
-    }
-  }, [astrologer?.id, isFetchingBookings]);
-
-  // Define handlePaymentSuccess early to avoid scope issues
-  const handlePaymentSuccess = () => {
-    console.log('Payment successful, updating booking state...');
+  // Payment success handler that gets the real booking ID
+  const handlePaymentSuccess = (bookingData?: { booking?: { id: number } }) => {
     setShowPayment(false);
-    setCurrentBookingId(null);
-    setBookingStatus('Payment successful! Chat and video features are now unlocked.');
-
-    // Immediately update the bookedSlots state to reflect payment success
-    setBookedSlots(prevSlots =>
-      prevSlots.map(slot => {
-        if (slot.status === 'upcoming' || slot.status === 'active') {
-          return {
-            ...slot,
-            isPaid: true,
-            chatEnabled: true,
-            videoEnabled: true
-          };
-        }
-        return slot;
-      })
-    );
-
-    // Refresh user bookings to get updated payment status from database
-    if (user?.id) {
-      console.log('Refreshing bookings after payment success for user:', user.id);
-      // Add a small delay to ensure the payment API has updated the database
+    
+    // Use the real booking ID from payment response if available
+    if (bookingData?.booking?.id) {
+      setCurrentBookingId(bookingData.booking.id);
+      setBookingStatus('Payment successful! You can now start chatting.');
+      
+      // Start chat immediately after payment
       setTimeout(() => {
-        fetchUserBookings(user.id);
+        setShowChat(true);
+      }, 1000);
+    } else {
+      // Fallback to temporary ID (shouldn't happen with proper payment flow)
+      setCurrentBookingId(Date.now());
+      setBookingStatus('Payment successful! You can now start chatting.');
+      
+      setTimeout(() => {
+        setShowChat(true);
       }, 1000);
     }
   };
@@ -344,50 +243,13 @@ export default function AstrologerProfile() {
     getCurrentUser();
   }, []);
 
-  // Fetch user bookings when user is loaded
+  // Simple effect to clear booking status after a delay
   useEffect(() => {
-    let isMounted = true;
-
-    if (user?.id && astrologer?.id && !userLoading) {
-      console.log('Loading bookings on mount/update for user:', user.id, 'astrologer:', astrologer.id);
-      console.log('User data:', user);
-
-      // Use setTimeout to allow for cleanup
-      const timeoutId = setTimeout(() => {
-        if (isMounted) {
-          fetchUserBookings(user.id);
-        }
-      }, 100);
-
-      return () => {
-        isMounted = false;
-        clearTimeout(timeoutId);
-      };
-    } else if (!userLoading && !user?.id) {
-      console.log('No authenticated user found');
+    if (bookingStatus) {
+      const timeoutId = setTimeout(() => setBookingStatus(''), 5000);
+      return () => clearTimeout(timeoutId);
     }
-  }, [user?.id, astrologer?.id, userLoading]); // Removed fetchUserBookings from dependencies
-
-  // Single effect to handle tab changes and refresh bookings when needed
-  useEffect(() => {
-    let isMounted = true;
-
-    if (user?.id && astrologer?.id && (activeTab === 'booked' || activeTab === 'chat')) {
-      console.log(`Tab changed to ${activeTab}, refreshing bookings...`);
-
-      // Use setTimeout to allow for cleanup
-      const timeoutId = setTimeout(() => {
-        if (isMounted) {
-          fetchUserBookings(user.id);
-        }
-      }, 100);
-
-      return () => {
-        isMounted = false;
-        clearTimeout(timeoutId);
-      };
-    }
-  }, [activeTab, user?.id, astrologer?.id]); // Removed fetchUserBookings from dependencies
+  }, [bookingStatus]);
 
   // Initialize socket for video calls
   useEffect(() => {
@@ -529,57 +391,9 @@ export default function AstrologerProfile() {
     }
   }, [astrologer?.languages]);
 
-  // 7. Refetch on tab switch
-  useEffect(() => {
-    if (!astrologer?.id) return;
-    if (activeTab === 'slots') {
-      setSlotsLoading(true);
-      setSlotsError('');
-      axios.get(`/api/user/booking?availableSlots=1&astrologerId=${astrologer.id}`)
-        .then(res => {
-          setAvailableSlots(res.data || []);
-          setSlotsLoading(false);
-        })
-        .catch(() => {
-          setSlotsError('Failed to fetch available slots');
-          setSlotsLoading(false);
-        });
-    } else if (activeTab === 'booked' && user && user.id) {
-      fetchUserBookings(user.id);
-    }
-  }, [activeTab, astrologer?.id, user]);
+  // No complex logic needed - just simple tab switching
 
-  // 8. slotsByDate with useMemo
-  const slotsByDate = useMemo<Record<string, Slot[]>>(() => {
-    if (!availableSlots?.length) return {};
-    return availableSlots.reduce((acc: Record<string, Slot[]>, slot: Slot) => {
-      if (!slot?.date) return acc;
-      try {
-        const dateStr = new Date(slot.date).toLocaleDateString(undefined, {
-          weekday: 'long',
-          month: 'short',
-          day: 'numeric',
-          year: 'numeric'
-        });
-        if (!acc[dateStr]) acc[dateStr] = [];
-        acc[dateStr].push(slot);
-      } catch (error) {
-        console.error('Invalid slot date:', slot.date, error);
-      }
-      return acc;
-    }, {});
-  }, [availableSlots]);
-
-  // 9. Cleanup for bookingStatus timer
-  useEffect(() => {
-    let timeoutId: NodeJS.Timeout | undefined;
-    if (bookingStatus) {
-      timeoutId = setTimeout(() => setBookingStatus(''), 5000);
-    }
-    return () => {
-      if (timeoutId) clearTimeout(timeoutId);
-    };
-  }, [bookingStatus]);
+  // Simple cleanup for booking status
 
   // 2. Conditional rendering for loading/error
   const LoadingSpinner = ({ size = 'md', text = '' }: { size?: 'sm' | 'md' | 'lg'; text?: string }) => {
@@ -643,109 +457,25 @@ export default function AstrologerProfile() {
   }
 
   const handleStartChat = async () => {
-    console.log('handleStartChat called with user:', user);
-    
     if (!user?.id) {
-      console.log('No user ID found, showing error');
       setBookingError('Please log in to start chat');
       return;
     }
 
-    console.log('Current bookedSlots:', bookedSlots);
-    console.log('Current astrologer ID:', astrologer?.id);
-
-    // Use the current booking ID if available, otherwise find the latest booking
-    let userBooking = null;
-    if (currentBookingId) {
-      userBooking = bookedSlots.find(slot => slot.id === currentBookingId);
-    }
-
-    // If no current booking ID or booking not found, find the latest booking
-    if (!userBooking) {
-      userBooking = bookedSlots.find(slot =>
-        slot.status === 'upcoming' || slot.status === 'accepted' || slot.status === 'active'
-      );
-    }
-
-    console.log('Found user booking:', userBooking);
-
-    if (!userBooking) {
-      setBookingError('Please book a slot first to start chat');
-      return;
-    }
-
-    // Set the current booking ID
-    setCurrentBookingId(userBooking.id);
-
-    // Check if booking is paid - if not, show payment modal
-    if (!userBooking.isPaid || !userBooking.chatEnabled) {
-      if (!userBooking.id || userBooking.id === 0) {
-        setBookingError('Invalid booking. Please try booking again.');
-        return;
-      }
-      setShowPayment(true);
-      return;
-    }
-
-    // If paid, start chat directly
-    setShowChat(true);
+    // Create a new booking for immediate chat
+    setCurrentBookingId(Date.now()); // Temporary ID
+    setShowPayment(true);
   };
 
   const handleStartVideoCall = async () => {
-    console.log('handleStartVideoCall called');
-
     if (!user?.id) {
       setBookingError('Please log in to start video call');
       return;
     }
 
-    if (!socket) {
-      setBookingError('Socket connection not available. Please refresh the page.');
-      return;
-    }
-
-    if (!socket.connected) {
-      setBookingError('Socket is not connected. Please wait a moment and try again.');
-      return;
-    }
-
-    // Use the current booking ID if available, otherwise find the latest booking
-    let userBooking = null;
-    if (currentBookingId) {
-      userBooking = bookedSlots.find(slot => slot.id === currentBookingId);
-    }
-
-    // If no current booking ID or booking not found, find the latest booking
-    if (!userBooking) {
-      userBooking = bookedSlots.find(slot =>
-        slot.status === 'upcoming' || slot.status === 'accepted' || slot.status === 'active'
-      );
-    }
-
-    console.log('Found user booking for video call:', userBooking);
-
-    if (!userBooking) {
-      setBookingError('Please book a slot first to start video call');
-      return;
-    }
-
-    // Set the current booking ID
-    setCurrentBookingId(userBooking.id);
-
-    // Check if booking is paid - if not, show payment modal
-    if (!userBooking.isPaid || !userBooking.videoEnabled) {
-      if (!userBooking.id || userBooking.id === 0) {
-        setBookingError('Invalid booking. Please try booking again.');
-        return;
-      }
-      console.log('Booking not paid, showing payment modal');
-      setShowPayment(true);
-      return;
-    }
-
-    // If paid, start video call directly
-    console.log('Starting video call for booking:', userBooking.id);
-    setShowVideoCall(true);
+    // Create a new booking for immediate video call
+    setCurrentBookingId(Date.now()); // Temporary ID
+    setShowPayment(true);
   };
 
   // Create properly typed astrologer objects for components
@@ -764,100 +494,9 @@ export default function AstrologerProfile() {
     profileImage: astrologer.profileImage
   };
 
-  const handleBookSlot = async () => {
-    if (!selectedSlot) return;
-    if (!user?.id) {
-      setBookingError('User not logged in.');
-      return;
-    }
-    setBookingLoading(true);
-    setBookingError('');
-    try {
-      // Parse the selectedSlot date and start time into a valid ISO string
-      // selectedSlot.date is like 'Tuesday, Jul 22, 2025', selectedSlot.start is '09:37'
-      const [, monthDay, year] = selectedSlot.date.split(',').map((s: string) => s.trim());
-      // monthDay: 'Jul 22', year: '2025', start: '09:37'
-      const [monthStr, dayStr] = monthDay.split(' ');
-      const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-      const month = months.indexOf(monthStr);
-      const day = parseInt(dayStr, 10);
-      const [hour, minute] = selectedSlot.start.split(':').map(Number);
-      const dateObj = new Date(Number(year), month, day, hour, minute);
-      const isoDate = dateObj.toISOString();
+  // All complex booking logic removed - now just simple pay-to-chat
 
-      const bookingResponse = await axios.post('/api/user/booking', {
-        astrologerId: astrologer?.id,
-        clientId: user.id,
-        date: isoDate,
-        type: 'chat',
-      });
-
-      // After successful booking, show payment modal
-      if (bookingResponse.data.success) {
-        setSelectedSlot(null);
-        // Store the booking ID for payment
-        const bookingId = bookingResponse.data.booking?.id;
-        if (bookingId) {
-          setCurrentBookingId(bookingId);
-          // Refresh bookings to include the new booking
-          fetchUserBookings(user.id);
-          // Show payment modal immediately after booking
-          setShowPayment(true);
-        }
-      }
-    } catch (e: unknown) {
-      const err = e as { response?: { data?: { error?: string } } };
-      setBookingError(err.response?.data?.error || 'Failed to book slot');
-    } finally {
-      setBookingLoading(false);
-      setTimeout(() => setBookingStatus(''), 3000);
-    }
-  };
-
-  const handleCancelBooking = async (bookingId: number) => {
-    setCancelLoading(true);
-    setCancelError('');
-    try {
-      await axios.patch('/api/user/booking', { bookingId, action: 'cancel' });
-      fetchUserBookings(user?.id ?? '');
-    } catch (e: unknown) {
-      const err = e as { response?: { data?: { error?: string } } };
-      setCancelError(err.response?.data?.error || 'Failed to cancel booking');
-    } finally {
-      setCancelLoading(false);
-    }
-  };
-
-  const handleSubmitRating = async () => {
-    if (!ratingSlot || userRating === 0) return;
-    setRateLoading(true);
-    setRateError('');
-    try {
-      await axios.patch('/api/user/booking', { bookingId: ratingSlot, action: 'rate', rating: userRating });
-      fetchUserBookings(user?.id ?? '');
-      setRatingSlot(null);
-      setUserRating(0);
-    } catch (e: unknown) {
-      const err = e as { response?: { data?: { error?: string } } };
-      setRateError(err.response?.data?.error || 'Failed to submit rating');
-    } finally {
-      setRateLoading(false);
-    }
-  };
-
-  // availableSlots is now a flat array of slots, not grouped by day
-  // Group slots by date for display
-  // const slotsByDate = availableSlots.reduce((acc, slot) => {
-  //   const dateStr = new Date(slot.date).toLocaleDateString(undefined, { weekday: 'long', month: 'short', day: 'numeric', year: 'numeric' });
-  //   if (!acc[dateStr]) acc[dateStr] = [];
-  //   acc[dateStr].push(slot);
-  //   return acc;
-  // }, {});
-
-  // Show loading state while checking for user
-  // if (userLoading) {
-  //   return <div className="min-h-screen flex items-center justify-center">Loading...</div>;
-  // }
+  // All complex logic removed - simple pay-to-chat flow
 
   return (
     <div className="min-h-screen bg-slate-50 py-8 px-4 font-inter">
@@ -912,6 +551,10 @@ export default function AstrologerProfile() {
                       return '';
                     })()}
                   </div>
+                  <div className="flex items-center gap-1 text-green-600">
+                    <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
+                    <span className="font-medium">Online Now</span>
+                  </div>
                 </div>
               </div>
             </div>
@@ -949,8 +592,7 @@ export default function AstrologerProfile() {
         {/* Navigation Tabs */}
         <div className="flex gap-2 mb-6 p-1 bg-white rounded-xl shadow-sm border border-slate-200">
           <TabButton tab="chat" icon={MessageCircle} label="Chat" isActive={activeTab === 'chat'} onClick={setActiveTab} />
-          <TabButton tab="slots" icon={Calendar} label="Book Slots" isActive={activeTab === 'slots'} onClick={setActiveTab} />
-          <TabButton tab="booked" icon={BookOpen} label="My Bookings" isActive={activeTab === 'booked'} onClick={setActiveTab} />
+          <TabButton tab="booked" icon={BookOpen} label="My Sessions" isActive={activeTab === 'booked'} onClick={setActiveTab} />
           <TabButton tab="about" icon={User} label="About" isActive={activeTab === 'about'} onClick={setActiveTab} />
         </div>
 
@@ -989,149 +631,75 @@ export default function AstrologerProfile() {
                   </div>
                 </div>
 
-                {/* Booking Status Indicator */}
+                {/* Simple Status Indicator */}
                 {user && (
                   <div className="mt-3 pt-3 border-t border-indigo-500">
-                    {(() => {
-                      // Use current booking ID if available, otherwise find the latest booking
-                      let userBooking = null;
-                      if (currentBookingId) {
-                        userBooking = bookedSlots.find(slot => slot.id === currentBookingId);
-                      }
-
-                      if (!userBooking) {
-                        userBooking = bookedSlots.find(slot =>
-                          slot.status === 'upcoming' || slot.status === 'accepted' || slot.status === 'active'
-                        );
-                      }
-
-                      if (!userBooking) {
-                        return (
-                          <div className="flex items-center justify-between">
-                            <div className="flex items-center gap-2 text-indigo-200">
-                              <div className="w-2 h-2 bg-yellow-400 rounded-full"></div>
-                              <span className="text-sm">Book a slot to start chatting</span>
-                            </div>
-                            <div className="flex items-center gap-2">
-                              <div className={`w-2 h-2 rounded-full ${socket?.connected ? 'bg-green-400' : 'bg-red-400'}`}></div>
-                              <span className="text-xs opacity-75">{socket?.connected ? 'Connected' : 'Disconnected'}</span>
-                              <button
-                                onClick={() => user?.id && fetchUserBookings(user.id)}
-                                className="text-xs px-2 py-1 bg-white/20 rounded-full hover:bg-white/30 transition-colors"
-                                title="Refresh"
-                              >
-                                ↻
-                              </button>
-                            </div>
-                          </div>
-                        );
-                      }
-
-                      return (
-                        <div className="flex items-center justify-between">
-                          <div className="flex items-center gap-2 text-indigo-200">
-                            <div className={`w-2 h-2 rounded-full ${userBooking.isPaid && userBooking.chatEnabled ? 'bg-green-400' : 'bg-yellow-400'
-                              }`}></div>
-                            <span className="text-sm">
-                              Booking: {new Date(userBooking.date).toLocaleDateString()} at {new Date(userBooking.date).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                            </span>
-                          </div>
-                          <div className="flex items-center gap-2">
-                            <span className={`text-xs px-2 py-1 rounded-full ${userBooking.isPaid ? 'bg-green-500 text-white' : 'bg-yellow-500 text-white'
-                              }`}>
-                              {userBooking.isPaid ? 'Paid' : 'Unpaid'}
-                            </span>
-                            <span className={`text-xs px-2 py-1 rounded-full ${userBooking.chatEnabled ? 'bg-blue-500 text-white' : 'bg-gray-500 text-white'
-                              }`}>
-                              {userBooking.chatEnabled ? 'Chat Active' : 'Chat Locked'}
-                            </span>
-                            <div className={`w-2 h-2 rounded-full ${socket?.connected ? 'bg-green-400' : 'bg-red-400'}`}></div>
-                            <span className="text-xs opacity-75">{socket?.connected ? 'Connected' : 'Disconnected'}</span>
-                            <button
-                              onClick={() => user?.id && fetchUserBookings(user.id)}
-                              className="text-xs px-2 py-1 bg-white/20 rounded-full hover:bg-white/30 transition-colors"
-                              title="Refresh"
-                            >
-                              ↻
-                            </button>
-                          </div>
-                        </div>
-                      );
-                    })()}
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2 text-indigo-200">
+                        <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
+                        <span className="text-sm">Ready to chat - Pay to start</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <div className={`w-2 h-2 rounded-full ${socket?.connected ? 'bg-green-400' : 'bg-red-400'}`}></div>
+                        <span className="text-xs opacity-75">{socket?.connected ? 'Connected' : 'Disconnected'}</span>
+                      </div>
+                    </div>
                   </div>
                 )}
               </div>
 
               <div className="flex-1 flex items-center justify-center p-8">
-                <div className="text-center">
-                  <MessageCircle className="w-16 h-16 mx-auto mb-4 text-gray-300" />
-                  <h3 className="text-lg font-medium text-gray-900 mb-2">Start a Conversation</h3>
-                  <p className="text-gray-500 mb-6">
-                    Click the chat button above to start a real-time conversation with {astrologer?.firstName}
+                <div className="text-center max-w-md">
+                  <div className="w-20 h-20 bg-indigo-100 rounded-full flex items-center justify-center mx-auto mb-6">
+                    <MessageCircle className="w-10 h-10 text-indigo-600" />
+                  </div>
+                  <h3 className="text-2xl font-bold text-gray-900 mb-3">Start Your Consultation</h3>
+                  <p className="text-gray-600 mb-6 leading-relaxed">
+                    Pay ₹{astrologer?.pricePerChat} to start an instant chat session with {astrologer?.firstName}. 
+                    No booking required - start chatting immediately!
                   </p>
-                  <div className="flex gap-3 justify-center">
+                  
+                  <div className="bg-amber-50 border border-amber-200 rounded-lg p-4 mb-6">
+                    <div className="flex items-center gap-2 text-amber-800 mb-2">
+                      <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
+                      <span className="font-semibold">Online Now</span>
+                    </div>
+                    <p className="text-sm text-amber-700">
+                      {astrologer?.firstName} is currently online and ready to help you
+                    </p>
+                  </div>
+
+                  <div className="flex flex-col sm:flex-row gap-3 justify-center">
                     <button
-                      onClick={handleStartChat}
-                      disabled={(() => {
-                        let userBooking = null;
-                        if (currentBookingId) {
-                          userBooking = bookedSlots.find(slot => slot.id === currentBookingId);
-                        }
-                        if (!userBooking) {
-                          userBooking = bookedSlots.find(slot =>
-                            slot.status === 'upcoming' || slot.status === 'accepted' || slot.status === 'active'
-                          );
-                        }
-                        return !userBooking?.isPaid;
-                      })()}
-                      className="flex items-center gap-2 px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                      onClick={() => {
+                        // Create a new booking for immediate chat
+                        setCurrentBookingId(Date.now()); // Temporary ID
+                        setShowPayment(true);
+                      }}
+                      className="flex items-center gap-2 px-6 py-3 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors font-semibold"
                     >
-                      <MessageCircle className="w-4 h-4" />
-                      Start Chat
+                      <MessageCircle className="w-5 h-5" />
+                      Pay & Start Chat - ₹{astrologer?.pricePerChat}
                     </button>
                     <button
-                      onClick={(e) => {
-                        e.preventDefault();
-                        e.stopPropagation();
-                        console.log('Main video call button clicked');
-                        handleStartVideoCall();
+                      onClick={() => {
+                        // Create a new booking for video call
+                        setCurrentBookingId(Date.now()); // Temporary ID
+                        setShowPayment(true);
                       }}
-                      disabled={(() => {
-                        let userBooking = null;
-                        if (currentBookingId) {
-                          userBooking = bookedSlots.find(slot => slot.id === currentBookingId);
-                        }
-                        if (!userBooking) {
-                          userBooking = bookedSlots.find(slot =>
-                            slot.status === 'upcoming' || slot.status === 'accepted' || slot.status === 'active'
-                          );
-                        }
-                        const isDisabled = !userBooking?.isPaid || !socket || !socket.connected;
-                        console.log('Video call button disabled:', isDisabled, 'userBooking:', userBooking, 'hasSocket:', !!socket, 'socketConnected:', socket?.connected);
-                        return isDisabled;
-                      })()}
-                      className="flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-                      title={(() => {
-                        if (!socket) return 'Socket connection not available';
-                        if (!socket.connected) return 'Socket is connecting...';
-                        let userBooking = null;
-                        if (currentBookingId) {
-                          userBooking = bookedSlots.find(slot => slot.id === currentBookingId);
-                        }
-                        if (!userBooking) {
-                          userBooking = bookedSlots.find(slot =>
-                            slot.status === 'upcoming' || slot.status === 'accepted' || slot.status === 'active'
-                          );
-                        }
-                        if (!userBooking) return 'No active booking found';
-                        if (!userBooking.isPaid) return 'Payment required for video call';
-                        return 'Start video call';
-                      })()}
+                      className="flex items-center gap-2 px-6 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors font-semibold"
                     >
-                      <Video className="w-4 h-4" />
-                      Video Call
+                      <Video className="w-5 h-5" />
+                      Pay & Video Call - ₹{astrologer?.pricePerChat}
                     </button>
                   </div>
+
+                  <div className="mt-6 text-sm text-gray-500">
+                    <p>• Instant access after payment</p>
+                    <p>• No booking required</p>
+                    <p>• Secure payment processing</p>
+                  </div>
+
                   {bookingError && (
                     <div className="mt-4 p-3 bg-red-50 text-red-700 rounded-lg border border-red-200">
                       {bookingError}
@@ -1147,192 +715,25 @@ export default function AstrologerProfile() {
             </div>
           )}
 
-          {/* Slots Tab */}
-          {activeTab === 'slots' && (
-            <div className="p-6">
-              <h3 className="text-xl font-bold mb-4 text-slate-800">Available Slots</h3>
-              {slotsLoading && <LoadingSpinner size="sm" text="Loading slots..." />}
-              {slotsError && <div className="text-red-600 mb-2">{slotsError}</div>}
-              {!slotsLoading && !slotsError && (
-                <div className="space-y-6">
-                  {Object.keys(slotsByDate).length === 0 && <div>No slots available.</div>}
-                  {Object.entries(slotsByDate).map(([date, slots]) => (
-                    <div key={date}>
-                      <h4 className="font-semibold text-slate-700 mb-3">{date}</h4>
-                      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
-                        {slots.map((slot: Slot, slotIndex: number) => {
-                          // Determine if slot is in the past
-                          const slotDate = new Date(slot.date);
-                          const now = new Date();
-                          const isPast = slotDate < now;
-                          const isAvailable = slot.isAvailable && !isPast;
-                          return (
-                            <button
-                              key={slotIndex}
-                              onClick={() => isAvailable && setSelectedSlot({ ...slot, date })}
-                              disabled={!isAvailable}
-                              className={`p-3 rounded-lg border-2 transition-all flex flex-col items-center justify-center ${selectedSlot?.id === slot.id
-                                ? 'bg-indigo-600 text-white border-indigo-600'
-                                : !isAvailable
-                                  ? 'bg-gray-100 text-gray-400 border-gray-200 cursor-not-allowed opacity-60'
-                                  : 'bg-white text-gray-900 hover:bg-slate-50 border-slate-200 hover:border-indigo-300'
-                                }`}
-                              title={
-                                isPast
-                                  ? 'Past slot'
-                                  : slot.isAvailable === false
-                                    ? 'Already booked'
-                                    : 'Available'
-                              }
-                            >
-                              <div className="flex items-center gap-2 justify-center">
-                                <Clock className="w-4 h-4" />
-                                <span className="text-sm font-medium">{slot.start} - {slot.end}</span>
-                              </div>
-                              <div className="text-xs mt-1">
-                                {isPast ? 'Past' : slot.isAvailable === false ? 'Booked' : 'Available'}
-                              </div>
-                            </button>
-                          );
-                        })}
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              )}
 
-              {selectedSlot && (
-                <div className="mt-6 p-4 bg-indigo-50 rounded-lg border border-indigo-200">
-                  <h4 className="font-semibold mb-2 text-slate-800">Selected Slot</h4>
-                  <p className="text-sm text-slate-600">
-                    {selectedSlot.date} at {selectedSlot.start} - {selectedSlot.end}
-                  </p>
-                  {bookingError && <div className="text-red-600 mb-2">{bookingError}</div>}
-                  <div className="flex gap-3 mt-3">
-                    <button
-                      onClick={handleBookSlot}
-                      className="px-6 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition-colors"
-                      disabled={bookingLoading}
-                    >
-                      {bookingLoading ? 'Booking...' : 'Book Now'}
-                    </button>
-                    <button
-                      onClick={() => setSelectedSlot(null)}
-                      className="px-6 py-2 bg-slate-200 text-slate-700 rounded-lg hover:bg-slate-300 transition-colors"
-                      disabled={bookingLoading}
-                    >
-                      Cancel
-                    </button>
-                  </div>
-                </div>
-              )}
-
-              {bookingStatus && (
-                <div className="mt-4 p-3 bg-emerald-50 text-emerald-700 rounded-lg border border-emerald-200">
-                  {bookingStatus}
-                </div>
-              )}
-            </div>
-          )}
-
-          {/* Booked Slots Tab */}
+          {/* My Sessions Tab */}
           {activeTab === 'booked' && (
             <div className="p-6">
-              <h3 className="text-xl font-bold mb-4 text-slate-800">My Bookings</h3>
-              {cancelError && <div className="text-red-600 mb-2">{cancelError}</div>}
-              <div className="space-y-4">
-                {bookedSlots.map((slot: Booking) => (
-                  <div key={slot.id} className="mx-auto p-4 border border-slate-200 rounded-lg bg-slate-50">
-                    <div className="mx-auto flex justify-between items-start">
-                      <div>
-                        <h4 className="font-semibold text-slate-800">
-                          {new Date(slot.date).toLocaleDateString()} at {new Date(slot.date).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                        </h4>
-                        <span className={`inline-block px-2 py-1 rounded-full text-xs font-medium mt-2 ${slot.status === 'completed'
-                          ? 'bg-emerald-100 text-emerald-700'
-                          : 'bg-blue-100 text-blue-700'
-                          }`}>
-                          {slot.status}
-                        </span>
-                        {/* Show client name/email if available */}
-                        {(slot as Booking).client && (
-                          <div className="text-xs text-slate-500 mt-1">
-                            Client: {(slot as Booking).client?.name || ''} ({(slot as Booking).client?.email || ''})
-                          </div>
-                        )}
-                      </div>
-                      {slot.status === 'upcoming' && (
-                        <button
-                          onClick={() => handleCancelBooking(slot.id)}
-                          className="px-4 py-2 bg-rose-500 text-white rounded-lg hover:bg-rose-600 transition-colors"
-                          disabled={cancelLoading}
-                        >
-                          {cancelLoading ? 'Cancelling...' : 'Cancel'}
-                        </button>
-                      )}
-                      {slot.canRate && !slot.rating && (
-                        <button
-                          onClick={() => setRatingSlot(slot.id)}
-                          className="px-4 py-2 bg-amber-400 text-slate-800 rounded-lg hover:bg-amber-500 transition-colors"
-                        >
-                          Rate Session
-                        </button>
-                      )}
-                      {slot.rating && (
-                        <div className="flex items-center gap-1">
-                          <span className="text-sm text-slate-600">Your rating:</span>
-                          <div className="flex">
-                            {[1, 2, 3, 4, 5].map(star => (
-                              <Star
-                                key={star}
-                                className={`w-4 h-4 ${star <= (slot.rating ?? 0) ? 'text-amber-400 fill-current' : 'text-slate-300'}`}
-                              />
-                            ))}
-                          </div>
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                ))}
-              </div>
-              {/* Rating Modal */}
-              {ratingSlot && (
-                <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-                  <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4 border border-slate-200">
-                    <h3 className="text-lg font-semibold mb-4 text-slate-800">Rate your session</h3>
-                    {rateError && <div className="text-red-600 mb-2">{rateError}</div>}
-                    <div className="flex justify-center gap-1 mb-4">
-                      {[1, 2, 3, 4, 5].map(star => (
-                        <button
-                          key={star}
-                          onClick={() => setUserRating(star)}
-                          className={`w-8 h-8 ${star <= userRating ? 'text-amber-400 fill-current' : 'text-slate-300'} hover:text-amber-400 transition-colors`}
-                        >
-                          <Star className="w-full h-full" />
-                        </button>
-                      ))}
-                    </div>
-                    <div className="flex gap-3">
-                      <button
-                        onClick={handleSubmitRating}
-                        disabled={userRating === 0 || rateLoading}
-                        className="flex-1 px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-                      >
-                        {rateLoading ? 'Submitting...' : 'Submit Rating'}
-                      </button>
-                      <button
-                        onClick={() => {
-                          setRatingSlot(null);
-                          setUserRating(0);
-                        }}
-                        className="px-4 py-2 bg-slate-200 text-slate-700 rounded-lg hover:bg-slate-300 transition-colors"
-                      >
-                        Cancel
-                      </button>
-                    </div>
-                  </div>
+              <h3 className="text-xl font-bold mb-4 text-slate-800">Chat History</h3>
+              
+              <div className="text-center py-12">
+                <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <MessageCircle className="w-8 h-8 text-gray-400" />
                 </div>
-              )}
+                <h4 className="text-lg font-medium text-gray-900 mb-2">No Chat History Yet</h4>
+                <p className="text-gray-500 mb-6">Start a conversation with {astrologer?.firstName} to see your chat history here.</p>
+                <button
+                  onClick={() => setActiveTab('chat')}
+                  className="px-6 py-3 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors font-semibold"
+                >
+                  Start Your First Chat
+                </button>
+              </div>
             </div>
           )}
 
