@@ -24,8 +24,7 @@ const AstrologerSidebar: FC<AstrologerSidebarProps> = ({ approvalStatus = 'verif
 
   const menuItems = [
     { icon: UserCircle2, label: "Manage Profile", href: "/astrologer/profile" },
-    { icon: Calendar, label: "Availability Schedule", href: "/astrologer/availability" },
-    { icon: BookOpen, label: "View Bookings", href: "/astrologer/bookings" },
+    { icon: Calendar, label: "Online Status", href: "/astrologer/availability" },
     { icon: MessageCircle, label: "Start Consultations", href: "/astrologer/consultations" },
     { icon: Star, label: "View Ratings/Reviews", href: "/astrologer/reviews" },
     { icon: Wallet, label: "Withdraw Earnings", href: "/astrologer/withdraw" },

@@ -13,7 +13,7 @@ interface PaymentModalProps {
     lastName: string;
     pricePerChat: number;
   };
-  onPaymentSuccess: () => void;
+  onPaymentSuccess: (bookingData?: { booking?: { id: number } }) => void;
   onClose: () => void;
 }
 
@@ -95,10 +95,11 @@ export default function PaymentModal({
       }
 
       const paymentData = {
-        bookingId,
+        astrologerId: astrologer.id,
         amount: astrologer.pricePerChat,
         paymentMethod,
-        clientId
+        clientId,
+        type: 'chat'
       };
 
       console.log('Sending payment data:', paymentData);
@@ -111,7 +112,7 @@ export default function PaymentModal({
       console.log('Payment response:', response.data);
 
       if (response.data.success) {
-        onPaymentSuccess();
+        onPaymentSuccess(response.data);
       } else {
         setError('Payment failed. Please try again.');
       }

@@ -58,31 +58,63 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
   // --- POST: Create a booking ---
   if (req.method === 'POST') {
-    const { astrologerId, date, type } = req.body;
+    const { astrologerId, type } = req.body;
     const clientId = getClientId(req);
-    if (!isValidBookingInput(astrologerId, clientId, date, type)) {
-      return res.status(400).json({ error: 'Missing or invalid required fields' });
+    
+    if (!astrologerId || !clientId || !type) {
+      return res.status(400).json({ error: 'Missing required fields' });
     }
+    
+    if (isNaN(Number(astrologerId)) || isNaN(Number(clientId))) {
+      return res.status(400).json({ error: 'Invalid astrologerId or clientId' });
+    }
+    
     try {
-      const slotTaken = await prisma.booking.findFirst({
+      // Check if astrologer is online and verified
+      const astrologer = await prisma.astrologer.findUnique({
+        where: { id: Number(astrologerId) },
+        select: {
+          isOnline: true,
+          verificationStatus: true,
+        }
+      });
+      
+      if (!astrologer) {
+        return res.status(404).json({ error: 'Astrologer not found' });
+      }
+      
+      if (!astrologer.isOnline) {
+        return res.status(409).json({ error: 'Astrologer is currently offline' });
+      }
+      
+      if (astrologer.verificationStatus !== 'verified') {
+        return res.status(409).json({ error: 'Astrologer is not verified' });
+      }
+      
+      // Check if user already has an active booking with this astrologer
+      const existingBooking = await prisma.booking.findFirst({
         where: {
           astrologerId: Number(astrologerId),
-          date: new Date(date),
-          status: { notIn: ['cancelled', 'rejected'] },
+          clientId: Number(clientId),
+          status: { in: ['upcoming', 'in_progress'] },
         },
       });
-      if (slotTaken) {
-        return res.status(409).json({ error: 'Slot already booked' });
+      
+      if (existingBooking) {
+        return res.status(409).json({ error: 'You already have an active booking with this astrologer' });
       }
+      
       const booking = await prisma.booking.create({
         data: {
           astrologerId: Number(astrologerId),
           clientId: Number(clientId),
-          date: new Date(date),
+          date: new Date(), // Current time for immediate booking
           type,
           status: 'upcoming',
+          updatedAt: new Date(),
         },
       });
+      
       return res.status(201).json({ 
         success: true,
         booking 
@@ -117,7 +149,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     }
   }
 
- // --- GET: List available slots for an astrologer (user-side, no auth) ---
+ // --- GET: Check astrologer availability (user-side, no auth) ---
 if (req.method === 'GET' && req.query.availableSlots === '1') {
   const { astrologerId } = req.query;
   if (!astrologerId || isNaN(Number(astrologerId))) {
@@ -125,71 +157,32 @@ if (req.method === 'GET' && req.query.availableSlots === '1') {
   }
   
   try {
-    const now = new Date();
-    const tenDaysLater = new Date(now.getTime() + 10 * 24 * 60 * 60 * 1000);
-    
-    const slots = await prisma.astrologerAvailability.findMany({
-      where: {
-        astrologerId: Number(astrologerId),
-        date: {
-          gte: now,
-          lt: tenDaysLater
-        },
-      },
-      orderBy: { date: 'asc' },
+    const astrologer = await prisma.astrologer.findUnique({
+      where: { id: Number(astrologerId) },
+      select: {
+        id: true,
+        firstName: true,
+        lastName: true,
+        isOnline: true,
+        lastOnlineAt: true,
+        areasOfExpertise: true,
+        pricePerChat: true,
+        verificationStatus: true,
+      }
     });
     
+    if (!astrologer) {
+      return res.status(404).json({ error: 'Astrologer not found' });
+    }
     
-    // Get all bookings for this astrologer in the date range
-    const allBookings = await prisma.booking.findMany({
-      where: {
-        astrologerId: Number(astrologerId),
-        date: {
-          gte: now,
-          lt: tenDaysLater
-        },
-        status: { notIn: ['cancelled', 'rejected'] },
-      },
+    return res.status(200).json({
+      astrologer,
+      isAvailable: astrologer.isOnline && astrologer.verificationStatus === 'verified'
     });
-    
-    
-    const slotsWithAvailability = slots.map(slot => {
-      const slotDate = new Date(slot.date);
-      const slotDateStr = slotDate.toISOString().split('T')[0]; // YYYY-MM-DD
-      
-      // Convert IST time to UTC
-      // Create a date with the slot time in IST timezone
-      const [slotHour, slotMinute] = slot.start.split(':').map(Number);
-      
-      // Method 1: Manual conversion (IST = UTC + 5:30)
-      // To convert IST to UTC: subtract 5 hours 30 minutes
-      const expectedBookingDate = new Date(`${slotDateStr}T${slot.start}:00.000Z`);
-      // This date is currently treated as UTC, but it's actually IST
-      // So we need to subtract 5.5 hours to get the actual UTC time
-      expectedBookingDate.setTime(expectedBookingDate.getTime() - (5.5 * 60 * 60 * 1000));
-     
-      // Check if any booking matches this time
-      const matchingBooking = allBookings.find(booking => {
-        const bookingDate = new Date(booking.date);
-        const timeDiff = Math.abs(bookingDate.getTime() - expectedBookingDate.getTime());
-        
-        return timeDiff < 60000; // Within 1 minute tolerance
-      });
-      
-      const isBooked = !!matchingBooking;
-      
-      return {
-        ...slot,
-        isAvailable: !isBooked,
-      };
-    });
-    
-    
-    return res.status(200).json(slotsWithAvailability);
     
   } catch (e) {
     return res.status(500).json({ 
-      error: 'Failed to fetch slots', 
+      error: 'Failed to check availability', 
       details: e instanceof Error ? e.message : e 
     });
   }

@@ -1,5 +1,16 @@
 import { NextResponse } from 'next/server'
 import prisma from '@/lib/prisma'
+import {
+  PanchangData,
+  PanchangLunarMonth,
+  PanchangNakshatra,
+  PanchangRitu,
+  PanchangTithi,
+  PanchangWeekday,
+  PanchangYogaMap,
+  PanchangKaranaMap,
+  DatabasePanchangData
+} from '@/types/panchang'
 
 // GET /api/panchang/calculations - Get calculated Panchang timings
 export async function GET(request: Request) {
@@ -75,7 +86,11 @@ export async function GET(request: Request) {
 }
 
 // Helper function to calculate additional Panchang timings
-function calculatePanchangTimings(data: any) {
+function calculatePanchangTimings(data: {
+  sun_rise: string
+  sun_set: string
+  weekday_number: number
+}) {
   const sunRise = parseTime(data.sun_rise)
   const sunSet = parseTime(data.sun_set)
   
@@ -209,7 +224,7 @@ function getGulikaKaalStartHour(weekdayNumber: number): number {
 }
 
 // Helper function to format Panchang response
-function formatPanchangResponse(data: any) {
+function formatPanchangResponse(data: DatabasePanchangData): PanchangData {
   return {
     sun_rise: data.sun_rise,
     sun_set: data.sun_set,
@@ -246,7 +261,7 @@ function formatPanchangResponse(data: any) {
       ends_at: data.nakshatra_ends_at,
       left_percentage: data.nakshatra_left_percentage
     },
-    yoga: data.panchang_yogas.reduce((acc: any, yoga: any, index: number) => {
+    yoga: data.panchang_yogas.reduce<PanchangYogaMap>((acc, yoga, index) => {
       acc[index + 1] = {
         number: yoga.yoga_number,
         name: yoga.yoga_name,
@@ -254,8 +269,8 @@ function formatPanchangResponse(data: any) {
         yoga_left_percentage: yoga.yoga_left_percentage
       }
       return acc
-    }, {}),
-    karana: data.panchang_karanas.reduce((acc: any, karana: any, index: number) => {
+    }, {} as PanchangYogaMap),
+    karana: data.panchang_karanas.reduce<PanchangKaranaMap>((acc, karana, index) => {
       acc[index + 1] = {
         number: karana.karana_number,
         name: karana.karana_name,
@@ -263,7 +278,7 @@ function formatPanchangResponse(data: any) {
         karana_left_percentage: karana.karana_left_percentage
       }
       return acc
-    }, {}),
+    }, {} as PanchangKaranaMap),
     year: {
       status: "success",
       timestamp: new Date().toISOString(),

@@ -2,6 +2,15 @@ import { NextResponse } from 'next/server'
 import fs from 'fs'
 import path from 'path'
 
+interface OrderRating {
+  orderId: string
+  rating: number
+  review?: string
+  userId: string
+  created_at?: string
+  updated_at?: string
+}
+
 export async function POST(request: Request) {
   try {
     const body = await request.json()
@@ -15,10 +24,11 @@ export async function POST(request: Request) {
     if (!fs.existsSync(dataDir)) fs.mkdirSync(dataDir, { recursive: true })
 
     const filePath = path.join(dataDir, 'order_ratings.json')
-    let ratings: any[] = []
+    let ratings: OrderRating[] = []
     try {
       const raw = fs.readFileSync(filePath, 'utf-8')
-      ratings = JSON.parse(raw)
+      const parsed: unknown = JSON.parse(raw)
+      ratings = Array.isArray(parsed) ? (parsed as OrderRating[]) : []
     } catch (e) {
       ratings = []
     }

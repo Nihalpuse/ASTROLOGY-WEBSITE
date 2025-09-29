@@ -1,35 +1,26 @@
 "use client";
 
 import { useState } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion } from "framer-motion";
 import React from "react";
-import { z } from "zod";
 
-interface Slot {
-  id?: number;
-  date: string;
-  start: string;
-  end: string;
-  repeat?: string;
+interface AstrologerStatus {
+  isOnline: boolean;
+  lastOnlineAt: string | null;
+  firstName: string;
+  lastName: string;
+  areasOfExpertise: string;
+  pricePerChat: number | null;
 }
 
 type APIErrorResponse = { error?: string };
 
-const weekdayLabels = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
-
 const AvailabilityPage = () => {
-  const [slots, setSlots] = useState<Slot[]>([]);
-  const [form, setForm] = useState({
-    startDate: "",
-    startTime: "",
-    endTime: "",
-    weekdays: [] as number[],
-  });
-  const [showForm, setShowForm] = useState(true);
+  const [status, setStatus] = useState<AstrologerStatus | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
-  // Fetch slots on mount
+  // Fetch status on mount
   React.useEffect(() => {
     const token = localStorage.getItem('astrologerToken');
     if (!token) return;
@@ -39,97 +30,38 @@ const AvailabilityPage = () => {
     })
       .then(res => res.json())
       .then(data => {
-        if (Array.isArray(data)) setSlots(data.map(slot => ({ ...slot, date: slot.date.slice(0, 10) })));
-        else setError(data.error || 'Failed to load slots');
+        if (data.error) {
+          setError(data.error);
+        } else {
+          setStatus(data);
+        }
       })
-      .catch(() => setError('Failed to load slots'))
+      .catch(() => setError('Failed to load status'))
       .finally(() => setLoading(false));
   }, []);
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
-    const { name, value, type } = e.target;
-    if (name === "weekdays" && type === "checkbox") {
-      const idx = Number(value);
-      const checked = (e.target as HTMLInputElement).checked;
-      setForm((prev) => ({
-        ...prev,
-        weekdays: checked
-          ? [...prev.weekdays, idx]
-          : prev.weekdays.filter((d) => d !== idx),
-      }));
-    } else {
-      setForm((prev) => ({ ...prev, [name]: value }));
-    }
-  };
-
-  // Zod validation schema
-  const formSchema = z.object({
-    startDate: z.string().min(1, "Start date required"),
-    startTime: z.string().regex(/^\d{2}:\d{2}$/),
-    endTime: z.string().regex(/^\d{2}:\d{2}$/),
-    weekdays: z.array(z.number().int().min(0).max(6)).min(1, "Select at least one weekday"),
-  });
-
-  const handleAddOrUpdateSlot = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleToggleStatus = async () => {
+    if (!status) return;
     setError("");
     const token = localStorage.getItem('astrologerToken');
     if (!token) return setError('Not authenticated');
-    // Validate form
-    const result = formSchema.safeParse(form);
-    if (!result.success) {
-      setError(result.error.errors[0].message);
-      return;
-    }
+    
     setLoading(true);
     try {
       const res: Response = await fetch('/api/astrologer/availability', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-        body: JSON.stringify(form)
+        body: JSON.stringify({ isOnline: !status.isOnline })
       });
       const data = await res.json();
       if (res.ok) {
-        // Refetch slots
-        fetch('/api/astrologer/availability', {
-          headers: { Authorization: `Bearer ${token}` }
-        })
-          .then(res => res.json())
-          .then(data => {
-            if (Array.isArray(data)) setSlots(data.map(slot => ({ ...slot, date: slot.date.slice(0, 10) })));
-          });
-        setForm({ startDate: "", startTime: "", endTime: "", weekdays: [] });
+        setStatus(data);
       } else {
         const errorData = data as APIErrorResponse;
-        setError(errorData.error || 'Failed to add slot');
+        setError(errorData.error || 'Failed to update status');
       }
     } catch {
-      setError('Failed to save slot');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleRemoveSlot = async (id?: number) => {
-    if (!id) return;
-    setError("");
-    const token = localStorage.getItem('astrologerToken');
-    if (!token) return setError('Not authenticated');
-    setLoading(true);
-    try {
-      const res: Response = await fetch('/api/astrologer/availability', {
-        method: 'DELETE',
-        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-        body: JSON.stringify({ id })
-      });
-      if (res.status === 204) {
-        setSlots(prev => prev.filter(slot => slot.id !== id));
-      } else {
-        const data: APIErrorResponse = await res.json();
-        setError(data.error || 'Failed to delete slot');
-      }
-    } catch {
-      setError('Failed to delete slot');
+      setError('Failed to update status');
     } finally {
       setLoading(false);
     }
@@ -142,108 +74,80 @@ const AvailabilityPage = () => {
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5, ease: "easeOut" }}
     >
-      <h1 className="text-2xl font-bold mb-4">Availability Schedule</h1>
-      <p className="mb-6 text-gray-600 dark:text-gray-300">Set your available slots for consultations here.</p>
-      {error && <div className="text-red-500 mb-2">{error}</div>}
-      {loading && <div className="text-gray-500 mb-2">Loading...</div>}
-      <AnimatePresence>
-        {showForm && (
-          <motion.form
-            className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-8"
-            onSubmit={handleAddOrUpdateSlot}
+      <h1 className="text-2xl font-bold mb-4">Online Status</h1>
+      <p className="mb-6 text-gray-600 dark:text-gray-300">Toggle your online status to let clients know when you're available for consultations.</p>
+      
+      {error && <div className="text-red-500 mb-4 p-3 bg-red-50 dark:bg-red-900/20 rounded-lg">{error}</div>}
+      {loading && <div className="text-gray-500 mb-4">Loading...</div>}
+      
+      {status && (
+        <div className="space-y-6">
+          {/* Status Card */}
+          <motion.div
+            className="bg-white dark:bg-midnight-black border border-gray-200 dark:border-gray-700 rounded-lg p-6 shadow-sm"
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: 20 }}
             transition={{ duration: 0.3 }}
           >
-            <div>
-              <label className="block font-semibold text-sm mb-1">Start Date</label>
-              <input type="date" name="startDate" value={form.startDate} onChange={handleChange} className="w-full px-4 py-2 rounded border" required />
-            </div>
-            <div>
-              <label className="block font-semibold text-sm mb-1">Start Time</label>
-              <input type="time" name="startTime" value={form.startTime} onChange={handleChange} className="w-full px-4 py-2 rounded border" required />
-            </div>
-            <div>
-              <label className="block font-semibold text-sm mb-1">End Time</label>
-              <input type="time" name="endTime" value={form.endTime} onChange={handleChange} className="w-full px-4 py-2 rounded border" required />
-            </div>
-            <div className="col-span-2">
-              <label className="block font-semibold text-sm mb-1">Weekdays</label>
-              <div className="flex gap-2 flex-wrap">
-                {weekdayLabels.map((label, idx) => (
-                  <label key={label} className="flex items-center gap-1">
-                    <input
-                      type="checkbox"
-                      name="weekdays"
-                      value={idx}
-                      checked={form.weekdays.includes(idx)}
-                      onChange={handleChange}
-                    />
-                    {label}
-                  </label>
-                ))}
+            <div className="flex items-center justify-between mb-4">
+              <div>
+                <h2 className="text-lg font-semibold mb-1">Current Status</h2>
+                <div className="flex items-center gap-2">
+                  <div className={`w-3 h-3 rounded-full ${status.isOnline ? 'bg-green-500' : 'bg-gray-400'}`}></div>
+                  <span className={`font-medium ${status.isOnline ? 'text-green-600' : 'text-gray-500'}`}>
+                    {status.isOnline ? 'Online' : 'Offline'}
+                  </span>
+                </div>
               </div>
-            </div>
-            <div className="col-span-2 flex justify-center">
               <motion.button
                 whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.97 }}
-                type="submit"
-                className="py-2 px-6 bg-amber-500 dark:bg-purple-700 text-white font-bold rounded-lg mt-2 shadow"
+                whileTap={{ scale: 0.95 }}
+                onClick={handleToggleStatus}
                 disabled={loading}
+                className={`px-6 py-3 rounded-lg font-semibold transition-colors ${
+                  status.isOnline 
+                    ? 'bg-red-500 hover:bg-red-600 text-white' 
+                    : 'bg-green-500 hover:bg-green-600 text-white'
+                }`}
               >
-                Add Slots
+                {status.isOnline ? 'Go Offline' : 'Go Online'}
               </motion.button>
             </div>
-          </motion.form>
-        )}
-      </AnimatePresence>
-      <div>
-        <h2 className="text-lg font-semibold mb-2">Your Slots</h2>
-        <div className="space-y-3">
-          <AnimatePresence>
-            {(!loading && slots.length === 0) && (
-              <motion.div
-                className="text-gray-400 text-center py-6"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-              >
-                No slots added yet.
-              </motion.div>
+            
+            {status.lastOnlineAt && (
+              <div className="text-sm text-gray-500">
+                Last online: {new Date(status.lastOnlineAt).toLocaleString()}
+              </div>
             )}
-            {slots.map((slot) => (
-              <motion.div
-                key={slot.id}
-                className="flex flex-col sm:flex-row items-center justify-between bg-white dark:bg-midnight-black border border-gray-200 dark:border-gray-700 rounded-lg px-4 py-3 shadow-sm gap-2"
-                initial={{ opacity: 0, x: 40 }}
-                animate={{ opacity: 1, x: 0 }}
-                exit={{ opacity: 0, x: 40 }}
-                transition={{ duration: 0.3 }}
-              >
-                <div className="flex flex-col sm:flex-row gap-2 sm:gap-6 text-sm">
-                  <span><span className="font-semibold">Date:</span> {slot.date}</span>
-                  <span><span className="font-semibold">Start:</span> {slot.start}</span>
-                  <span><span className="font-semibold">End:</span> {slot.end}</span>
-                  {slot.repeat && <span><span className="font-semibold">Repeat:</span> {slot.repeat}</span>}
+          </motion.div>
+
+          {/* Profile Info */}
+          <motion.div
+            className="bg-white dark:bg-midnight-black border border-gray-200 dark:border-gray-700 rounded-lg p-6 shadow-sm"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.3, delay: 0.1 }}
+          >
+            <h3 className="text-lg font-semibold mb-4">Profile Information</h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">Name</label>
+                <p className="text-gray-900 dark:text-white">{status.firstName} {status.lastName}</p>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">Areas of Expertise</label>
+                <p className="text-gray-900 dark:text-white">{status.areasOfExpertise}</p>
+              </div>
+              {status.pricePerChat && (
+                <div>
+                  <label className="block text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">Price per Chat</label>
+                  <p className="text-gray-900 dark:text-white">₹{status.pricePerChat}</p>
                 </div>
-                <div className="flex gap-2">
-                  <motion.button
-                    whileHover={{ scale: 1.1, backgroundColor: '#ef4444', color: '#fff' }}
-                    whileTap={{ scale: 0.95 }}
-                    className="px-3 py-1 rounded bg-red-100 text-red-600 font-semibold text-xs transition-colors"
-                    onClick={() => handleRemoveSlot(slot.id)}
-                    disabled={loading}
-                  >
-                    Remove
-                  </motion.button>
-                </div>
-              </motion.div>
-            ))}
-          </AnimatePresence>
+              )}
+            </div>
+          </motion.div>
         </div>
-      </div>
+      )}
     </motion.div>
   );
 };

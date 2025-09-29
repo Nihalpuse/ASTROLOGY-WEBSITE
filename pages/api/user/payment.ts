@@ -127,13 +127,14 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
   if (req.method === 'POST') {
     try {
-      const { bookingId, amount, paymentMethod } = req.body;
+      const { astrologerId, amount, paymentMethod, type = 'chat' } = req.body;
       const clientId = getClientId(req);
       
       console.log('Payment API POST - received:', { 
-        bookingId, 
+        astrologerId, 
         amount, 
         paymentMethod, 
+        type,
         clientId,
         body: req.body 
       });
@@ -146,54 +147,59 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         });
       }
 
-      if (!bookingId || !amount) {
-        return res.status(400).json({ error: 'Booking ID and amount required' });
+      if (!astrologerId || !amount) {
+        return res.status(400).json({ error: 'Astrologer ID and amount required' });
       }
 
-      // Verify the booking belongs to this client
-      const booking = await prisma.booking.findFirst({
-        where: {
-          id: Number(bookingId),
-          clientId: clientId
-        },
-        include: {
-          astrologer: {
-            select: {
-              id: true,
-              firstName: true,
-              lastName: true,
-              pricePerChat: true
-            }
-          }
+      // Verify astrologer exists and is online
+      const astrologer = await prisma.astrologer.findUnique({
+        where: { id: Number(astrologerId) },
+        select: {
+          id: true,
+          firstName: true,
+          lastName: true,
+          pricePerChat: true,
+          isOnline: true,
+          verificationStatus: true
         }
       });
 
-      console.log('Payment API POST - Found booking:', booking);
-
-      if (!booking) {
-        return res.status(404).json({ 
-          error: 'Booking not found',
-          details: `No booking found with ID ${bookingId} for client ${clientId}`
-        });
+      if (!astrologer) {
+        return res.status(404).json({ error: 'Astrologer not found' });
       }
 
-      // Check if booking is already paid
-      if (booking.isPaid) {
-        return res.status(400).json({ 
-          error: 'Booking already paid',
-          details: 'This booking has already been paid for'
-        });
+      if (!astrologer.isOnline) {
+        return res.status(409).json({ error: 'Astrologer is currently offline' });
       }
+
+      if (!['verified', 'approved'].includes(astrologer.verificationStatus)) {
+        return res.status(409).json({ error: 'Astrologer is not verified' });
+      }
+
+      // Create booking first
+      const booking = await prisma.booking.create({
+        data: {
+          astrologerId: Number(astrologerId),
+          clientId: clientId,
+          date: new Date(),
+          type,
+          status: 'upcoming',
+          updatedAt: new Date()
+        }
+      });
+
+      console.log('Payment API POST - Created booking:', booking);
 
       // Create payment record
       const payment = await prisma.payment.create({
         data: {
-          bookingId: Number(bookingId),
+          bookingId: booking.id,
           amount: parseFloat(amount),
           currency: 'INR',
           status: 'completed',
           paymentMethod: paymentMethod || 'mock',
-          transactionId: `mock_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
+          transactionId: `mock_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+          updatedAt: new Date()
         }
       });
 
@@ -201,10 +207,10 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
       // Update booking to mark as paid and enable chat/video
       const updatedBooking = await prisma.booking.update({
-        where: { id: Number(bookingId) },
+        where: { id: booking.id },
         data: {
           isPaid: true,
-          paymentId: payment.id.toString(), // Convert to string to match schema
+          paymentId: payment.id.toString(),
           chatEnabled: true,
           videoEnabled: true,
           sessionStart: new Date(),
@@ -218,6 +224,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         success: true,
         payment,
         booking: updatedBooking,
+        astrologer,
         message: 'Payment processed successfully'
       });
 

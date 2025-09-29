@@ -1,5 +1,17 @@
 import { NextResponse } from 'next/server'
 import prisma from '@/lib/prisma'
+import {
+  PanchangData,
+  PanchangTithi,
+  PanchangNakshatra,
+  PanchangYogaMap,
+  PanchangKaranaMap,
+  PanchangWeekday,
+  PanchangLunarMonth,
+  PanchangRitu,
+  PanchangYearInfo,
+  DatabasePanchangData
+} from '@/types/panchang'
 
 // POST /api/panchang - Get or create Panchang data
 export async function POST(request: Request) {
@@ -32,28 +44,7 @@ export async function POST(request: Request) {
     // Create date object
     const panchangDate = new Date(year, month - 1, date)
     
-    // Check if data already exists in database (temporarily disabled due to Prisma client issue)
-    // const existingData = await prisma.panchang_data.findFirst({
-    //   where: {
-    //     date: panchangDate,
-    //     latitude: latitude,
-    //     longitude: longitude
-    //   },
-    //   include: {
-    //     panchang_yogas: true,
-    //     panchang_karanas: true
-    //   }
-    // })
 
-    // if (existingData) {
-    //   return NextResponse.json({
-    //     success: true,
-    //     data: formatPanchangResponse(existingData),
-    //     source: 'database'
-    //   })
-    // }
-
-    // Fetch from multiple external API endpoints
     const apiData = await fetchPanchangFromMultipleEndpoints({
       year,
       month,
@@ -66,8 +57,6 @@ export async function POST(request: Request) {
       timezone
     })
 
-    // Save to database (temporarily disabled due to Prisma client issue)
-    // const savedData = await savePanchangData(apiData, panchangDate, latitude, longitude, timezone)
 
     return NextResponse.json({
       success: true,
@@ -104,27 +93,7 @@ export async function GET(request: Request) {
 
     const panchangDate = new Date(date)
     
-    // Database query temporarily disabled due to Prisma client issue
-    // const data = await prisma.panchang_data.findFirst({
-    //   where: {
-    //     date: panchangDate,
-    //     latitude: parseFloat(latitude),
-    //     longitude: parseFloat(longitude)
-    //   },
-    //   include: {
-    //     panchang_yogas: true,
-    //     panchang_karanas: true
-    //   }
-    // })
-
-    // if (!data) {
-    //   return NextResponse.json({
-    //     success: false,
-    //     error: 'Panchang data not found for the specified date and location'
-    //   }, { status: 404 })
-    // }
-
-    // For now, return fallback data
+   
     const fallbackData = generateFallbackPanchangData({
       year: panchangDate.getFullYear(),
       month: panchangDate.getMonth() + 1,
@@ -155,75 +124,21 @@ export async function GET(request: Request) {
 }
 
 // Helper function to save Panchang data to database (temporarily disabled due to Prisma client issue)
-async function savePanchangData(apiData: any, date: Date, latitude: number, longitude: number, timezone: number) {
+async function savePanchangData(
+  apiData: PanchangData,
+  date: Date,
+  latitude: number,
+  longitude: number,
+  timezone: number
+) {
   // Temporarily return the API data directly
   return apiData
   
-  // const panchangData = await prisma.panchang_data.create({
-  //   data: {
-  //     date,
-  //     latitude,
-  //     longitude,
-  //     timezone,
-  //     sun_rise: apiData.sun_rise,
-  //     sun_set: apiData.sun_set,
-  //     weekday_number: apiData.weekday.weekday_number,
-  //     weekday_name: apiData.weekday.weekday_name,
-  //     vedic_weekday_number: apiData.weekday.vedic_weekday_number,
-  //     vedic_weekday_name: apiData.weekday.vedic_weekday_name,
-  //     lunar_month_number: apiData.lunar_month.lunar_month_number,
-  //     lunar_month_name: apiData.lunar_month.lunar_month_name,
-  //     lunar_month_full_name: apiData.lunar_month.lunar_month_full_name,
-  //     adhika: apiData.lunar_month.adhika || 0,
-  //     nija: apiData.lunar_month.nija || 0,
-  //     kshaya: apiData.lunar_month.kshaya || 0,
-  //     ritu_number: apiData.ritu.number,
-  //     ritu_name: apiData.ritu.name,
-  //     aayanam: apiData.aayanam,
-  //     tithi_number: apiData.tithi.number,
-  //     tithi_name: apiData.tithi.name,
-  //     paksha: apiData.tithi.paksha,
-  //     tithi_completes_at: apiData.tithi.completes_at ? new Date(apiData.tithi.completes_at) : null,
-  //     tithi_left_percentage: apiData.tithi.left_precentage || null,
-  //     nakshatra_number: apiData.nakshatra.number,
-  //     nakshatra_name: apiData.nakshatra.name,
-  //     nakshatra_starts_at: apiData.nakshatra.starts_at ? new Date(apiData.nakshatra.starts_at) : null,
-  //     nakshatra_ends_at: apiData.nakshatra.ends_at ? new Date(apiData.nakshatra.ends_at) : null,
-  //     nakshatra_left_percentage: apiData.nakshatra.left_percentage || null,
-  //     saka_salivahana_number: apiData.year.saka_salivahana_number,
-  //     saka_salivahana_name_number: apiData.year.saka_salivahana_name_number,
-  //     saka_salivahana_year_name: apiData.year.saka_salivahana_year_name,
-  //     vikram_chaitradi_number: apiData.year.vikram_chaitradi_number,
-  //     vikram_chaitradi_name_number: apiData.year.vikram_chaitradi_name_number,
-  //     vikram_chaitradi_year_name: apiData.year.vikram_chaitradi_year_name,
-  //     panchang_yogas: {
-  //       create: Object.values(apiData.yoga).map((yoga: any) => ({
-  //         yoga_number: yoga.number,
-  //         yoga_name: yoga.name,
-  //         completion: yoga.completion ? new Date(yoga.completion) : null,
-  //         yoga_left_percentage: yoga.yoga_left_percentage || null
-  //       }))
-  //     },
-  //     panchang_karanas: {
-  //       create: Object.values(apiData.karana).map((karana: any) => ({
-  //         karana_number: karana.number,
-  //         karana_name: karana.name,
-  //         completion: karana.completion ? new Date(karana.completion) : null,
-  //         karana_left_percentage: karana.karana_left_percentage || null
-  //       }))
-  //     }
-  //   },
-  //   include: {
-  //     panchang_yogas: true,
-  //     panchang_karanas: true
-  //   }
-  // })
-
-  // return panchangData
+ 
 }
 
 // Helper function to format Panchang response
-function formatPanchangResponse(data: any) {
+function formatPanchangResponse(data: DatabasePanchangData): PanchangData {
   return {
     sun_rise: data.sun_rise,
     sun_set: data.sun_set,
@@ -260,7 +175,7 @@ function formatPanchangResponse(data: any) {
       ends_at: data.nakshatra_ends_at,
       left_percentage: data.nakshatra_left_percentage
     },
-    yoga: data.panchang_yogas.reduce((acc: any, yoga: any, index: number) => {
+    yoga: data.panchang_yogas.reduce<PanchangYogaMap>((acc, yoga, index) => {
       acc[index + 1] = {
         number: yoga.yoga_number,
         name: yoga.yoga_name,
@@ -268,8 +183,8 @@ function formatPanchangResponse(data: any) {
         yoga_left_percentage: yoga.yoga_left_percentage
       }
       return acc
-    }, {}),
-    karana: data.panchang_karanas.reduce((acc: any, karana: any, index: number) => {
+    }, {} as PanchangYogaMap),
+    karana: data.panchang_karanas.reduce<PanchangKaranaMap>((acc, karana, index) => {
       acc[index + 1] = {
         number: karana.karana_number,
         name: karana.karana_name,
@@ -277,7 +192,7 @@ function formatPanchangResponse(data: any) {
         karana_left_percentage: karana.karana_left_percentage
       }
       return acc
-    }, {}),
+    }, {} as PanchangKaranaMap),
     year: {
       status: "success",
       timestamp: new Date().toISOString(),
@@ -302,7 +217,7 @@ async function fetchPanchangFromMultipleEndpoints(params: {
   latitude: number
   longitude: number
   timezone: number
-}) {
+}): Promise<PanchangData> {
   const { year, month, date, hours, minutes, seconds, latitude, longitude, timezone } = params
   const baseUrl = 'https://json.freeastrologyapi.com'
   const apiKey = process.env.ASTROLOGY_API_KEY || 'YOUR_API_KEY_HERE'
@@ -335,7 +250,7 @@ async function fetchPanchangFromMultipleEndpoints(params: {
     })
 
     if (completeResponse.ok) {
-      const data = await completeResponse.json()
+      const data = (await completeResponse.json()) as PanchangData
       return data
     }
   } catch (error) {
@@ -391,57 +306,57 @@ async function fetchPanchangFromMultipleEndpoints(params: {
     ])
 
     // Process the responses and combine them
-    const combinedData: any = {}
+    const combinedData: Partial<PanchangData> = {}
 
     // Process each response
     if (sunRiseSet.status === 'fulfilled' && sunRiseSet.value.ok) {
-      const data = await sunRiseSet.value.json()
+      const data = (await sunRiseSet.value.json()) as { sun_rise: string; sun_set: string }
       combinedData.sun_rise = data.sun_rise
       combinedData.sun_set = data.sun_set
     }
 
     if (tithiTimings.status === 'fulfilled' && tithiTimings.value.ok) {
-      const data = await tithiTimings.value.json()
+      const data = (await tithiTimings.value.json()) as { tithi: PanchangTithi }
       combinedData.tithi = data.tithi
     }
 
     if (nakshatraDurations.status === 'fulfilled' && nakshatraDurations.value.ok) {
-      const data = await nakshatraDurations.value.json()
+      const data = (await nakshatraDurations.value.json()) as { nakshatra: PanchangNakshatra }
       combinedData.nakshatra = data.nakshatra
     }
 
     if (yogaTimings.status === 'fulfilled' && yogaTimings.value.ok) {
-      const data = await yogaTimings.value.json()
+      const data = (await yogaTimings.value.json()) as { yoga: PanchangYogaMap }
       combinedData.yoga = data.yoga
     }
 
     if (karanaTimings.status === 'fulfilled' && karanaTimings.value.ok) {
-      const data = await karanaTimings.value.json()
+      const data = (await karanaTimings.value.json()) as { karana: PanchangKaranaMap }
       combinedData.karana = data.karana
     }
 
     if (vedicWeekday.status === 'fulfilled' && vedicWeekday.value.ok) {
-      const data = await vedicWeekday.value.json()
+      const data = (await vedicWeekday.value.json()) as { weekday: PanchangWeekday }
       combinedData.weekday = data.weekday
     }
 
     if (lunarMonthInfo.status === 'fulfilled' && lunarMonthInfo.value.ok) {
-      const data = await lunarMonthInfo.value.json()
+      const data = (await lunarMonthInfo.value.json()) as { lunar_month: PanchangLunarMonth }
       combinedData.lunar_month = data.lunar_month
     }
 
     if (rituInfo.status === 'fulfilled' && rituInfo.value.ok) {
-      const data = await rituInfo.value.json()
+      const data = (await rituInfo.value.json()) as { ritu: PanchangRitu }
       combinedData.ritu = data.ritu
     }
 
     if (samvatInfo.status === 'fulfilled' && samvatInfo.value.ok) {
-      const data = await samvatInfo.value.json()
+      const data = (await samvatInfo.value.json()) as { year: PanchangYearInfo }
       combinedData.year = data.year
     }
 
     if (aayanam.status === 'fulfilled' && aayanam.value.ok) {
-      const data = await aayanam.value.json()
+      const data = (await aayanam.value.json()) as { aayanam: string }
       combinedData.aayanam = data.aayanam
     }
 
@@ -458,7 +373,7 @@ async function fetchPanchangFromMultipleEndpoints(params: {
     if (!combinedData.yoga) combinedData.yoga = { 1: { number: 1, name: "Vishkambha", completion: null, yoga_left_percentage: null } }
     if (!combinedData.karana) combinedData.karana = { 1: { number: 1, name: "Bava", completion: null, karana_left_percentage: null } }
 
-    return combinedData
+    return combinedData as PanchangData
 
   } catch (error) {
     console.error('Error fetching from individual endpoints:', error)
@@ -478,7 +393,7 @@ function generateFallbackPanchangData(params: {
   latitude: number
   longitude: number
   timezone: number
-}) {
+}): PanchangData {
   const { year, month, date } = params
   const dateObj = new Date(year, month - 1, date)
   const weekdayNames = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday']

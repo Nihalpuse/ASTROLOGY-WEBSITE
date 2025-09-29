@@ -61,7 +61,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     }
 
     // Verify the message belongs to this booking
-    const message = await prisma.chatMessage.findFirst({
+    const message = await prisma.chatmessage.findFirst({
       where: {
         id: Number(messageId),
         bookingId: Number(bookingId)
@@ -78,7 +78,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     }
 
     // Update message as read
-    await prisma.chatMessage.update({
+    await prisma.chatmessage.update({
       where: { id: Number(messageId) },
       data: { isRead: true }
     });

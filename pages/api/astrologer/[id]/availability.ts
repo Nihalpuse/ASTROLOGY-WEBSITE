@@ -5,11 +5,24 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   const astrologerId = Number(req.query.id);
   if (req.method === 'GET') {
     try {
-      const slots = await prisma.astrologerAvailability.findMany({
-        where: { astrologerId },
-        orderBy: { date: 'asc' }
+      const astrologer = await prisma.astrologer.findUnique({
+        where: { id: astrologerId },
+        select: {
+          isOnline: true,
+          lastOnlineAt: true,
+          verificationStatus: true,
+        }
       });
-      return res.status(200).json({ slots });
+      
+      if (!astrologer) {
+        return res.status(404).json({ error: 'Astrologer not found' });
+      }
+      
+      return res.status(200).json({ 
+        isOnline: astrologer.isOnline,
+        lastOnlineAt: astrologer.lastOnlineAt,
+        isAvailable: astrologer.isOnline && ['verified', 'approved'].includes(astrologer.verificationStatus)
+      });
     } catch {
       return res.status(500).json({ error: 'Failed to fetch availability' });
     }
