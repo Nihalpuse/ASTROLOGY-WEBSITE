@@ -198,6 +198,13 @@ const ConsultationsPage = () => {
           }
           return chat;
         }));
+        
+        // If this is a new booking that's not in our list, refresh the bookings
+        const existingChat = chats.find(chat => chat.bookingId === message.bookingId);
+        if (!existingChat) {
+          console.log('New booking detected, refreshing bookings list');
+          fetchBookings();
+        }
       });
 
       socketInstance.on('joined-booking', (data) => {
@@ -237,26 +244,45 @@ const ConsultationsPage = () => {
       
       console.log('Bookings response:', response.data);
       
-      const chatData = response.data.bookings.map((booking: { id: number; client: { name: string }; clientId: number; lastMessage?: string; updatedAt: string; isPaid: boolean; chatEnabled: boolean; videoEnabled: boolean; status: string }) => ({
-        id: booking.id,
-        client: booking.client.name,
-        clientId: booking.clientId,
-        bookingId: booking.id,
-        lastMessage: booking.lastMessage || 'No messages yet',
-        timestamp: booking.updatedAt,
-        isPaid: booking.isPaid,
-        chatEnabled: booking.chatEnabled,
-        videoEnabled: booking.videoEnabled,
-        status: booking.status
-      }));
+      if (response.data.success && response.data.bookings) {
+        const chatData = response.data.bookings.map((booking: { 
+          id: number; 
+          client: { name: string }; 
+          clientId: number; 
+          lastMessage?: string; 
+          timestamp: string; 
+          isPaid: boolean; 
+          chatEnabled: boolean; 
+          videoEnabled: boolean; 
+          status: string 
+        }) => ({
+          id: booking.id,
+          client: booking.client.name,
+          clientId: booking.clientId,
+          bookingId: booking.id,
+          lastMessage: booking.lastMessage || 'No messages yet',
+          timestamp: booking.timestamp,
+          isPaid: booking.isPaid,
+          chatEnabled: booking.chatEnabled,
+          videoEnabled: booking.videoEnabled,
+          status: booking.status
+        }));
 
-      console.log('Processed chat data:', chatData);
-      setChats(chatData);
+        console.log('Processed chat data:', chatData);
+        setChats(chatData);
+      } else {
+        console.log('No bookings found or invalid response');
+        setChats([]);
+      }
     } catch (error) {
       console.error('Failed to fetch bookings:', error);
       if (axios.isAxiosError(error)) {
         if (error.response?.status === 401) {
           setError('Authentication failed. Please log in again.');
+        } else if (error.response?.status === 404) {
+          // API endpoint not found, set empty chats
+          console.log('Bookings API not found, setting empty chats');
+          setChats([]);
         } else {
           setError(`Failed to fetch bookings: ${error.response?.data?.error || error.message}`);
         }

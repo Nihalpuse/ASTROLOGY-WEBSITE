@@ -256,9 +256,9 @@ const TodayPanchangPage = () => {
                 This comprehensive system helps determine the most favorable times for important activities like business ventures, festivals, ceremonies, and personal milestones. Panchang includes detailed astrological calculations covering festival dates, fasting periods, Nakshatra positions, and optimal timing for various endeavors.
               </p>
               <div className="text-center">
-                <button className="bg-gradient-to-r from-green-700 via-emerald-500 to-green-700 text-white px-8 py-3 rounded-lg hover:from-green-800 hover:via-emerald-600 hover:to-green-800 transition-all duration-300 transform hover:scale-105 shadow-lg">
+                <a href="/freecalculators/kundli" className="inline-block bg-gradient-to-r from-green-700 via-emerald-500 to-green-700 text-white px-8 py-3 rounded-lg hover:from-green-800 hover:via-emerald-600 hover:to-green-800 transition-all duration-300 transform hover:scale-105 shadow-lg">
                   Get Your Personalized Kundli →
-                </button>
+                </a>
               </div>
             </div>
           </div>
