@@ -46,13 +46,25 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
     const astrologerId = decoded.id;
 
-    // Get astrologer's active bookings with client information and last message
+    // Check if requesting a specific booking
+    const bookingId = req.query.bookingId ? parseInt(req.query.bookingId as string) : null;
+
+    // Build where clause based on whether we're fetching a specific booking or all bookings
+    const whereClause = bookingId 
+      ? {
+          id: bookingId,
+          astrologerId: astrologerId,
+          isPaid: true
+        }
+      : {
+          astrologerId: astrologerId,
+          isPaid: true,
+          chatEnabled: true
+        };
+
+    // Get astrologer's bookings with client information and last message
     const bookings = await prisma.booking.findMany({
-      where: {
-        astrologerId: astrologerId,
-        isPaid: true,
-        chatEnabled: true
-      },
+      where: whereClause,
       include: {
         users: {
           select: {
@@ -88,24 +100,48 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     });
 
     // Format the response
-    const formattedBookings = bookings.map(booking => ({
-      id: booking.id,
-      client: {
-        id: booking.users.id,
-        name: booking.users.name,
-        email: booking.users.email
-      },
-      clientId: booking.clientId,
-      lastMessage: booking.chatmessage[0]?.message || 'No messages yet',
-      timestamp: booking.chatmessage[0]?.createdAt || booking.updatedAt,
-      isPaid: booking.isPaid,
-      chatEnabled: booking.chatEnabled,
-      videoEnabled: booking.videoEnabled,
-      status: booking.sessionEnd ? 'ended' : 'active',
-      payment: booking.payment[0] || null,
-      createdAt: booking.createdAt,
-      updatedAt: booking.updatedAt
-    }));
+    const formattedBookings = bookings.map(booking => {
+      // Determine status: only mark as "ended" if sessionEnd exists AND is in the past
+      let status: 'active' | 'ended' | 'pending' = 'active';
+      if (booking.sessionEnd) {
+        const now = new Date();
+        const sessionEndDate = new Date(booking.sessionEnd);
+        if (sessionEndDate <= now) {
+          status = 'ended';
+        }
+      }
+      // If chatEnabled is false, it's been ended
+      if (!booking.chatEnabled) {
+        status = 'ended';
+      }
+      
+      return {
+        id: booking.id,
+        client: {
+          id: booking.users.id,
+          name: booking.users.name,
+          email: booking.users.email
+        },
+        clientId: booking.clientId,
+        lastMessage: booking.chatmessage[0]?.message || 'No messages yet',
+        timestamp: booking.chatmessage[0]?.createdAt || booking.updatedAt,
+        isPaid: booking.isPaid,
+        chatEnabled: booking.chatEnabled,
+        videoEnabled: booking.videoEnabled,
+        status: status,
+        payment: booking.payment[0] || null,
+        createdAt: booking.createdAt,
+        updatedAt: booking.updatedAt
+      };
+    });
+
+    // If requesting a specific booking and not found, return error
+    if (bookingId && formattedBookings.length === 0) {
+      return res.status(404).json({ 
+        error: 'Booking not found or access denied',
+        success: false 
+      });
+    }
 
     return res.status(200).json({
       success: true,

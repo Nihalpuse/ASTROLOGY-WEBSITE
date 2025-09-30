@@ -345,25 +345,22 @@ export default function RealTimeChat({
       let bookingData;
       
       if (isAstrologer) {
-        // Use astrologer API for astrologers
-        console.log('Using astrologer API to fetch booking data');
-        const bookingResponse = await axios.get(`/api/astrologer/bookings`, {
+        // Use astrologer API for astrologers - fetch specific booking by ID
+        console.log('Using astrologer API to fetch booking data for bookingId:', bookingId);
+        const bookingResponse = await axios.get(`/api/astrologer/bookings?bookingId=${bookingId}`, {
           headers: { Authorization: `Bearer ${token}` }
         });
         
-        bookingData = bookingResponse.data.bookings?.find((b: { id: number; isPaid: boolean; chatEnabled: boolean }) => b.id === bookingId);
+        // Since we're fetching a specific booking, it should be the first (and only) item
+        bookingData = bookingResponse.data.bookings?.[0];
         
         // Transform the booking data to match the expected format
         if (bookingData) {
+          // For astrologers viewing their own bookings, we need to get the astrologer info from the booking
+          // But the booking.astrologer in this case is the astrologer's own data
           bookingData = {
             ...bookingData,
-            astrologer: {
-              id: bookingData.astrologer.id,
-              firstName: bookingData.astrologer.firstName,
-              lastName: bookingData.astrologer.lastName,
-              profileImage: bookingData.astrologer.profileImage || '/placeholder-user.jpg',
-              pricePerChat: bookingData.astrologer.pricePerChat || 0
-            }
+            astrologer: astrologer // Use the astrologer prop passed to this component
           };
         }
       } else {
@@ -389,14 +386,29 @@ export default function RealTimeChat({
         throw new Error('Payment required to start chat');
       }
   
+      // Check if chat is currently enabled
+      // Only throw error if chat was never enabled or if session has definitively ended
       if (!bookingData.chatEnabled) {
-        throw new Error('Chat is not enabled for this booking');
+        // Check if session has ended
+        if (bookingData.sessionEnd) {
+          const sessionEndTime = new Date(bookingData.sessionEnd);
+          const now = new Date();
+          if (sessionEndTime <= now) {
+            throw new Error('This chat session has ended');
+          }
+        } else {
+          throw new Error('Chat is not enabled for this booking');
+        }
       }
   
       setBooking(bookingData);
   
-      // Load messages - use the same API for both astrologers and clients
-      const messagesResponse = await axios.get(`/api/user/chat?bookingId=${bookingId}&clientId=${clientId}`, {
+      // Load messages - use appropriate API based on user type
+      const messagesEndpoint = isAstrologer 
+        ? `/api/astrologer/chat?bookingId=${bookingId}`
+        : `/api/user/chat?bookingId=${bookingId}&clientId=${clientId}`;
+      
+      const messagesResponse = await axios.get(messagesEndpoint, {
         headers: { Authorization: `Bearer ${token}` }
       });
       

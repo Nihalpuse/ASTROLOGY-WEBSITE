@@ -5,6 +5,8 @@ import { Send, Phone, Video, X, MessageCircle, RefreshCw, AlertCircle, Mic, MicO
 import { io, Socket } from 'socket.io-client';
 import axios from 'axios';
 import { getCurrentUser, getAuthToken } from '@/lib/auth-client';
+import ConfirmEndChatModal from './ConfirmEndChatModal';
+import RatingModal from './RatingModal';
 
 interface Message {
   id: number;
@@ -66,6 +68,8 @@ export default function UserChat({
   const [lastMessageId, setLastMessageId] = useState<number>(0);
   const [sendingMessages, setSendingMessages] = useState<Set<string>>(new Set());
   const [isSending, setIsSending] = useState(false);
+  const [showConfirmEndModal, setShowConfirmEndModal] = useState(false);
+  const [showRatingModal, setShowRatingModal] = useState(false);
   
   // Video call states
   const [isVideoCallActive, setIsVideoCallActive] = useState(false);
@@ -288,10 +292,9 @@ export default function UserChat({
       });
 
       socketInstance.on('session-ended', (data) => {
-        setError('Session has ended');
-        setTimeout(() => {
-          onClose();
-        }, 3000);
+        console.log('Session ended by:', data.endedBy);
+        // Don't automatically close or show error - let the user close manually
+        // The chat will just become read-only since chatEnabled will be false
       });
 
       socketInstance.on('error', (error) => {
@@ -778,6 +781,53 @@ export default function UserChat({
     initializeSocket();
   }, [initializeSocket]);
 
+  // Handle end session confirmation
+  const handleEndSession = useCallback(async () => {
+    try {
+      setShowConfirmEndModal(false);
+      
+      // Emit end session event to socket
+      if (socket && isConnected) {
+        socket.emit('end-session', { bookingId });
+      }
+      
+      // Show rating modal
+      setShowRatingModal(true);
+    } catch (error) {
+      console.error('Failed to end session:', error);
+      setError('Failed to end session');
+    }
+  }, [socket, isConnected, bookingId]);
+
+  // Handle rating submission
+  const handleRatingSubmit = useCallback(async (rating: number, review: string) => {
+    try {
+      const { token } = await getUserAuthData();
+      
+      // Submit rating to API
+      await axios.post('/api/user/rating', {
+        bookingId,
+        rating,
+        review: review || null
+      }, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+
+      console.log('Rating submitted successfully');
+      
+      // Close rating modal and chat
+      setShowRatingModal(false);
+      
+      // Wait a bit before closing to show success
+      setTimeout(() => {
+        onClose();
+      }, 500);
+    } catch (error) {
+      console.error('Failed to submit rating:', error);
+      throw new Error('Failed to submit rating. Please try again.');
+    }
+  }, [bookingId, getUserAuthData, onClose]);
+
   // Effects
   useEffect(() => {
     if (bookingId && bookingId > 0) {
@@ -941,9 +991,9 @@ export default function UserChat({
                 <Video className="w-4 h-4" />
               </button>
               <button
-                onClick={onClose}
+                onClick={() => setShowConfirmEndModal(true)}
                 className="p-2 bg-white/20 rounded-lg hover:bg-white/30 transition-colors"
-                title="Close Chat"
+                title="End Chat"
               >
                 <X className="w-4 h-4" />
               </button>
@@ -1082,6 +1132,26 @@ export default function UserChat({
             </div>
           )}
         </div>
+
+        {/* Confirm End Chat Modal */}
+        <ConfirmEndChatModal
+          isOpen={showConfirmEndModal}
+          onConfirm={handleEndSession}
+          onCancel={() => setShowConfirmEndModal(false)}
+          astrologerName={`${astrologer.firstName} ${astrologer.lastName}`}
+        />
+
+        {/* Rating Modal */}
+        <RatingModal
+          isOpen={showRatingModal}
+          onClose={() => {
+            setShowRatingModal(false);
+            onClose();
+          }}
+          onSubmit={handleRatingSubmit}
+          astrologer={astrologer}
+          bookingId={bookingId}
+        />
       </div>
     </div>
   );

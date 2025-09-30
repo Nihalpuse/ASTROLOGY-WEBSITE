@@ -214,7 +214,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
           chatEnabled: true,
           videoEnabled: true,
           sessionStart: new Date(),
-          sessionEnd: new Date(Date.now() + 60 * 60 * 1000) // 1 hour session
+          sessionEnd: null // Don't set session end until chat actually ends
         }
       });
 

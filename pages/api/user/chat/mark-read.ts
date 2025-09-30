@@ -51,13 +51,12 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       where: {
         id: Number(bookingId),
         clientId: clientId,
-        isPaid: true,
-        chatEnabled: true
+        isPaid: true
       }
     });
 
     if (!booking) {
-      return res.status(404).json({ error: 'Booking not found or chat not enabled' });
+      return res.status(404).json({ error: 'Booking not found' });
     }
 
     // Verify the message belongs to this booking

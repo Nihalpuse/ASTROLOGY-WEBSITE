@@ -68,8 +68,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         where: {
           id: Number(bookingId),
           astrologerId: astrologerId,
-          isPaid: true,
-          chatEnabled: true
+          isPaid: true
         },
         include: {
           astrologer: {
@@ -80,7 +79,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
               profileImage: true
             }
           },
-          client: {
+          users: {
             select: {
               id: true,
               name: true,
@@ -95,7 +94,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       }
 
       // Get messages for this booking with pagination
-      const messages = await prisma.chatMessage.findMany({
+      const messages = await prisma.chatmessage.findMany({
         where: { bookingId: Number(bookingId) },
         orderBy: { createdAt: 'desc' },
         take: Number(limit),
@@ -103,7 +102,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         include: {
           booking: {
             include: {
-              client: { select: { id: true, name: true } },
+              users: { select: { id: true, name: true } },
               astrologer: { select: { id: true, firstName: true, lastName: true } }
             }
           }
@@ -115,21 +114,21 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
       // Mark client messages as read
       const unreadClientMessages = chronologicalMessages.filter(
-        msg => msg.senderType === 'client' && !msg.isRead
+        (msg: { senderType: string; isRead: boolean }) => msg.senderType === 'client' && !msg.isRead
       );
 
       if (unreadClientMessages.length > 0) {
-        await prisma.chatMessage.updateMany({
+        await prisma.chatmessage.updateMany({
           where: {
             id: {
-              in: unreadClientMessages.map(msg => msg.id)
+              in: unreadClientMessages.map((msg: { id: number }) => msg.id)
             }
           },
           data: { isRead: true }
         });
 
         // Update the messages in response
-        chronologicalMessages.forEach(msg => {
+        chronologicalMessages.forEach((msg: { senderType: string; isRead: boolean }) => {
           if (msg.senderType === 'client') {
             msg.isRead = true;
           }
@@ -146,7 +145,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
           sessionStart: booking.sessionStart,
           sessionEnd: booking.sessionEnd,
           astrologer: booking.astrologer,
-          client: booking.client
+          client: booking.users
         }
       });
 
@@ -195,7 +194,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
               profileImage: true
             }
           },
-          client: {
+          users: {
             select: {
               id: true,
               name: true,
@@ -220,7 +219,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       }
 
       // Create new message
-      const newMessage = await prisma.chatMessage.create({
+      const newMessage = await prisma.chatmessage.create({
         data: {
           bookingId: Number(bookingId),
           senderId: astrologerId,
@@ -232,7 +231,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         include: {
           booking: {
             include: {
-              client: { select: { id: true, name: true } },
+              users: { select: { id: true, name: true } },
               astrologer: { select: { id: true, firstName: true, lastName: true } }
             }
           }
@@ -249,7 +248,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
           chatEnabled: booking.chatEnabled,
           videoEnabled: booking.videoEnabled,
           astrologer: booking.astrologer,
-          client: booking.client
+          client: booking.users
         }
       });
 
