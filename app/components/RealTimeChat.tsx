@@ -6,6 +6,7 @@ import Image from 'next/image';
 import { io, Socket } from 'socket.io-client';
 import axios from 'axios';
 import { getCurrentUser, getAuthToken } from '@/lib/auth-client';
+import SessionEndedModal from './SessionEndedModal';
 
 interface Message {
   id: number;
@@ -69,6 +70,8 @@ export default function RealTimeChat({
   const [lastMessageId, setLastMessageId] = useState<number>(0);
   const [sendingMessages, setSendingMessages] = useState<Set<string>>(new Set()); // Track messages being sent
   const [isSending, setIsSending] = useState(false); // Global sending state
+  const [showSessionEndedModal, setShowSessionEndedModal] = useState(false);
+  const [sessionEndedBy, setSessionEndedBy] = useState<'user' | 'astrologer'>('user');
   
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const socketRef = useRef<Socket | null>(null);
@@ -295,11 +298,14 @@ export default function RealTimeChat({
         }
       });
 
-        socketInstance.on('session-ended', (data) => {
-          setError('Session has ended');
-        setTimeout(() => {
-          onClose();
-        }, 3000);
+      socketInstance.on('session-ended', (data) => {
+        console.log('Session ended event received:', data);
+        // Show modal that user has ended the chat
+        setSessionEndedBy(data.endedBy === currentUserId ? 'astrologer' : 'user');
+        setShowSessionEndedModal(true);
+        
+        // Update booking state to reflect session ended
+        setBooking(prev => prev ? { ...prev, chatEnabled: false, sessionEnd: new Date().toISOString() } : null);
       });
 
       socketInstance.on('error', (error) => {
@@ -856,13 +862,31 @@ export default function RealTimeChat({
 
         {/* Message Input */}
         <div className="bg-white dark:bg-gray-900 border-t border-gray-200 dark:border-gray-700 p-6">
+          {/* Session Ended Banner */}
+          {booking && !booking.chatEnabled && (
+            <div className="mb-4 bg-orange-50 dark:bg-orange-900/20 border border-orange-200 dark:border-orange-800 rounded-lg p-3">
+              <div className="flex items-center gap-2">
+                <AlertCircle className="w-5 h-5 text-orange-600 dark:text-orange-400" />
+                <p className="text-sm text-orange-800 dark:text-orange-200 font-medium">
+                  This chat session has ended. You can view messages but cannot send new ones.
+                </p>
+              </div>
+            </div>
+          )}
+          
           <div className="flex gap-3">
             <input
               type="text"
               value={newMessage}
               onChange={(e) => handleMessageChange(e.target.value)}
               onKeyPress={handleKeyPress}
-              placeholder={isConnected ? (isSending ? "Sending message..." : "Type your message...") : "Connecting..."}
+              placeholder={
+                !booking?.chatEnabled 
+                  ? "Chat session has ended" 
+                  : isConnected 
+                    ? (isSending ? "Sending message..." : "Type your message...") 
+                    : "Connecting..."
+              }
               disabled={!isConnected || !booking?.chatEnabled || isSending}
               className="flex-1 px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-xl bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent disabled:bg-gray-100 dark:disabled:bg-gray-700 disabled:cursor-not-allowed font-medium"
             />
@@ -880,7 +904,7 @@ export default function RealTimeChat({
           </div>
           
           {/* Connection status */}
-          {!isConnected && (
+          {!isConnected && booking?.chatEnabled && (
             <div className="mt-3 text-center">
               <div className="inline-flex items-center gap-2 px-3 py-1.5 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg">
                 <div className="w-2 h-2 bg-red-500 rounded-full animate-pulse"></div>
@@ -891,6 +915,17 @@ export default function RealTimeChat({
             </div>
           )}
         </div>
+
+        {/* Session Ended Modal */}
+        <SessionEndedModal
+          isOpen={showSessionEndedModal}
+          onClose={() => {
+            setShowSessionEndedModal(false);
+            onClose();
+          }}
+          endedBy={sessionEndedBy}
+          clientName={booking?.astrologer ? `${booking.astrologer.firstName} ${booking.astrologer.lastName}` : 'Client'}
+        />
       </div>
     </div>
   );

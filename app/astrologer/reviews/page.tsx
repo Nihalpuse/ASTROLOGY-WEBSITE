@@ -1,101 +1,147 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { FaStar } from 'react-icons/fa';
 import { format } from 'date-fns';
+import axios from 'axios';
 
-const dummyReviews = [
-  {
-    id: 1,
-    rating: 5,
-    review: 'Very insightful session.',
-    context: 'Career',
-    date: '2024-06-10',
-    sentiment: 'Positive',
-  },
-  {
-    id: 2,
-    rating: 4,
-    review: 'Good but can improve timing.',
-    context: 'Marriage',
-    date: '2024-06-12',
-    sentiment: 'Neutral',
-  },
-  {
-    id: 3,
-    rating: 3,
-    review: 'Average consultation.',
-    context: 'Health',
-    date: '2024-06-15',
-    sentiment: 'Neutral',
-  },
-  {
-    id: 4,
-    rating: 5,
-    review: 'Amazing experience!',
-    context: 'Vastu',
-    date: '2024-06-18',
-    sentiment: 'Positive',
-  },
-  {
-    id: 5,
-    rating: 2,
-    review: 'Didn’t feel connected.',
-    context: 'Love',
-    date: '2024-06-20',
-    sentiment: 'Negative',
-  },
-];
+interface Review {
+  id: number;
+  rating: number;
+  review: string | null;
+  context: string;
+  date: string;
+  bookingId: number;
+  user: {
+    id: number;
+    name: string;
+  };
+  bookingDate: string;
+}
 
-const ratingsData = [
-  { stars: '5★', count: 2 },
-  { stars: '4★', count: 1 },
-  { stars: '3★', count: 1 },
-  { stars: '2★', count: 1 },
-  { stars: '1★', count: 0 },
-];
+interface RatingsBreakdown {
+  stars: number;
+  count: number;
+}
+
+interface ReviewsData {
+  reviews: Review[];
+  statistics: {
+    averageRating: number;
+    totalRatings: number;
+    ratingsBreakdown: RatingsBreakdown[];
+  };
+}
 
 const ReviewsPage = () => {
   const [selectedRating, setSelectedRating] = useState<number | null>(null);
+  // UI shows capitalized labels; we map to API values when requesting
   const [sortOption, setSortOption] = useState('Newest');
+  const [reviews, setReviews] = useState<Review[]>([]);
+  const [statistics, setStatistics] = useState<ReviewsData['statistics']>({
+    averageRating: 0,
+    totalRatings: 0,
+    ratingsBreakdown: [
+      { stars: 5, count: 0 },
+      { stars: 4, count: 0 },
+      { stars: 3, count: 0 },
+      { stars: 2, count: 0 },
+      { stars: 1, count: 0 }
+    ]
+  });
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  const handleSort = (a: unknown, b: unknown) => {
-    const reviewA = a as { rating: number; date: string };
-    const reviewB = b as { rating: number; date: string };
+  useEffect(() => {
+    fetchReviews();
+  }, [selectedRating, sortOption]);
 
-    if (sortOption === 'Highest Rated') return reviewB.rating - reviewA.rating;
-    if (sortOption === 'Lowest Rated') return reviewA.rating - reviewB.rating;
-    if (sortOption === 'Newest')
-      return new Date(reviewB.date).getTime() - new Date(reviewA.date).getTime();
-    return new Date(reviewA.date).getTime() - new Date(reviewB.date).getTime();
+  const fetchReviews = async () => {
+    try {
+      setIsLoading(true);
+      setError(null);
+
+      const token = localStorage.getItem('astrologerToken');
+      if (!token) {
+        setError('Please log in as an astrologer');
+        return;
+      }
+
+      const params = new URLSearchParams();
+      if (selectedRating) {
+        params.append('rating', selectedRating.toString());
+      }
+      // Map UI sort option to API sortBy param
+      const sortMap: Record<string, string> = {
+        'Newest': 'newest',
+        'Oldest': 'oldest',
+        'Highest Rated': 'highest',
+        'Lowest Rated': 'lowest'
+      };
+      params.append('sortBy', sortMap[sortOption] || 'newest');
+
+      const response = await axios.get(`/api/astrologer/reviews?${params.toString()}`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+
+      if (response.data.success) {
+        setReviews(response.data.reviews);
+        setStatistics(response.data.statistics);
+      }
+    } catch (err) {
+      console.error('Failed to fetch reviews:', err);
+      if (axios.isAxiosError(err)) {
+        setError(err.response?.data?.error || 'Failed to fetch reviews');
+      } else {
+        setError('Failed to fetch reviews');
+      }
+    } finally {
+      setIsLoading(false);
+    }
   };
 
-  const filteredReviews = dummyReviews
+  const getSentiment = (rating: number): 'Positive' | 'Neutral' | 'Negative' => {
+    if (rating >= 4) return 'Positive';
+    if (rating === 3) return 'Neutral';
+    return 'Negative';
+  };
+
+  const maxCount = Math.max(...statistics.ratingsBreakdown.map((r) => r.count), 1);
+  const averageRating = statistics.averageRating.toFixed(1);
+  const totalRatings = statistics.totalRatings;
+
+  // Prepare reviews with sentiment and optional client-side filtering (API already filters by rating)
+  const filteredReviews = reviews
     .filter((r) => (selectedRating ? r.rating === selectedRating : true))
-    .sort(handleSort);
+    .map((r) => ({
+      ...r,
+      sentiment: getSentiment(r.rating) as 'Positive' | 'Neutral' | 'Negative'
+    }));
 
-  const getAverageRating = (data: typeof ratingsData) => {
-    let total = 0,
-      count = 0;
-    data.forEach((r) => {
-      total += parseInt(r.stars) * r.count;
-      count += r.count;
-    });
-    return count ? (total / count).toFixed(1) : '0.0';
-  };
-  const getTotalRatings = (data: typeof ratingsData) =>
-    data.reduce((sum, r) => sum + r.count, 0);
-
-  const maxCount = Math.max(...ratingsData.map((r) => r.count));
-  const averageRating = getAverageRating(ratingsData);
-  const totalRatings = getTotalRatings(ratingsData);
+  if (isLoading) {
+    return (
+      <div className="w-full min-h-screen bg-[#FFF5E1] dark:bg-black p-8 rounded-xl shadow text-gray-900 dark:text-white">
+        <div className="flex items-center justify-center h-96">
+          <div className="flex flex-col items-center gap-4">
+            <div className="w-8 h-8 border-4 border-indigo-200 border-t-indigo-600 rounded-full animate-spin"></div>
+            <div className="text-lg font-medium">Loading reviews...</div>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="w-full min-h-screen bg-[#FFF5E1] dark:bg-black p-8 rounded-xl shadow text-gray-900 dark:text-white">
       <div className="flex items-center gap-2 text-3xl font-bold mb-6">
-  
-  Ratings & Reviews
-</div>
+        Ratings & Reviews
+      </div>
+
+      {error && (
+        <div className="mb-6 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-4">
+          <p className="text-red-600 dark:text-red-400">{error}</p>
+        </div>
+      )}
 
 
 
@@ -124,7 +170,7 @@ const ReviewsPage = () => {
         {/* Ratings Breakdown Bars */}
         <div className="flex-1 flex flex-col gap-2 w-full max-w-md">
           {[5, 4, 3, 2, 1].map((star) => {
-            const item = ratingsData.find((r) => parseInt(r.stars) === star);
+            const item = statistics.ratingsBreakdown.find((r) => r.stars === star);
             const percent = maxCount ? (item?.count || 0) / maxCount : 0;
             return (
               <div key={star} className="flex items-center gap-2">

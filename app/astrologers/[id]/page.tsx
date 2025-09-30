@@ -564,7 +564,7 @@ export default function AstrologerProfile() {
               <div className="text-center">
                 <div className="flex items-center gap-1 mb-1">
                   <Star className="w-5 h-5 fill-amber-400 text-amber-400" />
-                  <span className="font-bold text-lg text-slate-800">4.5</span>
+                  <span className="font-bold text-lg text-slate-800">{(Number(astrologer?.rating ?? 0)).toFixed(1)}</span>
                 </div>
                 <p className="text-xs text-slate-500">{astrologer?.totalRatings} ratings</p>
               </div>

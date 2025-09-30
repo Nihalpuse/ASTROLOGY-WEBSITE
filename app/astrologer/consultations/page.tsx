@@ -207,6 +207,23 @@ const ConsultationsPage = () => {
         }
       });
 
+      socketInstance.on('session-ended', (data) => {
+        console.log('Session ended in consultations page:', data);
+        // Update the chat status to ended
+        setChats(prev => prev.map(chat => {
+          if (chat.bookingId === data.bookingId) {
+            return {
+              ...chat,
+              status: 'ended'
+            };
+          }
+          return chat;
+        }));
+        
+        // Refresh bookings to get updated status
+        fetchBookings();
+      });
+
       socketInstance.on('joined-booking', (data) => {
         console.log('Successfully joined booking:', data);
       });

@@ -16,6 +16,21 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     if (!astrologer) {
       return res.status(404).json({ error: 'Astrologer not found' });
     }
+
+    // Compute ratings: use stored astrologer.rating if present; otherwise derive from reviews
+    const [avgResult, totalRatings] = await Promise.all([
+      prisma.review.aggregate({
+        where: { astrologerId: astrologer.id },
+        _avg: { rating: true },
+      }),
+      prisma.review.count({ where: { astrologerId: astrologer.id } }),
+    ]);
+
+    const computedAverage = typeof avgResult._avg.rating === 'number' ? avgResult._avg.rating : 0;
+    const ratingValue = typeof astrologer.rating === 'number' && !isNaN(Number(astrologer.rating))
+      ? Number(astrologer.rating)
+      : computedAverage;
+    const normalizedRating = Math.round((ratingValue || 0) * 10) / 10;
     // Only return public fields
     const publicAstrologer = {
       id: astrologer.id,
@@ -31,6 +46,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       about: astrologer.about,
       pricePerChat: astrologer.pricePerChat,
       languages: astrologer.languages,
+      rating: normalizedRating,
+      totalRatings: totalRatings,
     };
     return res.status(200).json({ astrologer: publicAstrologer });
   } catch (e) {
