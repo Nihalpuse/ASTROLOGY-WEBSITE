@@ -4,8 +4,12 @@ export function useAuthToken(tokenKey = "astrologerToken") {
   const [token, setToken] = useState<string | null>(null);
 
   useEffect(() => {
+    console.log('🔑 [useAuthToken] Checking for token with key:', tokenKey);
+    
     // Try to get the token immediately
     const t = localStorage.getItem(tokenKey);
+    console.log('🔑 [useAuthToken] Token from localStorage:', t ? `EXISTS (${t.length} chars)` : 'NOT FOUND');
+    
     if (t) {
       setToken(t);
       return;
@@ -19,9 +23,11 @@ export function useAuthToken(tokenKey = "astrologerToken") {
     // Poll every 100ms until token is found
     let interval: NodeJS.Timeout | null = null;
     if (!t) {
+      console.log('🔑 [useAuthToken] Starting polling for token...');
       interval = setInterval(() => {
         const t = localStorage.getItem(tokenKey);
         if (t) {
+          console.log('🔑 [useAuthToken] Token found via polling:', `EXISTS (${t.length} chars)`);
           setToken(t);
           if (interval) clearInterval(interval);
         }

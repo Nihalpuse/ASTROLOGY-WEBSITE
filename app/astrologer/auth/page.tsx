@@ -63,9 +63,13 @@ const AstrologerAuthPage = () => {
     setIsLoading(true);
     setError('');
     try {
+      
       const res = await axios.post('/api/astrologer/login', { email, password });
+      
+      
       if (res.data.token) {
         localStorage.setItem('astrologerToken', res.data.token);
+        
         toast({ title: 'Login successful', description: 'Welcome!' });
         router.push('/astrologer/profile/');
       } else {

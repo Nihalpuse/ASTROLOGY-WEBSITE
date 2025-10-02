@@ -224,7 +224,7 @@ export default function AstrologerDetailPage({ params }: { params: { email: stri
   // Add useEffect to fetch data on component mount
   useEffect(() => {
     if (decodedEmail) {
-      console.log("Fetching verification for email:", decodedEmail);
+   
       refetchVerification();
     }
   }, [decodedEmail, refetchVerification]);

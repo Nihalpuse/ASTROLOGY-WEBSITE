@@ -28,9 +28,16 @@ const astrologerProtectedPaths = [
 // This function can be marked `async` if using `await` inside
 export async function middleware(request: NextRequest) {
   const path = request.nextUrl.pathname;
+
   
-  // Skip middleware for non-admin paths or login page
-  if (!path.startsWith('/admin') || path === '/admin/login') {
+  // Skip middleware for non-protected paths
+  if (!path.startsWith('/admin') && !path.startsWith('/astrologer')) {
+    return NextResponse.next();
+  }
+  
+  // Skip middleware for login/register pages
+  if (path === '/admin/login' || path === '/astrologer/auth' || path === '/astrologer/register' || 
+      path === '/astrologer/forgot-password' || path === '/astrologer/reset-password') {
     return NextResponse.next();
   }
   
@@ -73,18 +80,28 @@ export async function middleware(request: NextRequest) {
     path === protectedPath || path.startsWith(`${protectedPath}/`)
   );
   if (path.startsWith('/astrologer') && isAstrologerProtected) {
-    // Try to get token from cookie or Authorization header
-    const token = request.cookies.get('astrologerToken')?.value ||
-      request.headers.get('authorization')?.replace('Bearer ', '');
+   
+    
+    // Try to get token from cookie first (preferred method)
+    const token = request.cookies.get('astrologerToken')?.value;
+   
+    
     if (!token) {
+   
       const url = new URL('/astrologer/auth', request.url);
       url.searchParams.set('callbackUrl', path);
       return NextResponse.redirect(url);
     }
     try {
-      await verifyAstrologerJwt(token);
+      // Use the correct astrologer JWT secret
+      const astrologerSecret = new TextEncoder().encode(
+        process.env.ASTROLOGER_JWT_SECRET || process.env.JWT_SECRET || 'astrologer-secret-key'
+      );
+      const payload = await jwtVerify(token, astrologerSecret);
+     
       return NextResponse.next();
-    } catch {
+    } catch (error) {
+      console.error('❌ [MIDDLEWARE] Astrologer token verification failed:', error);
       const url = new URL('/astrologer/auth', request.url);
       url.searchParams.set('callbackUrl', path);
       return NextResponse.redirect(url);
@@ -97,5 +114,5 @@ export async function middleware(request: NextRequest) {
 
 // Configure the middleware to run only on specific paths
 export const config = {
-  matcher: ['/admin/:path*'],
+  matcher: ['/admin/:path*', '/astrologer/:path*'],
 };

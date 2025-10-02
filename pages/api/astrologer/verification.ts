@@ -38,13 +38,34 @@ interface AstrologerJWTPayload {
   [key: string]: unknown;
 }
 
-// Astrologer authentication using Authorization header only
+// Astrologer authentication using cookies (same as middleware)
 async function getAstrologerFromRequest(req: NextApiRequest): Promise<AstrologerJWTPayload | null> {
+  // Try Authorization header first (for backward compatibility)
+  let token: string | null = null;
+  
   const authHeader = req.headers['authorization'];
-  const token = authHeader?.replace('Bearer ', '');
+  if (authHeader) {
+    token = authHeader.replace('Bearer ', '');
+  }
+  
+  // If no Authorization header, try cookies (like middleware does)
+  if (!token) {
+    const cookies = req.headers.cookie;
+    if (cookies) {
+      const astrologerTokenMatch = cookies.match(/astrologerToken=([^;]+)/);
+      if (astrologerTokenMatch) {
+        token = astrologerTokenMatch[1];
+      }
+    }
+  }
+  
   if (!token) return null;
+  
   try {
-    const secret = new TextEncoder().encode(process.env.JWT_SECRET || 'your-secret-key');
+    // Use the same secret as middleware
+    const secret = new TextEncoder().encode(
+      process.env.ASTROLOGER_JWT_SECRET || process.env.JWT_SECRET || 'astrologer-secret-key'
+    );
     const { payload } = await jwtVerify(token, secret);
     if (
       typeof payload === 'object' &&
@@ -69,11 +90,15 @@ export const config = {
 };
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
+  console.log('🔍 [VERIFICATION API] Request received:', { method: req.method, hasAuth: !!req.headers.authorization, hasCookies: !!req.headers.cookie });
   
   const user = await getAstrologerFromRequest(req);
   if (!user) {
+    console.log('❌ [VERIFICATION API] No user found - unauthorized');
     return res.status(401).json({ error: 'Unauthorized' });
   }
+  
+  console.log('✅ [VERIFICATION API] User authenticated:', { id: user.id, email: user.email });
   const astrologerId = user.id;
   const astrologerEmail = user.email;
 
@@ -428,15 +453,24 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   if (req.method === 'GET') {
     // Only astrologer can fetch their own verification
     try {
-        const verification = await prisma.astrologerverification.findUnique({
+      console.log('🔍 [VERIFICATION API] Fetching verification for astrologer:', astrologerId);
+      const verification = await prisma.astrologerverification.findUnique({
         where: { astrologerId },
         include: {
           astrologercertification: true,
           astrologereducation: true,
         },
       });
+      
+      console.log('🔍 [VERIFICATION API] Verification found:', { 
+        hasVerification: !!verification, 
+        status: verification?.status,
+        verificationId: verification?.id 
+      });
+      
       return res.status(200).json({ verification });
     } catch (e) {
+      console.error('❌ [VERIFICATION API] Error fetching verification:', e);
       return res.status(500).json({ error: 'Failed to fetch verification data', details: e });
     }
   }

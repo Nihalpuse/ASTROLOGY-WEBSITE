@@ -2,8 +2,6 @@
 
 import React, { useState } from 'react';
 import Link from 'next/link';
-import { AnimatedStars } from '../../components/AnimatedStars';
-import { MysticBackground } from '../../components/MysticBackground';
 import axios from 'axios';
 import { useToast } from '@/hooks/use-toast';
 import Image from 'next/image';
