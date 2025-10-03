@@ -42,7 +42,7 @@ const TermsConditionsPage = () => {
         </div>
         
         <p>
-          Welcome to Nakshatra Gyaan. These Terms and Conditions ("Terms") govern your use of our platform and services. By accessing or using our services, you agree to be bound by these Terms. If you do not agree to these Terms, please do not use our services.
+          Welcome to Nakshatra Gyaan. These Terms and Conditions (&quot;Terms&quot;) govern your use of our platform and services. By accessing or using our services, you agree to be bound by these Terms. If you do not agree to these Terms, please do not use our services.
         </p>
 
         <h2 className="text-2xl font-semibold mt-8 mb-4">1. Acceptance of Terms</h2>
@@ -107,7 +107,7 @@ const TermsConditionsPage = () => {
 
         <h2 className="text-2xl font-semibold mt-8 mb-4">13. Changes to Terms</h2>
         <p>
-          We reserve the right to modify these Terms at any time. We will notify users of any material changes by posting the new Terms on our platform and updating the "Last updated" date. Your continued use of our services after such modifications constitutes acceptance of the updated Terms.
+          We reserve the right to modify these Terms at any time. We will notify users of any material changes by posting the new Terms on our platform and updating the &quot;Last updated&quot; date. Your continued use of our services after such modifications constitutes acceptance of the updated Terms.
         </p>
 
         <h2 className="text-2xl font-semibold mt-8 mb-4">14. Contact Information</h2>

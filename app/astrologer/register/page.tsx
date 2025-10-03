@@ -258,7 +258,7 @@ const AstrologerRegisterPage = () => {
             </DialogHeader>
             <div className="space-y-4 text-sm leading-relaxed">
               <p>
-                Welcome to Nakshatra Gyaan. These Terms and Conditions ("Terms") govern your use of our platform and services. By accessing or using our services, you agree to be bound by these Terms. If you do not agree to these Terms, please do not use our services.
+                Welcome to Nakshatra Gyaan. These Terms and Conditions (&quot;Terms&quot;) govern your use of our platform and services. By accessing or using our services, you agree to be bound by these Terms. If you do not agree to these Terms, please do not use our services.
               </p>
 
               <h3 className="text-lg font-semibold mt-6 mb-2">1. Acceptance of Terms</h3>
@@ -324,7 +324,7 @@ const AstrologerRegisterPage = () => {
             </DialogHeader>
             <div className="space-y-4 text-sm leading-relaxed">
               <p>
-                This Privacy Policy describes how Nakshatra Gyaan ("the Platform") collects, uses, discloses, and protects your personal information when you access or use our services. By using the Platform, you acknowledge that you have read, understood, and agree to the terms of this Privacy Policy.
+                This Privacy Policy describes how Nakshatra Gyaan (&quot;the Platform&quot;) collects, uses, discloses, and protects your personal information when you access or use our services. By using the Platform, you acknowledge that you have read, understood, and agree to the terms of this Privacy Policy.
               </p>
 
               <h3 className="text-lg font-semibold mt-6 mb-2">Information We Collect</h3>
@@ -364,7 +364,7 @@ const AstrologerRegisterPage = () => {
 
               <h3 className="text-lg font-semibold mt-6 mb-2">Updates to Privacy Policy</h3>
               <p>
-                We may update this Privacy Policy from time to time to reflect changes in our practices, legal requirements, or for other operational reasons. We will notify you of any material changes by posting the new Privacy Policy on the Platform and updating the "Last updated" date.
+                We may update this Privacy Policy from time to time to reflect changes in our practices, legal requirements, or for other operational reasons. We will notify you of any material changes by posting the new Privacy Policy on the Platform and updating the &quot;Last updated&quot; date.
               </p>
 
               <div className="mt-8 p-4 bg-gray-50 rounded-lg">
