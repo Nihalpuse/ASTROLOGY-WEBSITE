@@ -45,6 +45,7 @@ const ProfilePage = () => {
   const [success, setSuccess] = useState<string | null>(null);
   const [verification, setVerification] = useState<Record<string, unknown> | null>(null);
   const [docFiles, setDocFiles] = useState<{ [key: string]: File | null }>({});
+  const [showReuploadInputs, setShowReuploadInputs] = useState<{ [key: string]: boolean }>({});
   // const [astrologer, setAstrologer] = useState<Record<string, unknown> | null>(null);
 
 
@@ -276,6 +277,14 @@ const ProfilePage = () => {
   // Handle file input changes
   const handleDocFileChange = (e: ChangeEvent<HTMLInputElement>) => {
     setDocFiles({ ...docFiles, [e.target.name]: e.target.files ? e.target.files[0] : null });
+  };
+
+  // Toggle re-upload input visibility
+  const toggleReuploadInput = (docName: string) => {
+    setShowReuploadInputs(prev => ({
+      ...prev,
+      [docName]: !prev[docName]
+    }));
   };
 
   // Dynamic certifications/educations
@@ -600,18 +609,29 @@ const ProfilePage = () => {
                             </span>
                           </div>
                           {url && (
-                            <button
-                              type="button"
-                              className="text-blue-600 underline text-sm w-fit"
-                              onClick={() => setModalDoc({ url, label: doc.label })}
-                            >
-                              View
-                            </button>
+                            <div className="flex gap-2">
+                              <button
+                                type="button"
+                                className="text-blue-600 underline text-sm w-fit"
+                                onClick={() => setModalDoc({ url, label: doc.label })}
+                              >
+                                View
+                              </button>
+                              {(status === 'accepted' || ((approvalStatus as string) === 'rejected' && status === 'pending')) && (
+                                <button
+                                  type="button"
+                                  className="text-amber-600 underline text-sm w-fit"
+                                  onClick={() => toggleReuploadInput(doc.name)}
+                                >
+                                  Re-upload
+                                </button>
+                              )}
+                            </div>
                           )}
                           {status === 'rejected' && remarks && (
                             <div className="text-xs text-red-600 mt-1">Remarks: {remarks}</div>
                           )}
-                          {(status === 'rejected' || status === 'unverified') && (
+                          {(status === 'rejected' || status === 'unverified' || (approvalStatus as string) === 'rejected') && (
                             <input
                               type="file"
                               name={doc.name}
@@ -619,6 +639,24 @@ const ProfilePage = () => {
                               onChange={handleDocFileChange}
                               className="w-full mt-2"
                             />
+                          )}
+                          {((status === 'accepted' || ((approvalStatus as string) === 'rejected' && status === 'pending')) && showReuploadInputs[doc.name]) && (
+                            <div className="mt-2">
+                              <input
+                                type="file"
+                                name={doc.name}
+                                accept="application/pdf,image/*"
+                                onChange={handleDocFileChange}
+                                className="w-full"
+                              />
+                              <button
+                                type="button"
+                                className="text-gray-500 text-xs mt-1"
+                                onClick={() => toggleReuploadInput(doc.name)}
+                              >
+                                Cancel
+                              </button>
+                            </div>
                           )}
                         </div>
                       );
@@ -867,18 +905,29 @@ const ProfilePage = () => {
                             </span>
                           </div>
                           {url && (
-                            <button
-                              type="button"
-                              className="text-blue-600 underline text-sm w-fit"
-                              onClick={() => setModalDoc({ url, label: doc.label })}
-                            >
-                              View
-                            </button>
+                            <div className="flex gap-2">
+                              <button
+                                type="button"
+                                className="text-blue-600 underline text-sm w-fit"
+                                onClick={() => setModalDoc({ url, label: doc.label })}
+                              >
+                                View
+                              </button>
+                              {(status === 'accepted' || ((approvalStatus as string) === 'rejected' && status === 'pending')) && (
+                                <button
+                                  type="button"
+                                  className="text-amber-600 underline text-sm w-fit"
+                                  onClick={() => toggleReuploadInput(doc.name)}
+                                >
+                                  Re-upload
+                                </button>
+                              )}
+                            </div>
                           )}
                           {status === 'rejected' && remarks && (
                             <div className="text-xs text-red-600 mt-1">Remarks: {remarks}</div>
                           )}
-                          {(status === 'rejected' || status === 'unverified') && (
+                          {(status === 'rejected' || status === 'unverified' || (approvalStatus as string) === 'rejected') && (
                             <input
                               type="file"
                               name={doc.name}
@@ -886,6 +935,24 @@ const ProfilePage = () => {
                               onChange={handleDocFileChange}
                               className="w-full mt-2"
                             />
+                          )}
+                          {((status === 'accepted' || ((approvalStatus as string) === 'rejected' && status === 'pending')) && showReuploadInputs[doc.name]) && (
+                            <div className="mt-2">
+                              <input
+                                type="file"
+                                name={doc.name}
+                                accept="application/pdf,image/*"
+                                onChange={handleDocFileChange}
+                                className="w-full"
+                              />
+                              <button
+                                type="button"
+                                className="text-gray-500 text-xs mt-1"
+                                onClick={() => toggleReuploadInput(doc.name)}
+                              >
+                                Cancel
+                              </button>
+                            </div>
                           )}
                         </div>
                       );

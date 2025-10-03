@@ -717,6 +717,19 @@ export default function AstrologerDetailPage({ params }: { params: { email: stri
     return allDocs
   }
 
+  // Function to navigate to next document
+  const navigateToNextDocument = () => {
+    const allDocs = getAllDocuments()
+    const nextIndex = currentDocIndex + 1
+    
+    if (nextIndex < allDocs.length) {
+      setCurrentDocIndex(nextIndex)
+    } else {
+      // If we're at the last document, close the popup
+      setIsPopupOpen(false)
+    }
+  }
+
   // FIXED: Unified accept/reject handlers
   const handleAccept = (docId: string | number) => {
     const allDocs = getAllDocuments()
@@ -731,6 +744,11 @@ export default function AstrologerDetailPage({ params }: { params: { email: stri
     } else if (doc.category === "Certification Document") {
       handleAcceptCertification(docId as number)
     }
+
+    // Auto-navigate to next document after accepting
+    setTimeout(() => {
+      navigateToNextDocument()
+    }, 1000) // Small delay to show the success state
   }
 
   const handleReject = (docId: string | number) => {
@@ -776,6 +794,11 @@ export default function AstrologerDetailPage({ params }: { params: { email: stri
     } else if (doc.category === "Certification Document") {
       handleRejectConfirmCertification(docId as number)
     }
+
+    // Auto-navigate to next document after rejecting
+    setTimeout(() => {
+      navigateToNextDocument()
+    }, 1000) // Small delay to show the success state
   }
 
   // FIXED: Get current rejection reason based on document type

@@ -6,7 +6,6 @@ import { usePathname } from "next/navigation";
 import {
   UserCircle2,
   Calendar,
-  BookOpen,
   MessageCircle,
   Star,
   Wallet,

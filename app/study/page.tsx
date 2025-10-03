@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { BookOpen, Star, Moon, Sun, HelpCircle, Users, Target, Award, Globe, Heart, Shield, Sparkles, Zap, Compass, Gem, Activity, TrendingUp, ArrowUpRight } from 'lucide-react';
+import { BookOpen, Star, Moon, Sun, HelpCircle, Users, Globe, Heart, Shield, Sparkles } from 'lucide-react';
 import { CTASection } from '../components/CTASection';
 import { AstrologerProfile } from '../components/AstrologerProfile';
 import { ContactForm } from '../components/ContactForm';

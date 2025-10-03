@@ -2,10 +2,18 @@
 
 import React, { useState } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import axios from 'axios';
 import { useToast } from '@/hooks/use-toast';
 import Image from 'next/image';
 import { Eye, EyeOff } from 'lucide-react';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+} from '@/components/ui/dialog';
 
 const areas = ['Vedic', 'Tarot', 'Numerology', 'Palmistry', 'Western'];
 
@@ -16,6 +24,7 @@ const FloatingCard = ({ className, children }: { className?: string; children?: 
 );
 
 const AstrologerRegisterPage = () => {
+  const router = useRouter();
   const [selectedAreas, setSelectedAreas] = useState<string[]>([]);
   const [profileImage, setProfileImage] = useState<File | null>(null);
   const [profileImagePreview, setProfileImagePreview] = useState<string | null>(null);
@@ -37,6 +46,8 @@ const AstrologerRegisterPage = () => {
   const { toast } = useToast();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [showTermsModal, setShowTermsModal] = useState(false);
+  const [showPrivacyModal, setShowPrivacyModal] = useState(false);
 
   const toggleArea = (area: string) => {
     setSelectedAreas(prev =>
@@ -93,14 +104,12 @@ const AstrologerRegisterPage = () => {
       formData.append('ifscCode', form.ifscCode);
       if (profileImage) formData.append('profileImage', profileImage);
       await axios.post('/api/astrologer/register', formData);
-      toast({ title: 'Success', description: 'Registration successful!', variant: 'default' });
-      // Reset form and image preview
-      setForm({
-        firstName: '', lastName: '', email: '', phone: '', password: '', confirmPassword: '', yearsOfExperience: '', bankName: '', accountNumber: '', ifscCode: '', terms: false
-      });
-      setSelectedAreas([]);
-      setProfileImage(null);
-      setProfileImagePreview(null);
+      toast({ title: 'Success', description: 'Registration successful! Redirecting to login...', variant: 'default' });
+      
+      // Redirect to astrologer auth page after successful registration
+      setTimeout(() => {
+        router.push('/astrologer/auth');
+      }, 1500);
     } catch (err: unknown) {
       toast({ title: 'Error', description: (err && typeof err === 'object' && 'response' in err && (err as { response?: { data?: { message?: string } } })?.response?.data?.message) ? (err as { response?: { data?: { message?: string } } }).response!.data!.message : 'Registration failed', variant: 'destructive' });
     } finally {
@@ -215,7 +224,7 @@ const AstrologerRegisterPage = () => {
               <div className="flex items-start gap-2">
                 <input name="terms" type="checkbox" checked={form.terms} onChange={handleChange} className="mt-1 accent-amber-500" required />
                 <p className="text-sm text-gray-700">
-                  I agree to the <span className="text-amber-600 underline">Terms</span> and <span className="text-amber-600 underline">Privacy Policy</span>
+                  I agree to the <span className="text-amber-600 underline cursor-pointer hover:text-amber-700" onClick={() => setShowTermsModal(true)}>Terms</span> and <span className="text-amber-600 underline cursor-pointer hover:text-amber-700" onClick={() => setShowPrivacyModal(true)}>Privacy Policy</span>
                 </p>
               </div>
 
@@ -237,6 +246,138 @@ const AstrologerRegisterPage = () => {
             </p>
           </div>
         </div>
+
+        {/* Terms and Conditions Modal */}
+        <Dialog open={showTermsModal} onOpenChange={setShowTermsModal}>
+          <DialogContent className="max-w-4xl max-h-[80vh] overflow-y-auto">
+            <DialogHeader>
+              <DialogTitle className="text-2xl font-bold text-center">Terms and Conditions</DialogTitle>
+              <DialogDescription className="text-center text-gray-600">
+                Last updated: January 1, 2024
+              </DialogDescription>
+            </DialogHeader>
+            <div className="space-y-4 text-sm leading-relaxed">
+              <p>
+                Welcome to Nakshatra Gyaan. These Terms and Conditions ("Terms") govern your use of our platform and services. By accessing or using our services, you agree to be bound by these Terms. If you do not agree to these Terms, please do not use our services.
+              </p>
+
+              <h3 className="text-lg font-semibold mt-6 mb-2">1. Acceptance of Terms</h3>
+              <p>
+                By creating an account, accessing our platform, or using any of our services, you acknowledge that you have read, understood, and agree to be bound by these Terms and Conditions and our Privacy Policy. These Terms constitute a legally binding agreement between you and Nakshatra Gyaan.
+              </p>
+
+              <h3 className="text-lg font-semibold mt-6 mb-2">2. Description of Service</h3>
+              <p>
+                Nakshatra Gyaan provides an online platform that connects users with qualified astrologers for consultations, readings, and spiritual guidance. Our services include but are not limited to astrology consultations, horoscope readings, gemstone recommendations, and spiritual products. We also offer educational content and courses related to astrology and spirituality.
+              </p>
+
+              <h3 className="text-lg font-semibold mt-6 mb-2">3. User Accounts</h3>
+              <p>
+                To access certain features of our service, you must create an account. You are responsible for maintaining the confidentiality of your account credentials and for all activities that occur under your account. You agree to provide accurate, current, and complete information during registration and to update such information to keep it accurate, current, and complete.
+              </p>
+
+              <h3 className="text-lg font-semibold mt-6 mb-2">4. Astrologer Registration</h3>
+              <p>
+                Astrologers who wish to provide services through our platform must complete a registration process and meet our qualification standards. We reserve the right to approve or reject applications at our sole discretion. Approved astrologers must maintain professional standards and comply with all applicable laws and regulations.
+              </p>
+
+              <h3 className="text-lg font-semibold mt-6 mb-2">5. Payment Terms</h3>
+              <p>
+                Payment for services must be made in advance through our secure payment system. All payments are processed through third-party payment processors. Refunds are subject to our refund policy and may be granted at our discretion. Prices for services are subject to change without notice.
+              </p>
+
+              <h3 className="text-lg font-semibold mt-6 mb-2">6. Prohibited Uses</h3>
+              <p>
+                You agree not to use our services for any unlawful purpose or in any way that could damage, disable, overburden, or impair our servers or networks. Prohibited activities include but are not limited to: harassment of other users or astrologers, posting false or misleading information, attempting to gain unauthorized access to our systems, and any activity that violates applicable laws or regulations.
+              </p>
+
+              <h3 className="text-lg font-semibold mt-6 mb-2">7. Disclaimers</h3>
+              <p>
+                Our services are provided for entertainment and informational purposes only. We do not guarantee the accuracy, completeness, or reliability of any astrological readings, consultations, or advice provided through our platform. Users should exercise their own judgment and discretion when making decisions based on information received through our services.
+              </p>
+
+              <h3 className="text-lg font-semibold mt-6 mb-2">8. Governing Law</h3>
+              <p>
+                These Terms shall be interpreted and governed by the laws of India, without regard to its conflict of law provisions. Any disputes arising out of or relating to these Terms or our services shall be subject to the exclusive jurisdiction of the courts located in India.
+              </p>
+
+              <div className="mt-8 p-4 bg-gray-50 rounded-lg">
+                <p className="text-sm text-gray-600">
+                  If you have any questions about these Terms and Conditions, please contact us at{' '}
+                  <a href="mailto:info@nakshatragyaan.com" className="text-amber-600 underline">
+                    info@nakshatragyaan.com
+                  </a>
+                </p>
+              </div>
+            </div>
+          </DialogContent>
+        </Dialog>
+
+        {/* Privacy Policy Modal */}
+        <Dialog open={showPrivacyModal} onOpenChange={setShowPrivacyModal}>
+          <DialogContent className="max-w-4xl max-h-[80vh] overflow-y-auto">
+            <DialogHeader>
+              <DialogTitle className="text-2xl font-bold text-center">Privacy Policy</DialogTitle>
+              <DialogDescription className="text-center text-gray-600">
+                Last updated: January 1, 2024
+              </DialogDescription>
+            </DialogHeader>
+            <div className="space-y-4 text-sm leading-relaxed">
+              <p>
+                This Privacy Policy describes how Nakshatra Gyaan ("the Platform") collects, uses, discloses, and protects your personal information when you access or use our services. By using the Platform, you acknowledge that you have read, understood, and agree to the terms of this Privacy Policy.
+              </p>
+
+              <h3 className="text-lg font-semibold mt-6 mb-2">Information We Collect</h3>
+              <p>
+                We collect personal information that you voluntarily provide to us when you register for an account, fill out forms, make purchases, subscribe to newsletters, or otherwise interact with the Platform. This information may include your name, email address, phone number, postal address, payment information, and any other details you choose to provide.
+              </p>
+
+              <h3 className="text-lg font-semibold mt-6 mb-2">How We Use Your Information</h3>
+              <p>
+                The information we collect is used to provide, maintain, and improve our services, process transactions, communicate with you, personalize your experience, send you marketing and promotional materials, and comply with legal obligations. We may also use your information to analyze usage trends, monitor the effectiveness of our marketing campaigns, and enhance the security of the Platform.
+              </p>
+
+              <h3 className="text-lg font-semibold mt-6 mb-2">Information Sharing</h3>
+              <p>
+                We may share your personal information with trusted third-party service providers who assist us in operating the Platform, conducting our business, or serving our users, so long as those parties agree to keep this information confidential. We may also disclose your information if required to do so by law, in response to valid requests by public authorities, or to protect the rights, property, or safety of Nakshatra Gyaan, our users, or others.
+              </p>
+
+              <h3 className="text-lg font-semibold mt-6 mb-2">Data Security</h3>
+              <p>
+                We implement a variety of security measures to protect your personal information from unauthorized access, use, alteration, or disclosure. These measures include encryption, access controls, secure servers, and regular security assessments. However, no method of transmission over the internet or electronic storage is completely secure, and we cannot guarantee absolute security.
+              </p>
+
+              <h3 className="text-lg font-semibold mt-6 mb-2">Your Rights</h3>
+              <p>
+                You have the right to access, correct, update, or delete your personal information at any time. You may also object to or restrict certain processing of your data, withdraw your consent where processing is based on consent, and request a copy of your information in a portable format. To exercise these rights, please contact us at support@nakshatragyaan.com.
+              </p>
+
+              <h3 className="text-lg font-semibold mt-6 mb-2">Cookies and Tracking</h3>
+              <p>
+                Cookies and similar tracking technologies are used to enhance your experience on the Platform, remember your preferences, analyze site traffic, and deliver targeted advertisements. You can control the use of cookies through your browser settings, but disabling cookies may affect the functionality of the Platform.
+              </p>
+
+              <h3 className="text-lg font-semibold mt-6 mb-2">Data Retention</h3>
+              <p>
+                Your personal information will be retained only for as long as necessary to fulfill the purposes for which it was collected, comply with our legal obligations, resolve disputes, and enforce our agreements. When your information is no longer required, we will securely delete or anonymize it in accordance with applicable laws and regulations.
+              </p>
+
+              <h3 className="text-lg font-semibold mt-6 mb-2">Updates to Privacy Policy</h3>
+              <p>
+                We may update this Privacy Policy from time to time to reflect changes in our practices, legal requirements, or for other operational reasons. We will notify you of any material changes by posting the new Privacy Policy on the Platform and updating the "Last updated" date.
+              </p>
+
+              <div className="mt-8 p-4 bg-gray-50 rounded-lg">
+                <p className="text-sm text-gray-600">
+                  If you have any questions, concerns, or requests regarding this Privacy Policy or our privacy practices, please contact us at{' '}
+                  <a href="mailto:info@nakshatragyaan.com" className="text-amber-600 underline">
+                    info@nakshatragyaan.com
+                  </a>
+                </p>
+              </div>
+            </div>
+          </DialogContent>
+        </Dialog>
       </main>
     </div>
   );

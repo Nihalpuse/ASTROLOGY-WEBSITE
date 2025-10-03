@@ -158,7 +158,15 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         // Upload single files to Cloudinary
         async function uploadFile(field: string) {
           if (newFiles[field] && newFiles[field][0]) {
-            return await uploadAstrologerProfileImageBuffer(newFiles[field][0].buffer, astrologerEmail + '-' + field);
+            try {
+              console.log(`Uploading ${field} file to Cloudinary...`);
+              const url = await uploadAstrologerProfileImageBuffer(newFiles[field][0].buffer, astrologerEmail + '-' + field);
+              console.log(`${field} uploaded successfully:`, url);
+              return url;
+            } catch (error) {
+              console.error(`Failed to upload ${field}:`, error);
+              throw error;
+            }
           }
           return '';
         }
@@ -213,7 +221,14 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         for (let i = 0; i < certs.length; i++) {
           let certFileUrl = '';
           if (newFiles['certificationFiles'] && newFiles['certificationFiles'][i]) {
-            certFileUrl = await uploadAstrologerProfileImageBuffer(newFiles['certificationFiles'][i].buffer, astrologerEmail + '-cert-' + i);
+            try {
+              console.log(`Uploading certification file ${i} to Cloudinary...`);
+              certFileUrl = await uploadAstrologerProfileImageBuffer(newFiles['certificationFiles'][i].buffer, astrologerEmail + '-cert-' + i);
+              console.log(`Certification file ${i} uploaded successfully:`, certFileUrl);
+            } catch (error) {
+              console.error(`Failed to upload certification file ${i}:`, error);
+              throw error;
+            }
           }
           if (certs[i].id) {
             // Update existing
@@ -256,7 +271,14 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         for (let i = 0; i < edus.length; i++) {
           let degreeFileUrl = '';
           if (newFiles['degreeFiles'] && newFiles['degreeFiles'][i]) {
-            degreeFileUrl = await uploadAstrologerProfileImageBuffer(newFiles['degreeFiles'][i].buffer, astrologerEmail + '-degree-' + i);
+            try {
+              console.log(`Uploading degree file ${i} to Cloudinary...`);
+              degreeFileUrl = await uploadAstrologerProfileImageBuffer(newFiles['degreeFiles'][i].buffer, astrologerEmail + '-degree-' + i);
+              console.log(`Degree file ${i} uploaded successfully:`, degreeFileUrl);
+            } catch (error) {
+              console.error(`Failed to upload degree file ${i}:`, error);
+              throw error;
+            }
           }
           if (edus[i].id) {
             // Update existing
@@ -313,10 +335,17 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         ];
         for (const field of docFields) {
           if (files[field.name] && files[field.name][0]) {
-            const url = await uploadAstrologerProfileImageBuffer(files[field.name][0].buffer, astrologerEmail + '-' + field.name);
-            updateData[field.name] = url;
-            updateData[field.status] = 'pending';
-            updateData[field.remarks] = null;
+            try {
+              console.log(`Uploading ${field.name} file to Cloudinary (update)...`);
+              const url = await uploadAstrologerProfileImageBuffer(files[field.name][0].buffer, astrologerEmail + '-' + field.name);
+              console.log(`${field.name} uploaded successfully (update):`, url);
+              updateData[field.name] = url;
+              updateData[field.status] = 'pending';
+              updateData[field.remarks] = null;
+            } catch (error) {
+              console.error(`Failed to upload ${field.name} (update):`, error);
+              throw error;
+            }
           }
         }
         // Reset overall status to pending if any doc/cert/edu is re-uploaded
@@ -331,8 +360,15 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
             // If file is re-uploaded
             let certFileUrl = existing.certificateFile;
             if (certFiles[i]) {
-              certFileUrl = await uploadAstrologerProfileImageBuffer(certFiles[i].buffer, astrologerEmail + '-cert-' + i);
-              anyDocUpdated = true;
+              try {
+                console.log(`Uploading certification file ${i} to Cloudinary (update)...`);
+                certFileUrl = await uploadAstrologerProfileImageBuffer(certFiles[i].buffer, astrologerEmail + '-cert-' + i);
+                console.log(`Certification file ${i} uploaded successfully (update):`, certFileUrl);
+                anyDocUpdated = true;
+              } catch (error) {
+                console.error(`Failed to upload certification file ${i} (update):`, error);
+                throw error;
+              }
             }
             console.log('Updating existing certification:', cert);
             await prisma.astrologercertification.update({
@@ -350,8 +386,15 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
             // Create new certification if no id
             let certFileUrl = '';
             if (certFiles[i]) {
-              certFileUrl = await uploadAstrologerProfileImageBuffer(certFiles[i].buffer, astrologerEmail + '-cert-' + i);
-              anyDocUpdated = true;
+              try {
+                console.log(`Uploading new certification file ${i} to Cloudinary (update)...`);
+                certFileUrl = await uploadAstrologerProfileImageBuffer(certFiles[i].buffer, astrologerEmail + '-cert-' + i);
+                console.log(`New certification file ${i} uploaded successfully (update):`, certFileUrl);
+                anyDocUpdated = true;
+              } catch (error) {
+                console.error(`Failed to upload new certification file ${i} (update):`, error);
+                throw error;
+              }
             }
             console.log('Creating new certification (update branch):', {
               verificationId: verification.id,
@@ -381,8 +424,15 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
           if (existing && (existing.status === 'rejected' || existing.status === 'unverified')) {
             let degreeFileUrl = existing.degreeFile;
             if (eduFiles[i]) {
-              degreeFileUrl = await uploadAstrologerProfileImageBuffer(eduFiles[i].buffer, astrologerEmail + '-degree-' + i);
-              anyDocUpdated = true;
+              try {
+                console.log(`Uploading degree file ${i} to Cloudinary (update)...`);
+                degreeFileUrl = await uploadAstrologerProfileImageBuffer(eduFiles[i].buffer, astrologerEmail + '-degree-' + i);
+                console.log(`Degree file ${i} uploaded successfully (update):`, degreeFileUrl);
+                anyDocUpdated = true;
+              } catch (error) {
+                console.error(`Failed to upload degree file ${i} (update):`, error);
+                throw error;
+              }
             }
             console.log('Updating existing education:', edu);
             await prisma.astrologereducation.update({
@@ -400,8 +450,15 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
             // Create new education if no id
             let degreeFileUrl = '';
             if (eduFiles[i]) {
-              degreeFileUrl = await uploadAstrologerProfileImageBuffer(eduFiles[i].buffer, astrologerEmail + '-degree-' + i);
-              anyDocUpdated = true;
+              try {
+                console.log(`Uploading new degree file ${i} to Cloudinary (update)...`);
+                degreeFileUrl = await uploadAstrologerProfileImageBuffer(eduFiles[i].buffer, astrologerEmail + '-degree-' + i);
+                console.log(`New degree file ${i} uploaded successfully (update):`, degreeFileUrl);
+                anyDocUpdated = true;
+              } catch (error) {
+                console.error(`Failed to upload new degree file ${i} (update):`, error);
+                throw error;
+              }
             }
             console.log('Creating new education (update branch):', {
               verificationId: verification.id,

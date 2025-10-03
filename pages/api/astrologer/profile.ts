@@ -99,28 +99,51 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     if (!user) {
       return res.status(401).json({ error: 'Unauthorized' });
     }
+    
+    // Handle file upload with multer
     await runMiddleware(req, res, upload.single('profileImage'));
-    const file = (req as unknown as { file?: { buffer: Buffer } }).file;
+    const file = (req as unknown as { file?: { buffer: Buffer; originalname: string } }).file;
+    
+    console.log('Profile update request - File received:', file ? { name: file.originalname, size: file.buffer.length } : 'No file');
+    console.log('Profile update request - Body:', req.body);
+    
     let body: Record<string, unknown> = req.body;
     // If body fields are sent as JSON string (from FormData), parse them
     if (typeof body === 'string') {
-      body = JSON.parse(body);
+      try {
+        body = JSON.parse(body);
+      } catch (e) {
+        console.error('Failed to parse body as JSON:', e);
+        body = {};
+      }
     }
     if (!body || typeof body !== 'object') {
       body = {};
     }
-    // If fields are sent as FormData, they are strings
-    const { firstName, lastName, phone, yearsOfExperience, areasOfExpertise, avatar, about, pricePerChat, languages } = body as Record<string, string | number | null>;
+    
+    // Extract form fields
+    const { firstName, lastName, phone, yearsOfExperience, areasOfExpertise, avatar, about, pricePerChat, languages, profileImage } = body as Record<string, string | number | null>;
+    
     let profileImageUrl: string | undefined;
+    
     if (file && file.buffer) {
-      // Upload the file to Cloudinary
-      profileImageUrl = await uploadAstrologerProfileImageBuffer(file.buffer, user.email);
+      try {
+        console.log('Uploading profile image to Cloudinary...');
+        // Upload the file to Cloudinary
+        profileImageUrl = await uploadAstrologerProfileImageBuffer(file.buffer, user.email);
+        console.log('Profile image uploaded successfully:', profileImageUrl);
+      } catch (error) {
+        console.error('Failed to upload profile image:', error);
+        return res.status(500).json({ error: 'Failed to upload profile image', details: error });
+      }
     } else if (avatar) {
       // Use avatar URL if provided
       profileImageUrl = avatar as string;
-    } else if (body.profileImage) {
+      console.log('Using avatar URL:', profileImageUrl);
+    } else if (profileImage) {
       // Use existing profileImage if provided
-      profileImageUrl = body.profileImage as string;
+      profileImageUrl = profileImage as string;
+      console.log('Using existing profile image:', profileImageUrl);
     }
     // Normalize empty strings to null
     const norm = (v: string | number | null | undefined) => (v === undefined || v === null || v === '' ? null : v);
