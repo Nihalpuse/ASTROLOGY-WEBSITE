@@ -9,56 +9,60 @@ import {
   CarouselItem,
 } from '@/components/ui/carousel'
 
-const STORAGE_KEY = 'admin_carousals_v1'
-
-  const defaultCarousals: Record<string, string[]> = {
-  leftTall: [
-    'https://res.cloudinary.com/dxwspucxw/image/upload/v1752494996/A_realistic_cosmic_calendar_illustration_showing_the_planets_of_the_solar_system_orbiting_around_the_sun_with_soft_lighting_galaxy_background_visible_constellations_moon_phases_and_astrological_zodiac_symbols_s_1_uxgzjk.jpg',
-    'https://res.cloudinary.com/dxwspucxw/image/upload/c_crop,ar_9:16/v1753181211/bracelets_lqvtwk.png',
-    'https://res.cloudinary.com/dxwspucxw/image/upload/v1752042874/course-5_uvm6d2.jpg',
-  ],
-  centerTop: [
-    'https://res.cloudinary.com/dxwspucxw/image/upload/v1752042873/cosmiccalendar_v8ndoq.png',
-    'https://res.cloudinary.com/dxwspucxw/image/upload/v1752042872/course-2_ribcdu.jpg',
-    'https://res.cloudinary.com/dxwspucxw/image/upload/v1752042871/astrology_app_eoszbs.jpg',
-  ],
-  bottomLeft: [
-    'https://res.cloudinary.com/dxwspucxw/image/upload/v1752042879/zodiac_decoder_aphuoz.avif',
-    'https://res.cloudinary.com/dxwspucxw/image/upload/v1752042871/astrowellness_qltouz.jpg',
-    'https://res.cloudinary.com/dxwspucxw/image/upload/v1752042872/course-1_lwqxsr.jpg',
-  ],
-  bottomRight: [
-    'https://res.cloudinary.com/dxwspucxw/image/upload/v1752042876/myth_h93fku.jpg',
-    'https://res.cloudinary.com/dxwspucxw/image/upload/v1752042872/course-3_h9xwl3.jpg',
-  ],
-  rightTall: [
-    'https://res.cloudinary.com/dxwspucxw/image/upload/v1752497900/A_highly_realistic_image_of_a_calm_person_meditating_in_lotus_pose_on_a_flat_rock_bathed_in_soft_golden_sunrise_light._The_background_features_misty_hills_and_subtle_spiritual_symbols_like_chakra_icons_or_Om_sign_faint_zetsen.jpg',
-    'https://res.cloudinary.com/dxwspucxw/image/upload/v1752049127/gemstones_wztxzb.jpg',
-    'https://res.cloudinary.com/dxwspucxw/image/upload/v1752049127/meditation_b2qe9b.jpg',
-  ],
-  // mobile previews will reuse desktop sections (centerTop, bottomLeft, bottomRight)
+interface CarouselImage {
+  id: number
+  image_url: string
+  alt_text?: string
+  title?: string
+  sort_order: number
+  is_uploaded: boolean
 }
 
+interface CarouselSection {
+  id: number
+  name: string
+  title: string
+  carousel_images: CarouselImage[]
+}
+
+
 export default function AdminCarousalPage() {
-  const [carousals, setCarousals] = useState<Record<string, string[]>>(defaultCarousals)
+  const [carousals, setCarousals] = useState<Record<string, string[]>>({})
+  const [carouselSections, setCarouselSections] = useState<CarouselSection[]>([])
   const [inputs, setInputs] = useState<Record<string, string>>({})
   const [message, setMessage] = useState<string | null>(null)
+  const [loading, setLoading] = useState(false)
+  const [uploading, setUploading] = useState<Record<string, boolean>>({})
+
+  // Fetch carousel data from API
+  const fetchCarousals = async () => {
+    try {
+      setLoading(true)
+      const response = await fetch('/api/carousal')
+      const result = await response.json()
+      
+      if (result.success) {
+        setCarousals(result.data)
+        
+        // Also fetch sections for detailed management
+        const sectionsResponse = await fetch('/api/carousal/sections')
+        const sectionsResult = await sectionsResponse.json()
+        if (sectionsResult.success) {
+          setCarouselSections(sectionsResult.data)
+        }
+      } else {
+        setMessage('Failed to load carousel data')
+      }
+    } catch (error) {
+      console.error('Error fetching carousals:', error)
+      setMessage('Failed to load carousel data')
+    } finally {
+      setLoading(false)
+    }
+  }
 
   useEffect(() => {
-    try {
-      const raw = localStorage.getItem(STORAGE_KEY)
-      if (raw) {
-        try {
-          const parsed = JSON.parse(raw)
-          // Merge with defaults so missing desktop keys fallback to defaults
-          setCarousals({ ...defaultCarousals, ...parsed })
-        } catch (e) {
-          // malformed JSON - ignore
-        }
-      }
-    } catch (e) {
-      // ignore
-    }
+    fetchCarousals()
   }, [])
 
   useEffect(() => {
@@ -68,37 +72,108 @@ export default function AdminCarousalPage() {
     }
   }, [message])
 
+  // Save function is now handled by API calls
   const save = () => {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(carousals))
-    setMessage('Saved to localStorage (frontend only)')
+    setMessage('Images are automatically saved via API')
   }
 
-  const addImage = (section: string) => {
+  const addImage = async (section: string) => {
     const url = (inputs[section] || '').trim()
     if (!url) return setMessage('Enter an image URL first')
-    setCarousals(prev => ({ ...prev, [section]: [...(prev[section] || []), url] }))
-    setInputs(prev => ({ ...prev, [section]: '' }))
+    
+    try {
+      setUploading(prev => ({ ...prev, [section]: true }))
+      
+      const formData = new FormData()
+      formData.append('section', section)
+      formData.append('imageUrl', url)
+      
+      const response = await fetch('/api/carousal', {
+        method: 'POST',
+        body: formData
+      })
+      
+      const result = await response.json()
+      
+      if (result.success) {
+        setMessage(`Image added to ${section}`)
+        setInputs(prev => ({ ...prev, [section]: '' }))
+        // Refresh data
+        await fetchCarousals()
+      } else {
+        setMessage(result.error || 'Failed to add image')
+      }
+    } catch (error) {
+      console.error('Error adding image:', error)
+      setMessage('Failed to add image')
+    } finally {
+      setUploading(prev => ({ ...prev, [section]: false }))
+    }
   }
 
-  const handleFileUpload = (section: string, file: File) => {
+  const handleFileUpload = async (section: string, file: File) => {
     if (!file.type.startsWith('image/')) {
       setMessage('Please select a valid image file')
       return
     }
     
-    const reader = new FileReader()
-    reader.onload = (e) => {
-      const dataUrl = e.target?.result as string
-      if (dataUrl) {
-        setCarousals(prev => ({ ...prev, [section]: [...(prev[section] || []), dataUrl] }))
+    try {
+      setUploading(prev => ({ ...prev, [section]: true }))
+      
+      const formData = new FormData()
+      formData.append('file', file)
+      formData.append('section', section)
+      
+      const response = await fetch('/api/carousal', {
+        method: 'POST',
+        body: formData
+      })
+      
+      const result = await response.json()
+      
+      if (result.success) {
         setMessage(`Image uploaded to ${section}`)
+        // Refresh data
+        await fetchCarousals()
+      } else {
+        setMessage(result.error || 'Failed to upload image')
       }
+    } catch (error) {
+      console.error('Error uploading file:', error)
+      setMessage('Failed to upload image')
+    } finally {
+      setUploading(prev => ({ ...prev, [section]: false }))
     }
-    reader.readAsDataURL(file)
   }
 
-  const removeImage = (section: string, idx: number) => {
-    setCarousals(prev => ({ ...prev, [section]: prev[section].filter((_, i) => i !== idx) }))
+  const removeImage = async (section: string, idx: number) => {
+    // Find the section and get the image ID
+    const sectionData = carouselSections.find(s => s.name === section)
+    if (!sectionData || !sectionData.carousel_images[idx]) {
+      setMessage('Image not found')
+      return
+    }
+    
+    const imageId = sectionData.carousel_images[idx].id
+    
+    try {
+      const response = await fetch(`/api/carousal?id=${imageId}`, {
+        method: 'DELETE'
+      })
+      
+      const result = await response.json()
+      
+      if (result.success) {
+        setMessage('Image deleted successfully')
+        // Refresh data
+        await fetchCarousals()
+      } else {
+        setMessage(result.error || 'Failed to delete image')
+      }
+    } catch (error) {
+      console.error('Error deleting image:', error)
+      setMessage('Failed to delete image')
+    }
   }
 
   const renderEditor = (key: string, title: string) => (
@@ -140,19 +215,24 @@ export default function AdminCarousalPage() {
           />
           <button 
             onClick={() => addImage(key)} 
+            disabled={uploading[key]}
             className="px-4 py-2.5 bg-purple-600 hover:bg-purple-700 disabled:bg-purple-400 text-white rounded-lg transition-colors text-sm font-medium whitespace-nowrap"
           >
-            Add URL
+            {uploading[key] ? 'Adding...' : 'Add URL'}
           </button>
         </div>
         <div className="w-full">
           <input
             type="file"
             accept="image/*"
-            onChange={(e) => {
-              const file = e.target.files?.[0]
-              if (file) {
-                handleFileUpload(key, file)
+            multiple
+            onChange={async (e) => {
+              const files = e.target.files
+              if (files && files.length > 0) {
+                // Upload all files sequentially
+                for (let i = 0; i < files.length; i++) {
+                  await handleFileUpload(key, files[i])
+                }
                 e.target.value = '' // Reset file input
               }
             }}
@@ -183,200 +263,21 @@ export default function AdminCarousalPage() {
             >
               Restore Defaults
             </button> */}
-            <button onClick={save} className="w-full sm:w-auto px-4 py-2 rounded bg-purple-600 hover:bg-purple-700 disabled:bg-purple-400 text-white transition-colors text-sm md:text-base">Save Changes</button>
+            <button 
+              onClick={save} 
+              disabled={loading}
+              className="w-full sm:w-auto px-4 py-2 rounded bg-purple-600 hover:bg-purple-700 disabled:bg-purple-400 text-white transition-colors text-sm md:text-base"
+            >
+              {loading ? 'Loading...' : 'Refresh Data'}
+            </button>
            </div>
         </div>
 
         {message && <div className="mb-4 text-sm text-green-700 dark:text-green-400 p-3 bg-green-50 dark:bg-green-900/20 rounded-lg border border-green-200 dark:border-green-800">{message}</div>}
 
-        <div className="grid lg:grid-cols-3 gap-4 md:gap-6">
-          <div className="lg:col-span-1 space-y-3 md:space-y-4">
-            {sections.map(s => renderEditor(s.key, s.title))}
-          </div>
-
-          <div className="lg:col-span-2">
-            <h2 className="font-semibold mb-3 text-gray-900 dark:text-gray-100 text-lg">Preview</h2>
-            <div className="space-y-4 md:space-y-6">
-              {/* Desktop and tablet grid preview */}
-              <div className="hidden sm:grid grid-cols-4 gap-2 md:gap-4 h-[280px] sm:h-[320px] md:h-[420px]">
-                <div className="col-span-1 bg-white dark:bg-gray-800 rounded p-2 border border-gray-200 dark:border-gray-700">
-                  <Carousel plugins={[Autoplay({ delay: 3500, stopOnInteraction: false })]} className="h-full">
-                    <CarouselContent className="h-full">
-                      {(carousals.leftTall || []).map((url, i) => (
-                        <CarouselItem key={i} className="h-full">
-                          <div className="relative w-full h-full rounded overflow-hidden">
-                            <Image 
-                              src={url} 
-                              alt={`lt-${i}`} 
-                              fill 
-                              className="object-cover" 
-                              sizes="(max-width: 768px) 50vw, 20vw"
-                              unoptimized={url.startsWith('data:')}
-                            />
-                          </div>
-                        </CarouselItem>
-                      ))}
-                    </CarouselContent>
-                  </Carousel>
-                </div>
-
-                <div className="col-span-2 space-y-2">
-                  <div className="h-[160px] sm:h-[200px] md:h-[260px] bg-white dark:bg-gray-800 rounded p-1 sm:p-2 border border-gray-200 dark:border-gray-700">
-                    <Carousel plugins={[Autoplay({ delay: 4000, stopOnInteraction: false })]} className="h-full">
-                      <CarouselContent className="h-full">
-                        {(carousals.centerTop || []).map((url, i) => (
-                          <CarouselItem key={i} className="h-full">
-                            <div className="relative w-full h-full rounded overflow-hidden">
-                              <Image 
-                                src={url} 
-                                alt={`ct-${i}`} 
-                                fill 
-                                className="object-cover" 
-                                sizes="(max-width: 640px) 100vw, (max-width: 768px) 80vw, 40vw"
-                                unoptimized={url.startsWith('data:')}
-                              />
-                            </div>
-                          </CarouselItem>
-                        ))}
-                      </CarouselContent>
-                    </Carousel>
-                  </div>
-
-                  <div className="grid grid-cols-2 gap-2 h-[100px] sm:h-[110px] md:h-[140px]">
-                    <div className="bg-white dark:bg-gray-800 rounded p-1 sm:p-2 border border-gray-200 dark:border-gray-700">
-                      <Carousel plugins={[Autoplay({ delay: 3800, stopOnInteraction: false })]} className="h-full">
-                        <CarouselContent className="h-full">
-                          {(carousals.bottomLeft || []).map((url, i) => (
-                            <CarouselItem key={i} className="h-full">
-                              <div className="relative w-full h-full rounded overflow-hidden">
-                                <Image 
-                                  src={url} 
-                                  alt={`bl-${i}`} 
-                                  fill 
-                                  className="object-cover" 
-                                  sizes="(max-width: 640px) 50vw, (max-width: 768px) 40vw, 20vw"
-                                  unoptimized={url.startsWith('data:')}
-                                />
-                              </div>
-                            </CarouselItem>
-                          ))}
-                        </CarouselContent>
-                      </Carousel>
-                    </div>
-
-                    <div className="bg-white dark:bg-gray-800 rounded p-1 sm:p-2 border border-gray-200 dark:border-gray-700">
-                      <Carousel plugins={[Autoplay({ delay: 4200, stopOnInteraction: false })]} className="h-full">
-                        <CarouselContent className="h-full">
-                          {(carousals.bottomRight || []).map((url, i) => (
-                            <CarouselItem key={i} className="h-full">
-                              <div className="relative w-full h-full rounded overflow-hidden">
-                                <Image 
-                                  src={url} 
-                                  alt={`br-${i}`} 
-                                  fill 
-                                  className="object-cover" 
-                                  sizes="(max-width: 640px) 50vw, (max-width: 768px) 40vw, 20vw"
-                                  unoptimized={url.startsWith('data:')}
-                                />
-                              </div>
-                            </CarouselItem>
-                          ))}
-                        </CarouselContent>
-                      </Carousel>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="col-span-1 bg-white dark:bg-gray-800 rounded p-2 border border-gray-200 dark:border-gray-700">
-                  <Carousel plugins={[Autoplay({ delay: 3200, stopOnInteraction: false })]} className="h-full">
-                    <CarouselContent className="h-full">
-                      {(carousals.rightTall || []).map((url, i) => (
-                        <CarouselItem key={i} className="h-full">
-                          <div className="relative w-full h-full rounded overflow-hidden">
-                            <Image 
-                              src={url} 
-                              alt={`rt-${i}`} 
-                              fill 
-                              className="object-cover" 
-                              sizes="(max-width: 768px) 50vw, 20vw"
-                              unoptimized={url.startsWith('data:')}
-                            />
-                          </div>
-                        </CarouselItem>
-                      ))}
-                    </CarouselContent>
-                  </Carousel>
-                </div>
-              </div>
-
-              {/* Mobile preview */}
-              <div className="sm:hidden space-y-3">
-                <div className="bg-white dark:bg-gray-800 rounded p-2 border border-gray-200 dark:border-gray-700">
-                  <Carousel plugins={[Autoplay({ delay: 4000, stopOnInteraction: false })]} className="h-[180px]">
-                    <CarouselContent className="h-[180px]">
-                      {(carousals.centerTop || []).map((url, i) => (
-                        <CarouselItem key={i} className="h-[180px]">
-                          <div className="relative w-full h-full rounded overflow-hidden">
-                            <Image 
-                              src={url} 
-                              alt={`mm-${i}`} 
-                              fill 
-                              className="object-cover" 
-                              sizes="100vw"
-                              unoptimized={url.startsWith('data:')}
-                            />
-                          </div>
-                        </CarouselItem>
-                      ))}
-                    </CarouselContent>
-                  </Carousel>
-                </div>
-
-                <div className="grid grid-cols-2 gap-2">
-                  <div className="bg-white dark:bg-gray-800 rounded p-2 border border-gray-200 dark:border-gray-700">
-                    <Carousel plugins={[Autoplay({ delay: 3800, stopOnInteraction: false })]} className="h-[120px]">
-                      <CarouselContent className="h-[120px]">
-                        {(carousals.bottomLeft || []).map((url, i) => (
-                          <CarouselItem key={i} className="h-[120px]">
-                            <div className="relative w-full h-full rounded overflow-hidden">
-                              <Image 
-                                src={url} 
-                                alt={`mp-${i}`} 
-                                fill 
-                                className="object-cover" 
-                                sizes="50vw"
-                                unoptimized={url.startsWith('data:')}
-                              />
-                            </div>
-                          </CarouselItem>
-                        ))}
-                      </CarouselContent>
-                    </Carousel>
-                  </div>
-                  <div className="bg-white dark:bg-gray-800 rounded p-2 border border-gray-200 dark:border-gray-700">
-                    <Carousel plugins={[Autoplay({ delay: 4200, stopOnInteraction: false })]} className="h-[120px]">
-                      <CarouselContent className="h-[120px]">
-                        {(carousals.bottomRight || []).map((url, i) => (
-                          <CarouselItem key={i} className="h-[120px]">
-                            <div className="relative w-full h-full rounded overflow-hidden">
-                              <Image 
-                                src={url} 
-                                alt={`ms-${i}`} 
-                                fill 
-                                className="object-cover" 
-                                sizes="50vw"
-                                unoptimized={url.startsWith('data:')}
-                              />
-                            </div>
-                          </CarouselItem>
-                        ))}
-                      </CarouselContent>
-                    </Carousel>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
+        {/* Editors Section */}
+        <div className="space-y-6">
+          {sections.map(s => renderEditor(s.key, s.title))}
         </div>
       </div>
     </div>

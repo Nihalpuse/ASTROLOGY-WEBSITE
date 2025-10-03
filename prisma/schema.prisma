@@ -749,3 +749,42 @@ model ashtakoot_score_cache {
 
   @@index([expires_at])
 }
+
+/// Hero carousel sections and images management
+model carousel_sections {
+  id          Int      @id @default(autoincrement())
+  name        String   @unique @db.VarChar(50) // leftTall, centerTop, bottomLeft, bottomRight, rightTall
+  title       String   @db.VarChar(100) // Display title for admin
+  description String?  @db.Text
+  sort_order  Int      @default(0)
+  is_active   Boolean  @default(true)
+  created_at  DateTime @default(now()) @db.Timestamp(0)
+  updated_at  DateTime @default(now()) @db.Timestamp(0)
+  carousel_images carousel_images[]
+
+  @@index([name])
+  @@index([is_active])
+  @@index([sort_order])
+}
+
+/// Individual carousel images
+model carousel_images {
+  id          Int      @id @default(autoincrement())
+  section_id  Int
+  image_url   String   @db.VarChar(500)
+  alt_text    String?  @db.VarChar(255)
+  title       String?  @db.VarChar(255)
+  description String?  @db.Text
+  sort_order  Int      @default(0)
+  is_active   Boolean  @default(true)
+  is_uploaded Boolean  @default(false) // true for uploaded files, false for URL inputs
+  file_size   Int?     // in bytes for uploaded files
+  file_type   String?  @db.VarChar(100) // MIME type
+  created_at  DateTime @default(now()) @db.Timestamp(0)
+  updated_at  DateTime @default(now()) @db.Timestamp(0)
+  carousel_sections carousel_sections @relation(fields: [section_id], references: [id], onDelete: Cascade)
+
+  @@index([section_id])
+  @@index([is_active])
+  @@index([sort_order])
+}
