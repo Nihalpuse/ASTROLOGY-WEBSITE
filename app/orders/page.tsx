@@ -75,7 +75,6 @@ export default function OrdersPage() {
   const [activeOrderId, setActiveOrderId] = useState<number | null>(null)
   const [ratings, setRatings] = useState<Record<number, { rating: number; review: string; submitting?: boolean }>>({})
   const [ratedIds, setRatedIds] = useState<number[]>([])
-  const [previewRatings, setPreviewRatings] = useState(false)
   
   useEffect(() => {
     // Redirect if not authenticated
@@ -208,18 +207,14 @@ export default function OrdersPage() {
     const payload = ratings[orderId] || { rating: 5, review: '' }
     try {
       setRatings((prev) => ({ ...prev, [orderId]: { ...(prev[orderId] || {}), submitting: true } }))
-      if (!previewRatings) {
-        const res = await fetch('/api/orders/rate', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ orderId, rating: payload.rating, review: payload.review, userId })
-        })
-        const data = await res.json()
-        if (!res.ok || !data.success) throw new Error(data.error || 'Failed to submit rating')
-      } else {
-        // In preview mode just simulate a small delay
-        await new Promise((res) => setTimeout(res, 300))
-      }
+      // Always submit the rating to the backend
+      const res = await fetch('/api/orders/rate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ orderId, rating: payload.rating, review: payload.review, userId })
+      })
+      const data = await res.json()
+      if (!res.ok || !data.success) throw new Error(data.error || 'Failed to submit rating')
       // mark as rated locally
       setRatedIds((prev) => Array.from(new Set([...prev, orderId])))
       toast.success('Thanks for your feedback!')
@@ -268,12 +263,7 @@ export default function OrdersPage() {
             My Orders
           </h1>
           <p className="text-lg text-neutral-700">Track and view details of all your orders</p>
-          <div className="mt-4 flex justify-center">
-            <label className="inline-flex items-center space-x-2 text-sm text-neutral-600">
-              <input type="checkbox" checked={previewRatings} onChange={(e) => setPreviewRatings(e.target.checked)} />
-              <span>Preview Ratings UI</span>
-            </label>
-          </div>
+          {/* Ratings are always visible for eligible orders */}
         </div>
         
         <div className="max-w-4xl mx-auto">
@@ -329,9 +319,9 @@ export default function OrdersPage() {
                       className="p-4 sm:p-6 cursor-pointer relative"
                       onClick={() => toggleOrderDetails(order.id)}
                     >
-                      {/* Details Button - Top Right */}
+                      {/* Details Button - Top Right (Mobile Only) */}
                       <button 
-                        className="absolute top-4 right-4 text-green-800 hover:text-green-900 text-sm font-medium bg-white/80 px-3 py-1 rounded-lg shadow-sm hover:shadow-md transition-shadow"
+                        className="md:hidden absolute top-4 right-4 text-green-800 hover:text-green-900 text-sm font-medium bg-white/80 px-3 py-1 rounded-lg shadow-sm hover:shadow-md transition-shadow"
                         onClick={(e) => {
                           e.stopPropagation();
                           toggleOrderDetails(order.id);
@@ -374,6 +364,16 @@ export default function OrdersPage() {
                           <div className="text-xl sm:text-2xl font-bold text-neutral-900 mb-1">
                             ₹{order.total_amount.toLocaleString('en-IN')}
                           </div>
+                          {/* Details Button - Desktop Only (below price) */}
+                          <button 
+                            className="hidden md:block text-green-800 hover:text-green-900 text-sm font-medium bg-white/80 px-3 py-1 rounded-lg shadow-sm hover:shadow-md transition-shadow mt-2"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              toggleOrderDetails(order.id);
+                            }}
+                          >
+                            Details
+                          </button>
                         </div>
                       </div>
                     </div>
@@ -504,7 +504,7 @@ export default function OrdersPage() {
                       </div>
                       
                       {/* Rating UI for delivered/completed orders */}
-                      {(order.status === 'completed' || previewRatings) && !ratedIds.includes(order.id) && (
+                      {!ratedIds.includes(order.id) && (
                         <div className="w-full bg-white rounded-lg p-4 border border-neutral-200 mb-4">
                           <h5 className="font-medium text-neutral-900 mb-2">Rate your order</h5>
                           <div className="flex items-center mb-3">

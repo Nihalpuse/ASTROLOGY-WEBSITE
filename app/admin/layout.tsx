@@ -20,6 +20,7 @@ import {
   Sun,
   Bell,
   UserCircle2,
+  Image,
   Orbit,
   ChevronDown,
   ChevronUp,
@@ -290,6 +291,12 @@ const AdminLayout = ({ children }: { children: React.ReactNode }) => {
       label: 'Services', 
       href: '/admin/services',
       active: pathname === '/admin/services'
+    },
+    {
+      icon: Image,
+      label: 'Carousal',
+      href: '/admin/carousal',
+      active: pathname === '/admin/carousal'
     },
     { 
       icon: Star, 
