@@ -48,7 +48,7 @@ export default function ConfirmEndChatModal({
           
           <div className="bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg p-4 mb-6">
             <p className="text-sm text-yellow-800 dark:text-yellow-200">
-              <strong>Note:</strong> Once you end the session, you won't be able to send new messages. However, you can still view your chat history.
+              <strong>Note:</strong> Once you end the session, you won&apos;t be able to send new messages. However, you can still view your chat history.
             </p>
           </div>
 

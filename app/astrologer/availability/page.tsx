@@ -75,7 +75,7 @@ const AvailabilityPage = () => {
       transition={{ duration: 0.5, ease: "easeOut" }}
     >
       <h1 className="text-2xl font-bold mb-4">Online Status</h1>
-      <p className="mb-6 text-gray-600 dark:text-gray-300">Toggle your online status to let clients know when you're available for consultations.</p>
+      <p className="mb-6 text-gray-600 dark:text-gray-300">Toggle your online status to let clients know when you&apos;re available for consultations.</p>
       
       {error && <div className="text-red-500 mb-4 p-3 bg-red-50 dark:bg-red-900/20 rounded-lg">{error}</div>}
       {loading && <div className="text-gray-500 mb-4">Loading...</div>}
