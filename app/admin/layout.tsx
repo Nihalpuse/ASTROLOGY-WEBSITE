@@ -476,22 +476,12 @@ const AdminLayout = ({ children }: { children: React.ReactNode }) => {
               )}
             </button>
 
-            {/* Notifications */}
-            <button className="hover:bg-gray-100 dark:hover:bg-gray-700 p-2 rounded-full relative">
-              <Bell className="text-gray-600 dark:text-gray-300" size={20} />
-              <span className="absolute top-0 right-0 bg-red-500 text-white rounded-full px-1 text-xs">
-                2
-              </span>
-            </button>
-
-            {/* Grid/Apps */}
-            {/* Grid/Apps button removed (no behavior implemented) */}
-
+      
             {/* User Profile and Logout */}
             <div className="flex items-center space-x-2">
               <UserCircle2 className="text-gray-600 dark:text-gray-300" size={30} />
               <div className="mr-1 lg:mr-2">
-                <p className="text-sm font-medium">Hi | Example</p>
+               
                 <p className="text-xs text-gray-500 dark:text-gray-400">Admin</p>
               </div>
               

@@ -926,7 +926,9 @@ export default function AdminDashboard() {
                             <span className="text-xs sm:text-sm font-medium text-gray-900 dark:text-white truncate block">{astrologer.name}</span>
                             <div className="sm:hidden flex items-center mt-1">
                               <Star className="w-3 h-3 text-yellow-400 mr-1" />
-                              <span className="text-xs text-gray-900 dark:text-white">{astrologer.review}</span>
+                              <span className="text-xs text-gray-900 dark:text-white">
+                                {astrologer.review > 0 ? astrologer.review : 'No ratings yet'}
+                              </span>
                             </div>
                           </div>
                         </div>
@@ -934,7 +936,9 @@ export default function AdminDashboard() {
                       <td className="py-3 hidden sm:table-cell">
                         <div className="flex items-center">
                           <Star className="w-4 h-4 text-yellow-400 mr-1" />
-                          <span className="text-sm text-gray-900 dark:text-white">{astrologer.review}</span>
+                          <span className="text-sm text-gray-900 dark:text-white">
+                            {astrologer.review > 0 ? astrologer.review : 'No ratings yet'}
+                          </span>
                         </div>
                       </td>
                       <td className="py-3 text-sm text-gray-900 dark:text-white hidden md:table-cell">{astrologer.consultations}</td>

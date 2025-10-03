@@ -2,7 +2,8 @@
 
 import React, { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
-import { ArrowLeft, Printer, Package, User, CreditCard, MapPin, Loader2, AlertTriangle, RefreshCw } from 'lucide-react';
+import { ArrowLeft, Printer, Package, User, CreditCard, MapPin, Loader2, AlertTriangle, RefreshCw, FileText } from 'lucide-react';
+import Invoice from '@/app/components/Invoice';
 
 // Types for the order data structure
 interface OrderItem {
@@ -76,6 +77,7 @@ const OrderDetailsPage = () => {
   const [error, setError] = useState<string | null>(null);
   const [refreshing, setRefreshing] = useState(false);
   const [updating, setUpdating] = useState(false);
+  const [showInvoice, setShowInvoice] = useState(false);
 
   const orderId = params?.id as string;
 
@@ -234,6 +236,63 @@ const OrderDetailsPage = () => {
     window.print();
   };
 
+  const handleDownloadPDF = async () => {
+    setShowInvoice(true);
+    // Small delay to ensure the invoice component is rendered
+    setTimeout(async () => {
+      try {
+        // Dynamic imports to avoid SSR issues
+        const html2canvas = (await import('html2canvas')).default;
+        const jsPDF = (await import('jspdf')).default;
+
+        const invoiceElement = document.querySelector('.invoice-container') as HTMLDivElement;
+        if (!invoiceElement) {
+          console.error('Invoice element not found');
+          return;
+        }
+
+        const canvas = await html2canvas(invoiceElement, {
+          scale: 2,
+          useCORS: true,
+          allowTaint: true,
+          backgroundColor: '#ffffff',
+          logging: false,
+          width: invoiceElement.scrollWidth,
+          height: invoiceElement.scrollHeight,
+        });
+
+        const imgData = canvas.toDataURL('image/png', 1.0);
+        const pdf = new jsPDF('p', 'mm', 'a4');
+        
+        const imgWidth = 210; // A4 width in mm
+        const pageHeight = 295; // A4 height in mm
+        const imgHeight = (canvas.height * imgWidth) / canvas.width;
+        let heightLeft = imgHeight;
+
+        let position = 0;
+
+        pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
+        heightLeft -= pageHeight;
+
+        while (heightLeft >= 0) {
+          position = heightLeft - imgHeight;
+          pdf.addPage();
+          pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
+          heightLeft -= pageHeight;
+        }
+
+        const fileName = `Invoice-${orderData?.orderNumber}-${new Date().toISOString().split('T')[0]}.pdf`;
+        pdf.save(fileName);
+        
+        setShowInvoice(false);
+      } catch (error) {
+        console.error('Error generating PDF:', error);
+        // Fallback to print if PDF generation fails
+        window.print();
+      }
+    }, 100);
+  };
+
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64 p-4">
@@ -322,12 +381,20 @@ const OrderDetailsPage = () => {
               <span className="hidden sm:inline">Refresh</span>
             </button>
             <button
-              onClick={handlePrintInvoice}
+              onClick={() => setShowInvoice(true)}
+              className="flex items-center space-x-2 bg-blue-600 hover:bg-blue-700 text-white px-3 py-2 sm:px-4 sm:py-2 rounded-lg transition-colors text-sm"
+            >
+              <User className="w-4 h-4" />
+              <span className="hidden sm:inline">View Invoice</span>
+            </button>
+            <button
+              onClick={handleDownloadPDF}
               className="flex items-center space-x-2 bg-purple-600 hover:bg-purple-700 text-white px-3 py-2 sm:px-4 sm:py-2 rounded-lg transition-colors text-sm"
             >
               <Printer className="w-4 h-4" />
-              <span className="hidden sm:inline">Print Invoice</span>
+              <span className="hidden sm:inline">Download PDF</span>
             </button>
+          
           </div>
         </div>
       </div>
@@ -537,6 +604,23 @@ const OrderDetailsPage = () => {
           </div>
         </div>
       </div>
+
+      {/* Invoice Modal/Print View */}
+      {showInvoice && orderData && (
+        <div className="fixed inset-0 bg-white z-50 overflow-auto">
+          <div className="sticky top-0 bg-white border-b border-gray-200 p-4 flex justify-between items-center">
+            <h2 className="text-xl font-semibold text-gray-900">Invoice - Order #{orderData.orderNumber}</h2>
+            <button
+              onClick={() => setShowInvoice(false)}
+              className="flex items-center space-x-2 bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded-lg transition-colors"
+            >
+              <ArrowLeft className="w-4 h-4" />
+              <span>Close</span>
+            </button>
+          </div>
+          <Invoice orderData={orderData} />
+        </div>
+      )}
     </div>
   );
 };
