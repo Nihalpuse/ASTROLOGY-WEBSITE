@@ -406,7 +406,8 @@ export async function GET(request: Request) {
           return sum + paymentAmount
         }, 0)
         
-        const averageRating = 4.7 // Default rating since we don't have review system yet
+        // Use real rating from astrologer table (updated by rating system)
+        const averageRating = Number(astrologer.rating || 0)
         
         return {
           id: astrologer.id,
